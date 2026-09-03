@@ -1273,7 +1273,62 @@ const d=await api('/api/dashboard');if(!d)return;
 cards.innerHTML=Object.entries(d.stats).slice(0,8).map(([k,v])=>`<div class="card"><div class="muted">${k.replaceAll('_',' ')}</div><div class="stat">${typeof v==='number'?Math.round(v*100)/100:v}</div></div>`).join('');
 new Chart(document.getElementById('chart'),{type:'bar',data:{labels:['Customers','Projects','Leads','Students'],datasets:[{label:'Records',data:[d.stats.customers,d.stats.projects,d.stats.leads,d.stats.students]}]}});
 }
-async function page_customers(){await pageTable('customers','/api/customers','customers')}
+let customerRows=[];
+
+async function page_customers(){
+content.innerHTML=`<div class="panel"><div class="actions" style="align-items:center">
+<h2 style="margin-right:auto">${lang==='fr'?'Clients':'Customers'}</h2>
+<button class="btn" onclick="showCustomerForm()">+ ${lang==='fr'?'Nouveau client':'Add Customer'}</button>
+<button class="btn alt" onclick="loadCustomers()">↻ ${lang==='fr'?'Actualiser':'Refresh'}</button>
+</div>
+<div class="form" style="margin:15px 0"><input id="customerSearch" placeholder="${lang==='fr'?'Rechercher un client...':'Search customers...'}" oninput="renderCustomers()"></div>
+<div id="customerForm"></div><div id="customerTable" class="muted">Loading...</div></div>`;
+await loadCustomers();
+}
+
+async function loadCustomers(){const d=await api('/api/customers');if(!d)return;customerRows=d.customers||[];renderCustomers()}
+
+function renderCustomers(){
+const q=(document.getElementById('customerSearch')?.value||'').toLowerCase().trim();
+const rows=customerRows.filter(r=>!q||Object.values(r).some(v=>String(v??'').toLowerCase().includes(q)));
+const wrap=document.getElementById('customerTable');if(!wrap)return;
+if(!rows.length){wrap.innerHTML=`<p>${lang==='fr'?'Aucun client trouvé.':'No customers found.'}</p>`;return}
+const keys=['name','phone','email','company','location','status','source','last_message','created_at'];
+wrap.innerHTML=`<div style="overflow:auto"><table><thead><tr>${keys.map(k=>`<th>${customerLabel(k)}</th>`).join('')}<th>Actions</th></tr></thead><tbody>
+${rows.map(r=>`<tr>${keys.map(k=>`<td>${escapeHtml(r[k]??'')}</td>`).join('')}
+<td><button class="btn alt" onclick="editCustomer('${escapeJs(r.id||'')}')">${lang==='fr'?'Modifier':'Edit'}</button>
+<button class="btn alt" onclick="deleteCustomer('${escapeJs(r.id||'')}')">${lang==='fr'?'Supprimer':'Delete'}</button></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function customerLabel(k){const l={name:lang==='fr'?'Nom':'Name',phone:lang==='fr'?'Téléphone':'Phone',email:'Email',company:lang==='fr'?'Entreprise':'Company',location:lang==='fr'?'Localisation':'Location',status:lang==='fr'?'Statut':'Status',source:'Source',last_message:lang==='fr'?'Dernier message':'Last message',created_at:lang==='fr'?'Date de création':'Created'};return l[k]||k}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function escapeJs(v){return String(v).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+
+function showCustomerForm(c={}){
+const f=document.getElementById('customerForm');if(!f)return;
+f.innerHTML=`<div class="panel" style="margin-bottom:15px"><h3>${c.id?(lang==='fr'?'Modifier le client':'Edit Customer'):(lang==='fr'?'Nouveau client':'Add Customer')}</h3>
+<div class="form">
+<input id="c_name" placeholder="${lang==='fr'?'Nom du client':'Customer name'}" value="${escapeHtml(c.name||'')}">
+<input id="c_phone" placeholder="${lang==='fr'?'Téléphone / WhatsApp':'Phone / WhatsApp'}" value="${escapeHtml(c.phone||'')}">
+<input id="c_email" type="email" placeholder="Email" value="${escapeHtml(c.email||'')}">
+<input id="c_company" placeholder="${lang==='fr'?'Entreprise':'Company'}" value="${escapeHtml(c.company||'')}">
+<input id="c_location" placeholder="${lang==='fr'?'Localisation':'Location'}" value="${escapeHtml(c.location||'')}">
+<select id="c_status"><option value="active" ${c.status==='active'?'selected':''}>${lang==='fr'?'Actif':'Active'}</option><option value="lead" ${c.status==='lead'?'selected':''}>${lang==='fr'?'Prospect':'Lead'}</option><option value="inactive" ${c.status==='inactive'?'selected':''}>${lang==='fr'?'Inactif':'Inactive'}</option></select>
+<div class="actions"><button class="btn" onclick="saveCustomer('${escapeJs(c.id||'')}')">${lang==='fr'?'Enregistrer':'Save Customer'}</button><button class="btn alt" onclick="document.getElementById('customerForm').innerHTML=''">${lang==='fr'?'Annuler':'Cancel'}</button></div>
+</div></div>`;
+}
+
+async function saveCustomer(id){
+const data={name:c_name.value.trim(),phone:c_phone.value.trim(),email:c_email.value.trim(),company:c_company.value.trim(),location:c_location.value.trim(),status:c_status.value};
+if(!data.name&&!data.phone&&!data.email){toast(lang==='fr'?'Veuillez saisir au moins un nom, téléphone ou email.':'Enter at least a name, phone or email.');return}
+try{await api('/api/customers'+(id?'?id='+encodeURIComponent(id):''),{method:id?'PUT':'POST',body:JSON.stringify(id?{...data,id}:data)});
+toast(lang==='fr'?'Client enregistré avec succès.':'Customer saved successfully.');customerForm.innerHTML='';await loadCustomers()
+}catch(e){toast(e.message)}
+}
+
+function editCustomer(id){const c=customerRows.find(r=>String(r.id)===String(id));if(c)showCustomerForm(c)}
+async function deleteCustomer(id){if(!id)return;if(!confirm(lang==='fr'?'Supprimer ce client ?':'Delete this customer?'))return;try{await api('/api/customers?id='+encodeURIComponent(id),{method:'DELETE',body:JSON.stringify({id})});toast(lang==='fr'?'Client supprimé.':'Customer deleted.');await loadCustomers()}catch(e){toast(e.message)}}
+
 async function page_messages(){await pageTable('messages','/api/messages','messages')}
 async function page_leads(){await pageTable('leads','/api/leads','leads')}
 async function page_projects(){await pageTable('projects','/api/projects','projects')}
