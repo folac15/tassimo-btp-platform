@@ -1,5235 +1,1340 @@
-from flask import Flask, jsonify, request, send_from_directory
+
+from flask import Flask, jsonify, request, session, redirect, send_from_directory
 from flask_cors import CORS
-from datetime import datetime, timezone
-import requests
+from datetime import datetime, timezone, timedelta
 import os
-import time
-import threading
+import json
+import uuid
+import requests
 import traceback
 
+# ============================================================
+# TASSIMO BTP CONSTRUCTION SARL
+# Unified AI Business Management Platform
+# One-file backend designed for the complete 10-module roadmap.
+# Production secrets MUST be supplied through Render environment
+# variables. No secret is stored in this source file.
+# ============================================================
 
 app = Flask(__name__)
-CORS(app)
-
-
-# =========================================================
-# ENVIRONMENT VARIABLES
-# =========================================================
-
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-SUPABASE_SECRET_KEY = os.environ.get("SUPABASE_SECRET_KEY")
-
-SUPABASE_PROJECT_URL = "https://xfjroysinifwncfjvrsg.supabase.co"
-
-WHATSAPP_VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN")
-WHATSAPP_ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN")
-WHATSAPP_PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID")
-WHATSAPP_BUSINESS_ACCOUNT_ID = os.environ.get(
-    "WHATSAPP_BUSINESS_ACCOUNT_ID"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change-this-in-render")
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=12),
 )
+CORS(app, supports_credentials=True)
 
+APP_NAME = "TASSIMO BTP CONSTRUCTION SARL"
+CEO_NAME = "TAGNE Simo Innocant"
+SLOGAN = "Together, let us build excellence."
+SUPPORTED_LANGUAGES = ["en", "fr"]
 
-# =========================================================
-# OPENROUTER AI MODELS
-# =========================================================
-
-OPENROUTER_PRIMARY_MODEL = "openai/gpt-oss-20b:free"
-
-OPENROUTER_FREE_ROUTER_MODEL = "openrouter/free"
-
-
-# =========================================================
-# SUPABASE TABLE URLS
-# =========================================================
-
-CUSTOMERS_URL = SUPABASE_PROJECT_URL + "/rest/v1/customers"
-
-BUSINESS_ACCOUNTS_URL = (
-    SUPABASE_PROJECT_URL + "/rest/v1/business_accounts"
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
+SUPABASE_KEY = (
+    os.environ.get("SUPABASE_SECRET_KEY")
+    or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    or os.environ.get("SUPABASE_ANON_KEY", "")
 )
-
-AUTOMATION_SETTINGS_URL = (
-    SUPABASE_PROJECT_URL + "/rest/v1/automation_settings"
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+OPENROUTER_PRIMARY_MODEL = os.environ.get(
+    "OPENROUTER_MODEL", "openai/gpt-oss-20b:free"
 )
+OPENROUTER_FALLBACK_MODEL = "openrouter/free"
 
-AI_CONVERSATIONS_URL = (
-    SUPABASE_PROJECT_URL + "/rest/v1/ai_conversations"
-)
+WHATSAPP_VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "")
+WHATSAPP_ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN", "")
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "")
+WHATSAPP_BUSINESS_ACCOUNT_ID = os.environ.get("WHATSAPP_BUSINESS_ACCOUNT_ID", "")
 
-INTEGRATIONS_URL = (
-    SUPABASE_PROJECT_URL + "/rest/v1/integrations"
-)
+FACEBOOK_VERIFY_TOKEN = os.environ.get("FACEBOOK_VERIFY_TOKEN", "")
+FACEBOOK_PAGE_ACCESS_TOKEN = os.environ.get("FACEBOOK_PAGE_ACCESS_TOKEN", "")
 
-MESSAGES_URL = (
-    SUPABASE_PROJECT_URL + "/rest/v1/messages"
-)
+CEO_EMAIL = os.environ.get("CEO_EMAIL", "")
+CEO_PASSWORD = os.environ.get("CEO_PASSWORD", "")
+
+TABLES = {
+    "customers",
+    "business_accounts",
+    "automation_settings",
+    "ai_conversations",
+    "integrations",
+    "messages",
+    "projects",
+    "inventory",
+    "suppliers",
+    "expenses",
+    "payments",
+    "invoices",
+    "quotations",
+    "receipts",
+    "training_courses",
+    "trainers",
+    "students",
+    "classes",
+    "attendance",
+    "digital_courses",
+    "leads",
+    "tasks",
+    "campaigns",
+    "documents",
+    "approvals",
+    "notifications",
+}
+
+# ------------------------------------------------------------
+# Localization
+# ------------------------------------------------------------
+
+TEXT = {
+    "en": {
+        "login_required": "Authentication required.",
+        "invalid_credentials": "Invalid CEO credentials.",
+        "login_ok": "Login successful.",
+        "logout_ok": "Logged out.",
+        "saved": "Saved successfully.",
+        "not_found": "Record not found.",
+        "invalid_data": "Invalid data.",
+        "ai_unavailable": "AI service is not configured or is temporarily unavailable.",
+        "approval_required": "CEO approval is required for this action.",
+    },
+    "fr": {
+        "login_required": "Authentification requise.",
+        "invalid_credentials": "Identifiants du CEO invalides.",
+        "login_ok": "Connexion réussie.",
+        "logout_ok": "Déconnexion réussie.",
+        "saved": "Enregistré avec succès.",
+        "not_found": "Enregistrement introuvable.",
+        "invalid_data": "Données invalides.",
+        "ai_unavailable": "Le service IA n'est pas configuré ou est temporairement indisponible.",
+        "approval_required": "L'approbation du CEO est requise pour cette action.",
+    },
+}
 
 
-# =========================================================
-# TIME
-# =========================================================
+def language():
+    value = request.args.get("lang") or request.headers.get("X-Language")
+    if value not in SUPPORTED_LANGUAGES:
+        value = session.get("language", "en")
+    return value
 
-def now_iso():
+
+def t(key):
+    return TEXT.get(language(), TEXT["en"]).get(key, key)
+
+
+def utc_now():
     return datetime.now(timezone.utc).isoformat()
 
 
-# =========================================================
-# SUPABASE HEADERS
-# =========================================================
+# ------------------------------------------------------------
+# Supabase REST layer
+# ------------------------------------------------------------
+
+def supabase_configured():
+    return bool(SUPABASE_URL and SUPABASE_KEY)
+
 
 def supabase_headers(prefer=None):
-
     headers = {
-        "apikey": str(SUPABASE_SECRET_KEY or ""),
-        "Authorization": "Bearer " + str(
-            SUPABASE_SECRET_KEY or ""
-        ),
-        "Content-Type": "application/json"
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
     }
-
     if prefer:
         headers["Prefer"] = prefer
-
     return headers
 
 
-# =========================================================
-# WEBSITE
-# =========================================================
-
-@app.route("/")
-def home():
-    return send_from_directory(".", "index.html")
+def sb_url(table):
+    return f"{SUPABASE_URL}/rest/v1/{table}"
 
 
-@app.route("/index.html")
-def index_page():
-    return send_from_directory(".", "index.html")
-
-
-@app.route("/<path:filename>")
-def serve_files(filename):
-
-    if filename.endswith((".html", ".css", ".js")):
-        return send_from_directory(".", filename)
-
-    return "File not found", 404
-
-
-# =========================================================
-# API STATUS
-# =========================================================
-
-@app.route("/api/status")
-def status():
-
-    return jsonify({
-        "status": "online",
-        "message": "NexaFlow AI API is working"
-    })
-
-
-# =========================================================
-# AUTHENTICATED USER
-# =========================================================
-
-def get_authenticated_user():
-
-    authorization = request.headers.get("Authorization")
-
-    if not authorization:
-        return None
-
-    if not authorization.startswith("Bearer "):
-        return None
-
-    access_token = authorization.replace(
-        "Bearer ",
-        "",
-        1
-    ).strip()
-
-    if not access_token:
-        return None
-
-    if not SUPABASE_SECRET_KEY:
-
-        print(
-            "SUPABASE_SECRET_KEY is not configured."
-        )
-
-        return None
-
+def sb_select(table, params=None):
+    if not supabase_configured():
+        return []
     try:
-
         response = requests.get(
-            SUPABASE_PROJECT_URL + "/auth/v1/user",
-            headers={
-                "apikey": SUPABASE_SECRET_KEY,
-                "Authorization":
-                    "Bearer " + access_token
-            },
-            timeout=15
+            sb_url(table),
+            headers=supabase_headers(),
+            params=params or {},
+            timeout=20,
         )
-
-        print(
-            "Supabase authentication status:",
-            response.status_code
-        )
-
-        if response.status_code != 200:
-
-            print(
-                "Supabase authentication error:",
-                response.text
-            )
-
-            return None
-
-        user = response.json()
-
-        if not user.get("id"):
-            return None
-
-        return user
-
-    except Exception as error:
-
-        print(
-            "Authentication exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return None
-
-
-# =========================================================
-# SYSTEM PROMPT
-# =========================================================
-
-NEXAFLOW_SYSTEM_PROMPT = """
-You are NexaFlow AI, the intelligent conversational assistant inside the NexaFlow Business Management Platform.
-
-Help with:
-
-- Business management
-- Customer service
-- Marketing
-- Sales
-- Business ideas
-- Business planning
-- Mathematics
-- Physics
-- Engineering
-- Education
-- General knowledge
-- Writing
-- Communication
-- Problem solving
-
-Always use conversation history when supplied.
-
-Understand short follow-up messages from context.
-
-If the user says "give me an example", give an example of the current topic.
-
-If the user says "another one", give a different example.
-
-If the user says "solve it", solve the most recent relevant problem.
-
-If the user says "why", explain the previous statement.
-
-If the user says "make it easier", simplify the previous answer.
-
-If the user says "continue" or "go on", continue the current topic.
-
-For mathematics and physics:
-
-- Explain clearly.
-- Give formulas when useful.
-- Define variables when useful.
-- Show reasoning.
-- Give examples when requested.
-- Solve step by step when requested.
-
-For education:
-
-- Explain before giving examples when appropriate.
-- Do not give an exercise answer unless requested.
-- Correct mistakes politely.
-
-For business:
-
-- Give practical recommendations.
-- Consider African and Cameroonian realities where relevant.
-- Do not invent prices, statistics or regulations.
-
-Do not claim to have performed an action that you did not perform.
-
-Be accurate, natural, helpful and conversational.
-"""
-
-
-# =========================================================
-# SUPABASE GENERIC HELPERS
-# =========================================================
-
-def supabase_get(url, params):
-
-    return requests.get(
-        url,
-        headers=supabase_headers(),
-        params=params,
-        timeout=15
-    )
-
-
-def supabase_insert(url, data):
-
-    return requests.post(
-        url,
-        headers=supabase_headers(
-            "return=representation"
-        ),
-        json=data,
-        timeout=15
-    )
-
-
-def supabase_update(url, params, data):
-
-    return requests.patch(
-        url,
-        headers=supabase_headers(
-            "return=representation"
-        ),
-        params=params,
-        json=data,
-        timeout=15
-    )
-
-
-def supabase_delete(url, params):
-
-    return requests.delete(
-        url,
-        headers=supabase_headers(),
-        params=params,
-        timeout=15
-    )
-
-
-def first_row(response):
-
-    try:
+        if response.status_code >= 400:
+            return []
         data = response.json()
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
 
+
+def sb_insert(table, payload, select=True):
+    if not supabase_configured():
+        return None
+    try:
+        prefer = "return=representation" if select else "return=minimal"
+        response = requests.post(
+            sb_url(table),
+            headers=supabase_headers(prefer),
+            json=payload,
+            timeout=20,
+        )
+        if response.status_code >= 400:
+            return None
+        data = response.json() if response.content else None
+        if isinstance(data, list):
+            return data[0] if data else None
+        return data
     except Exception:
         return None
 
-    if isinstance(data, list) and data:
-        return data[0]
 
+def sb_update(table, filters, payload):
+    if not supabase_configured():
+        return None
+    try:
+        response = requests.patch(
+            sb_url(table),
+            headers=supabase_headers("return=representation"),
+            params=filters,
+            json=payload,
+            timeout=20,
+        )
+        if response.status_code >= 400:
+            return None
+        data = response.json() if response.content else None
+        return data[0] if isinstance(data, list) and data else data
+    except Exception:
+        return None
+
+
+def sb_delete(table, filters):
+    if not supabase_configured():
+        return False
+    try:
+        response = requests.delete(
+            sb_url(table),
+            headers=supabase_headers("return=minimal"),
+            params=filters,
+            timeout=20,
+        )
+        return response.status_code < 400
+    except Exception:
+        return False
+
+
+def sb_count(table):
+    if not supabase_configured():
+        return 0
+    try:
+        headers = supabase_headers("count=exact")
+        response = requests.get(
+            sb_url(table),
+            headers=headers,
+            params={"select": "id", "limit": "1"},
+            timeout=20,
+        )
+        content_range = response.headers.get("Content-Range", "")
+        if "/" in content_range:
+            return int(content_range.split("/")[-1])
+        data = response.json()
+        return len(data) if isinstance(data, list) else 0
+    except Exception:
+        return 0
+
+
+# ------------------------------------------------------------
+# Authentication
+# ------------------------------------------------------------
+
+def authentication_configured():
+    return bool(CEO_EMAIL and CEO_PASSWORD)
+
+
+def session_authenticated():
+    return bool(session.get("authenticated"))
+
+
+def resolve_ceo_user():
+    # Never invent a UUID. Use an actual business_accounts user_id only.
+    rows = sb_select(
+        "business_accounts",
+        {"select": "user_id", "limit": "1"},
+    )
+    if rows and rows[0].get("user_id"):
+        return {"id": rows[0]["user_id"]}
     return None
 
 
-# =========================================================
-# AI CONVERSATION SAVE
-# =========================================================
-
-def save_ai_conversation(
-    user_id,
-    question,
-    answer
-):
-
-    if not user_id:
-        return False
-
-    data = {
-        "user_id": user_id,
-        "question": question,
-        "answer": answer,
-        "created_at": now_iso()
-    }
-
-    try:
-
-        response = supabase_insert(
-            AI_CONVERSATIONS_URL,
-            data
-        )
-
-        print(
-            "AI conversation SAVE:",
-            response.status_code,
-            response.text
-        )
-
-        return response.status_code in (
-            200,
-            201
-        )
-
-    except Exception as error:
-
-        print(
-            "AI conversation SAVE exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return False
-
-
-# =========================================================
-# OPENROUTER SINGLE MODEL REQUEST
-# =========================================================
-
-def call_openrouter_model(
-    model,
-    messages,
-    title="NexaFlow AI"
-):
-
-    if not OPENROUTER_API_KEY:
-
-        return None, {
-            "type": "configuration",
-            "message":
-                "OPENROUTER_API_KEY is not configured.",
-            "status_code": None,
-            "model": model
-        }
-
-    url = (
-        "https://openrouter.ai/api/v1/"
-        "chat/completions"
-    )
-
-    headers = {
-        "Authorization":
-            "Bearer " + OPENROUTER_API_KEY,
-
-        "Content-Type":
-            "application/json",
-
-        "HTTP-Referer":
-            SUPABASE_PROJECT_URL,
-
-        "X-Title":
-            title
-    }
-
-    payload = {
-        "model": model,
-        "messages": messages
-    }
-
-    try:
-
-        response = requests.post(
-            url,
-            headers=headers,
-            json=payload,
-            timeout=90
-        )
-
-        print(
-            "================================================"
-        )
-
-        print(
-            "OpenRouter model:",
-            model
-        )
-
-        print(
-            "OpenRouter status:",
-            response.status_code
-        )
-
-        print(
-            "================================================"
-        )
-
-        try:
-            result = response.json()
-
-        except Exception:
-
-            result = {
-                "raw_response":
-                    response.text
-            }
-
-        if response.status_code != 200:
-
-            error_message = (
-                result.get("error", {})
-                if isinstance(result, dict)
-                else result
-            )
-
-            print(
-                "OpenRouter ERROR:",
-                error_message
-            )
-
-            return None, {
-                "type": "openrouter",
-                "message":
-                    str(error_message),
-                "status_code":
-                    response.status_code,
-                "model":
-                    model,
-                "raw":
-                    result
-            }
-
-        choices = result.get(
-            "choices",
-            []
-        )
-
-        if not choices:
-
-            return None, {
-                "type": "empty_response",
-                "message":
-                    "No AI response was returned.",
-                "status_code":
-                    response.status_code,
-                "model":
-                    model
-            }
-
-        answer = str(
-            choices[0]
-            .get("message", {})
-            .get("content", "")
-        ).strip()
-
-        if not answer:
-
-            return None, {
-                "type": "empty_response",
-                "message":
-                    "AI returned an empty response.",
-                "status_code":
-                    response.status_code,
-                "model":
-                    model
-            }
-
-        return answer, None
-
-    except requests.exceptions.Timeout:
-
-        print(
-            "OpenRouter TIMEOUT:",
-            model
-        )
-
-        return None, {
-            "type": "timeout",
-            "message":
-                "OpenRouter request timed out.",
-            "status_code":
-                None,
-            "model":
-                model
-        }
-
-    except requests.exceptions.RequestException as error:
-
-        print(
-            "OpenRouter REQUEST ERROR:",
-            model,
-            error
-        )
-
-        traceback.print_exc()
-
-        return None, {
-            "type": "request_exception",
-            "message":
-                str(error),
-            "status_code":
-                None,
-            "model":
-                model
-        }
-
-    except Exception as error:
-
-        print(
-            "OpenRouter EXCEPTION:",
-            model,
-            error
-        )
-
-        traceback.print_exc()
-
-        return None, {
-            "type": "exception",
-            "message":
-                str(error),
-            "status_code":
-                None,
-            "model":
-                model
-        }
-
-
-
-
-
-        
-
-
-# =========================================================
-# CUSTOMERS - UPDATE
-# =========================================================
-
-@app.route(
-    "/api/customers/<customer_id>",
-    methods=["PATCH"]
-)
-def update_customer(customer_id):
-
-    user = get_authenticated_user()
-
-    if not user:
-
+def get_authenticated_user():
+    if not session_authenticated():
+        return None
+    return session.get("user") or resolve_ceo_user()
+
+
+def login_page():
+    return """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TASSIMO BTP — CEO Login</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;
+background:linear-gradient(135deg,#101828,#183b56);min-height:100vh;
+display:flex;align-items:center;justify-content:center;padding:20px}
+.card{width:100%;max-width:430px;background:#fff;border-radius:24px;padding:30px;
+box-shadow:0 20px 60px #0005}.logo{width:70px;height:70px;border-radius:18px;
+background:#183b56;color:#fff;display:grid;place-items:center;font-size:30px;
+margin:auto}.center{text-align:center}.muted{color:#667085}.field{margin:16px 0}
+label{display:block;margin-bottom:7px;font-weight:700}input{width:100%;padding:14px;
+border:1px solid #d0d5dd;border-radius:12px;font-size:16px}button{width:100%;
+padding:14px;border:0;border-radius:12px;background:#183b56;color:#fff;
+font-weight:700;font-size:16px;cursor:pointer}.row{display:flex;gap:8px;margin-top:14px}
+.lang{background:#eef2f6;color:#183b56}.error{color:#b42318;margin-top:12px}
+</style></head>
+<body><main class="card">
+<div class="logo">🏗️</div><div class="center">
+<h2>TASSIMO BTP CONSTRUCTION SARL</h2><p class="muted">CEO Dashboard / Tableau de bord du CEO</p>
+</div><form id="login">
+<div class="field"><label>Email / E-mail</label><input id="email" type="email" required></div>
+<div class="field"><label>Password / Mot de passe</label><input id="password" type="password" required></div>
+<button>Sign in / Se connecter</button><div id="error" class="error"></div></form>
+<div class="row"><button class="lang" onclick="setLang('en')" type="button">English</button>
+<button class="lang" onclick="setLang('fr')" type="button">Français</button></div>
+<script>
+function setLang(x){localStorage.setItem('lang',x)}
+document.getElementById('login').onsubmit=async e=>{
+ e.preventDefault();
+ const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({email:email.value,password:password.value})});
+ const d=await r.json(); if(r.ok) location.href='/'; else error.textContent=d.error||'Login failed';
+}
+</script></main></body></html>"""
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "GET":
+        if session_authenticated():
+            return redirect("/")
+        return login_page()
+
+    data = request.get_json(silent=True) or request.form.to_dict()
+    email = str(data.get("email", "")).strip()
+    password = str(data.get("password", ""))
+
+    if not authentication_configured():
         return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    allowed_fields = {
-        "name",
-        "phone",
-        "email",
-        "location",
-        "message",
-        "ai_reply",
-        "status",
-        "notes"
-    }
-
-    update_data = {}
-
-    for field in allowed_fields:
-
-        if field in data:
-
-            value = data.get(field)
-
-            if value is None:
-                value = ""
-
-            update_data[field] = str(
-                value
-            ).strip()
-
-    if not update_data:
-
-        return jsonify({
-            "error":
-                "No customer information was provided."
-        }), 400
-
-    try:
-
-        response = supabase_update(
-            CUSTOMERS_URL,
-            {
-                "id":
-                    "eq." + str(customer_id),
-
-                "user_id":
-                    "eq." + user["id"]
-            },
-            update_data
-        )
-
-        if response.status_code not in (
-            200,
-            204
-        ):
-
-            return jsonify({
-                "success": False,
-                "error":
-                    "Unable to update customer: "
-                    + response.text
-            }), response.status_code
-
-        return jsonify({
-            "success":
-                True,
-
-            "customer":
-                first_row(response),
-
-            "message":
-                "Customer updated successfully."
-        })
-
-    except Exception as error:
-
-        print(
-            "Customer PATCH exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "success": False,
-            "error":
-                "Unable to update customer: "
-                + str(error)
-        }), 500
-
-
-
-
-# =========================================================
-# CUSTOMER COUNT
-# =========================================================
-
-@app.route(
-    "/api/customers/count",
-    methods=["GET"]
-)
-def customer_count():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    try:
-
-        response = supabase_get(
-            CUSTOMERS_URL,
-            {
-                "select":
-                    "id",
-
-                "user_id":
-                    "eq." + user["id"]
-            }
-        )
-
-        if response.status_code != 200:
-
-            return jsonify({
-                "error":
-                    "Unable to load customer count: "
-                    + response.text
-            }), response.status_code
-
-        customers = response.json()
-
-        return jsonify({
-            "success":
-                True,
-
-            "count":
-                len(customers)
-        })
-
-    except Exception as error:
-
-        print(
-            "Customer COUNT exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "success": False,
-            "error":
-                "Unable to load customer count: "
-                + str(error)
-        }), 500
-
-
-# =========================================================
-# BUSINESS ACCOUNT - GET
-# =========================================================
-
-@app.route(
-    "/api/business-account",
-    methods=["GET"]
-)
-def get_business_account():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    try:
-
-        response = supabase_get(
-            BUSINESS_ACCOUNTS_URL,
-            {
-                "select":
-                    "*",
-
-                "user_id":
-                    "eq." + user["id"],
-
-                "limit":
-                    "1"
-            }
-        )
-
-        if response.status_code != 200:
-
-            return jsonify({
-                "success": False,
-                "error":
-                    "Unable to load business account: "
-                    + response.text
-            }), response.status_code
-
-        account = first_row(response)
-
-        return jsonify({
-            "success":
-                True,
-
-            "business_account":
-                account
-        })
-
-    except Exception as error:
-
-        print(
-            "Business account GET exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "success": False,
-            "error":
-                "Unable to load business account: "
-                + str(error)
-        }), 500
-
-
-# =========================================================
-# BUSINESS ACCOUNT - SAVE
-# =========================================================
-
-@app.route(
-    "/api/business-account",
-    methods=["POST"]
-)
-def save_business_account():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    allowed_fields = {
-        "business_name",
-        "owner_name",
-        "email",
-        "phone",
-        "address",
-        "city",
-        "country",
-        "industry",
-        "description",
-        "website",
-        "logo_url",
-        "slogan"
-    }
-
-    business_data = {
-        "user_id":
-            user["id"]
-    }
-
-    for field in allowed_fields:
-
-        if field in data:
-
-            value = data.get(field)
-
-            if value is None:
-                value = ""
-
-            business_data[field] = str(
-                value
-            ).strip()
-
-    business_data["updated_at"] = now_iso()
-
-    try:
-
-        existing_response = supabase_get(
-            BUSINESS_ACCOUNTS_URL,
-            {
-                "select":
-                    "id",
-
-                "user_id":
-                    "eq." + user["id"],
-
-                "limit":
-                    "1"
-            }
-        )
-
-        existing = first_row(
-            existing_response
-        )
-
-        if existing and existing.get("id"):
-
-            response = supabase_update(
-                BUSINESS_ACCOUNTS_URL,
-                {
-                    "id":
-                        "eq." + str(
-                            existing["id"]
-                        ),
-
-                    "user_id":
-                        "eq." + user["id"]
-                },
-                business_data
-            )
-
-        else:
-
-            business_data["created_at"] = now_iso()
-
-            response = supabase_insert(
-                BUSINESS_ACCOUNTS_URL,
-                business_data
-            )
-
-        if response.status_code not in (
-            200,
-            201,
-            204
-        ):
-
-            return jsonify({
-                "success": False,
-                "error":
-                    "Unable to save business account: "
-                    + response.text
-            }), response.status_code
-
-        return jsonify({
-            "success":
-                True,
-
-            "business_account":
-                first_row(response),
-
-            "message":
-                "Business account saved successfully."
-        })
-
-    except Exception as error:
-
-        print(
-            "Business account SAVE exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "success": False,
-            "error":
-                "Unable to save business account: "
-                + str(error)
-        }), 500
-                        
-
-
-# =========================================================
-# OPENROUTER AI WITH AUTOMATIC FREE FALLBACK
-# =========================================================
-
-def call_openrouter(
-    messages,
-    title="NexaFlow AI"
-):
-
-    models_to_try = [
-        OPENROUTER_PRIMARY_MODEL,
-        OPENROUTER_FREE_ROUTER_MODEL
-    ]
-
-    last_error = None
-
-    retryable_status_codes = {
-        402,
-        404,
-        408,
-        409,
-        429,
-        500,
-        502,
-        503,
-        504
-    }
-
-    for index, model in enumerate(
-        models_to_try
-    ):
-
-        print(
-            "AI MODEL ATTEMPT:",
-            index + 1,
-            "of",
-            len(models_to_try),
-            model
-        )
-
-        answer, error = call_openrouter_model(
-            model,
-            messages,
-            title
-        )
-
-        if answer:
-
-            print(
-                "AI MODEL SUCCESS:",
-                model
-            )
-
-            return answer, None
-
-        last_error = error or {
-            "type": "unknown",
-            "message":
-                "Unknown OpenRouter error.",
-            "status_code":
-                None,
-            "model":
-                model
-        }
-
-        status_code = last_error.get(
-            "status_code"
-        )
-
-        print(
-            "AI MODEL FAILED:",
-            model,
-            "status:",
-            status_code
-        )
-
-        if (
-            index == 0
-            and status_code in retryable_status_codes
-        ):
-
-            print(
-                "Trying OpenRouter free-model router..."
-            )
-
-            time.sleep(0.5)
-
-            continue
-
-        if index == 0:
-
-            print(
-                "Primary model failed."
-            )
-
-            print(
-                "Trying fallback model anyway..."
-            )
-
-            time.sleep(0.5)
-
-            continue
-
-        break
-
-    print(
-        "================================================"
-    )
-
-    print(
-        "ALL OPENROUTER AI MODELS FAILED"
-    )
-
-    print(
-        "Last error:",
-        last_error
-    )
-
-    print(
-        "================================================"
-    )
-
-    return None, last_error
-
-# =========================================================
-# AI ASSISTANT
-# =========================================================
-
-@app.route(
-    "/api/ai",
-    methods=["POST"]
-)
-def ai_reply():
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    question = str(
-        data.get(
-            "question",
-            ""
-        )
-    ).strip()
-
-    conversation = data.get(
-        "conversation",
-        []
-    )
-
-    if not question:
-
-        return jsonify({
-            "answer":
-                "Please enter your question."
-        }), 400
-
-    user = get_authenticated_user()
-
-    user_id = (
-        user.get("id")
-        if user
-        else None
-    )
-
-    messages = [{
-        "role":
-            "system",
-        "content":
-            NEXAFLOW_SYSTEM_PROMPT
-    }]
-
-    if isinstance(
-        conversation,
-        list
-    ):
-
-        for item in conversation:
-
-            if not isinstance(
-                item,
-                dict
-            ):
-                continue
-
-            role = item.get(
-                "role"
-            )
-
-            content = item.get(
-                "content"
-            )
-
-            if role not in (
-                "user",
-                "assistant"
-            ):
-
-                continue
-
-            if content is None:
-
-                continue
-
-            content = str(
-                content
-            ).strip()
-
-            if not content:
-
-                continue
-
-            messages.append({
-                "role":
-                    role,
-                "content":
-                    content
-            })
-
-    messages.append({
-        "role":
-            "user",
-        "content":
-            question
-    })
-
-    if len(messages) > 21:
-
-        messages = (
-            [messages[0]]
-            + messages[-20:]
-        )
-
-    answer, error = call_openrouter(
-        messages,
-        "NexaFlow AI"
-    )
-
-    if not answer:
-
-        print(
-            "FINAL AI ASSISTANT ERROR:",
-            error
-        )
-
-        return jsonify({
-            "success":
-                False,
-            "answer":
-                "NexaFlow AI is temporarily unable to respond. "
-                "Please try again in a moment.",
-            "error":
-                "AI service temporarily unavailable."
+            "error": "CEO_EMAIL and CEO_PASSWORD are not configured in Render."
         }), 503
 
-    saved = save_ai_conversation(
-        user_id,
-        question,
-        answer
-    )
+    if email != CEO_EMAIL or password != CEO_PASSWORD:
+        return jsonify({"error": t("invalid_credentials")}), 401
 
+    session.clear()
+    session.permanent = True
+    session["authenticated"] = True
+    session["language"] = "en"
+    user = resolve_ceo_user()
+    if user:
+        session["user"] = user
+    return jsonify({"message": t("login_ok"), "redirect": "/"})
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
+
+
+@app.route("/api/auth/me")
+def auth_me():
+    if not session_authenticated():
+        return jsonify({"authenticated": False}), 401
     return jsonify({
-        "success":
-            True,
-        "answer":
-            answer,
-        "conversation_saved":
-            saved
+        "authenticated": True,
+        "name": CEO_NAME,
+        "business": APP_NAME,
+        "language": session.get("language", "en"),
+        "user": get_authenticated_user(),
     })
 
-# =========================================================
-# CUSTOMERS - GET
-# =========================================================
 
-@app.route(
-    "/api/customers",
-    methods=["GET"]
-)
-def get_customers():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    try:
-
-        response = supabase_get(
-            CUSTOMERS_URL,
-            {
-                "select":
-                    "*",
-
-                "user_id":
-                    "eq." + user["id"],
-
-                "order":
-                    "created_at.desc"
-            }
-        )
-
-        if response.status_code != 200:
-
-            return jsonify({
-                "error":
-                    "Unable to load customers: "
-                    + response.text
-            }), response.status_code
-
-        customers = response.json()
-
-        return jsonify({
-            "success":
-                True,
-
-            "customers":
-                customers,
-
-            "count":
-                len(customers)
-        })
-
-    except Exception as error:
-
-        print(
-            "Customers GET exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                "Unable to load customers: "
-                + str(error)
-        }), 500
-
-
-# =========================================================
-# CUSTOMERS - ADD
-# =========================================================
-
-@app.route(
-    "/api/customers",
-    methods=["POST"]
-)
-def add_customer():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    name = str(
-        data.get(
-            "name",
-            data.get(
-                "customer_name",
-                ""
-            )
-        )
-    ).strip()
-
-    if not name:
-
-        return jsonify({
-            "error":
-                "Customer name is required."
-        }), 400
-
-    customer_data = {
-        "user_id":
-            user["id"],
-
-        "name":
-            name,
-
-        "phone":
-            str(
-                data.get(
-                    "phone",
-                    data.get(
-                        "phone_number",
-                        ""
-                    )
-                )
-            ).strip(),
-
-        "email":
-            str(
-                data.get(
-                    "email",
-                    ""
-                )
-            ).strip(),
-
-        "location":
-            str(
-                data.get(
-                    "location",
-                    ""
-                )
-            ).strip(),
-
-        "message":
-            str(
-                data.get(
-                    "message",
-                    data.get(
-                        "customer_message",
-                        ""
-                    )
-                )
-            ).strip(),
-
-        "ai_reply":
-            str(
-                data.get(
-                    "ai_reply",
-                    ""
-                )
-            ).strip(),
-
-        "created_at":
-            now_iso()
-    }
-
-    try:
-
-        response = supabase_insert(
-            CUSTOMERS_URL,
-            customer_data
-        )
-
-        if response.status_code not in (
-            200,
-            201
-        ):
-
-            return jsonify({
-                "success":
-                    False,
-
-                "error":
-                    "Unable to save customer: "
-                    + response.text
-            }), response.status_code
-
-        saved = (
-            first_row(response)
-            or customer_data
-        )
-
-        return jsonify({
-            "success":
-                True,
-
-            "customer":
-                saved,
-
-            "message":
-                "Customer saved successfully."
-        })
-
-    except Exception as error:
-
-        print(
-            "Customer SAVE exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "success":
-                False,
-
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# UPDATE CUSTOMER FROM WHATSAPP
-# =========================================================
-
-def update_customer_whatsapp_message(
-    user_id,
-    customer_id,
-    message_text
-):
-
-    if (
-        not user_id
-        or not customer_id
-        or not message_text
-    ):
-        return False
-
-    try:
-
-        params = {
-            "id":
-                "eq." + str(
-                    customer_id
-                ),
-            "user_id":
-                "eq." + str(
-                    user_id
-                ),
-            "select":
-                "*"
-        }
-
-        response = supabase_get(
-            CUSTOMERS_URL,
-            params
-        )
-
-        if response.status_code != 200:
-
-            print(
-                "Customer lookup failed:",
-                response.text
-            )
-
-            return False
-
-        rows = response.json()
-
-        if not rows:
-
-            print(
-                "Customer not found:",
-                customer_id
-            )
-
-            return False
-
-        current = rows[0]
-
-        existing_message = str(
-            current.get(
-                "message",
-                ""
-            )
-        ).strip()
-
-        if existing_message:
-
-            combined_message = (
-                existing_message
-                + "\n"
-                + message_text
-            )
-
-        else:
-
-            combined_message = message_text
-
-        update_data = {
-            "message":
-                combined_message,
-            "updated_at":
-                now_iso()
-        }
-
-        update_response = supabase_patch(
-            CUSTOMERS_URL,
-            params,
-            update_data
-        )
-
-        if update_response.status_code not in (
-            200,
-            204
-        ):
-
-            print(
-                "Customer WhatsApp update failed:",
-                update_response.text
-            )
-
-            return False
-
-        return True
-
-    except Exception as error:
-
-        print(
-            "Customer WhatsApp update exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return False
-def update_customer_ai_reply(
-    user_id,
-    customer_id,
-    ai_reply
-):
-
-    if (
-        not user_id
-        or not customer_id
-        or not ai_reply
-    ):
-        return False
-
-    try:
-
-        params = {
-            "id":
-                "eq." + str(
-                    customer_id
-                ),
-
-            "user_id":
-                "eq." + str(
-                    user_id
-                )
-        }
-
-        data = {
-            "ai_reply":
-                ai_reply,
-
-            "updated_at":
-                now_iso()
-        }
-
-        response = supabase_update(
-            CUSTOMERS_URL,
-            params,
-            data
-        )
-
-        print(
-            "CUSTOMER AI REPLY UPDATE:",
-            response.status_code,
-            response.text
-        )
-
-        return response.status_code in (
-            200,
-            204
-        )
-
-    except Exception as error:
-
-        print(
-            "Customer AI reply update exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return False
-
-
-# =========================================================
-# CUSTOMERS - DELETE
-# =========================================================
-
-@app.route(
-    "/api/customers/<int:customer_id>",
-    methods=["DELETE"]
-)
-def delete_customer(customer_id):
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    try:
-
-        response = supabase_delete(
-            CUSTOMERS_URL,
-            {
-                "id":
-                    "eq." + str(
-                        customer_id
-                    ),
-
-                "user_id":
-                    "eq." + user["id"]
-            }
-        )
-
-        if response.status_code not in (
-            200,
-            204
-        ):
-
-            return jsonify({
-                "error":
-                    response.text
-            }), response.status_code
-
-        return jsonify({
-            "success":
-                True,
-
-            "message":
-                "Customer deleted successfully."
-        })
-
-    except Exception as error:
-
-        print(
-            "Customer DELETE exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# DASHBOARD
-# =========================================================
-
-@app.route(
-    "/api/dashboard/stats",
-    methods=["GET"]
-)
-def dashboard_stats():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    user_id = user["id"]
-
-    try:
-
-        customers_response = supabase_get(
-            CUSTOMERS_URL,
-            {
-                "select":
-                    "id",
-
-                "user_id":
-                    "eq." + user_id
-            }
-        )
-
-        conversations_response = supabase_get(
-            AI_CONVERSATIONS_URL,
-            {
-                "select":
-                    "id",
-
-                "user_id":
-                    "eq." + user_id
-            }
-        )
-
-        business_response = supabase_get(
-            BUSINESS_ACCOUNTS_URL,
-            {
-                "select":
-                    "id",
-
-                "user_id":
-                    "eq." + user_id,
-
-                "limit":
-                    "1"
-            }
-        )
-
-        messages_response = supabase_get(
-            MESSAGES_URL,
-            {
-                "select":
-                    "id,direction,status",
-
-                "user_id":
-                    "eq." + user_id,
-
-                "platform":
-                    "eq.whatsapp"
-            }
-        )
-
-        customers = (
-            customers_response.json()
-            if customers_response.status_code == 200
-            else []
-        )
-
-        conversations = (
-            conversations_response.json()
-            if conversations_response.status_code == 200
-            else []
-        )
-
-        businesses = (
-            business_response.json()
-            if business_response.status_code == 200
-            else []
-        )
-
-        whatsapp_messages = (
-            messages_response.json()
-            if messages_response.status_code == 200
-            else []
-        )
-
-        incoming = len([
-            x
-            for x in whatsapp_messages
-            if x.get("direction")
-            == "inbound"
-        ])
-
-        outgoing = len([
-            x
-            for x in whatsapp_messages
-            if x.get("direction")
-            == "outbound"
-        ])
-
-        return jsonify({
-
-            "success":
-                True,
-
-            "stats": {
-
-                "customers":
-                    len(customers),
-
-                "ai_conversations":
-                    len(conversations),
-
-                "whatsapp_messages":
-                    len(whatsapp_messages),
-
-                "whatsapp_incoming":
-                    incoming,
-
-                "whatsapp_outgoing":
-                    outgoing,
-
-                "reports":
-                    len(customers)
-                    + len(conversations),
-
-                "business_account":
-                    1 if businesses
-                    else 0
-            }
-        })
-
-    except Exception as error:
-
-        print(
-            "Dashboard stats exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# AI CONVERSATIONS
-# =========================================================
-
-@app.route(
-    "/api/ai/conversations",
-    methods=["GET"]
-)
-def get_ai_conversations():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    try:
-
-        response = supabase_get(
-            AI_CONVERSATIONS_URL,
-            {
-                "select":
-                    "*",
-
-                "user_id":
-                    "eq." + user["id"],
-
-                "order":
-                    "created_at.desc"
-            }
-        )
-
-        if response.status_code != 200:
-
-            return jsonify({
-                "error":
-                    response.text
-            }), response.status_code
-
-        conversations = response.json()
-
-        return jsonify({
-
-            "success":
-                True,
-
-            "conversations":
-                conversations,
-
-            "count":
-                len(conversations)
-        })
-
-    except Exception as error:
-
-        print(
-            "AI conversations GET exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# AUTOMATION - GET
-# =========================================================
-
-@app.route(
-    "/api/automation",
-    methods=["GET"]
-)
-def get_automation_settings():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    try:
-
-        response = supabase_get(
-            AUTOMATION_SETTINGS_URL,
-            {
-                "select":
-                    "*",
-
-                "user_id":
-                    "eq." + user["id"],
-
-                "limit":
-                    "1"
-            }
-        )
-
-        if response.status_code != 200:
-
-            return jsonify({
-                "error":
-                    response.text
-            }), response.status_code
-
-        rows = response.json()
-
-        if rows:
-
-            return jsonify({
-                "automation":
-                    rows[0]
-            })
-
-        return jsonify({
-
-            "automation": {
-
-                "user_id":
-                    user["id"],
-
-                "ai_replies":
-                    True,
-
-                "message_automation":
-                    True,
-
-                "task_automation":
-                    True
-            }
-        })
-
-    except Exception as error:
-
-        print(
-            "Automation GET exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# AUTOMATION - SAVE
-# =========================================================
-
-@app.route(
-    "/api/automation",
-    methods=["POST"]
-)
-def save_automation_settings():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    settings = {
-
-        "user_id":
-            user["id"],
-
-        "ai_replies":
-            bool(
-                data.get(
-                    "ai_replies",
-                    True
-                )
-            ),
-
-        "message_automation":
-            bool(
-                data.get(
-                    "message_automation",
-                    True
-                )
-            ),
-
-        "task_automation":
-            bool(
-                data.get(
-                    "task_automation",
-                    True
-                )
-            ),
-
-        "updated_at":
-            now_iso()
-    }
-
-    try:
-
-        existing_response = supabase_get(
-            AUTOMATION_SETTINGS_URL,
-            {
-                "select":
-                    "id",
-
-                "user_id":
-                    "eq." + user["id"],
-
-                "limit":
-                    "1"
-            }
-        )
-
-        existing = (
-            existing_response.json()
-            if existing_response.status_code == 200
-            else []
-        )
-
-        if existing:
-
-            response = supabase_update(
-                AUTOMATION_SETTINGS_URL,
-                {
-                    "user_id":
-                        "eq." + user["id"]
-                },
-                settings
-            )
-
-        else:
-
-            response = supabase_insert(
-                AUTOMATION_SETTINGS_URL,
-                settings
-            )
-
-        if response.status_code not in (
-            200,
-            201,
-            204
-        ):
-
-            return jsonify({
-                "error":
-                    response.text
-            }), response.status_code
-
-        return jsonify({
-
-            "success":
-                True,
-
-            "automation":
-                first_row(response)
-                or settings,
-
-            "message":
-                "Automation settings saved successfully."
-        })
-
-    except Exception as error:
-
-        print(
-            "Automation SAVE exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# AUTOMATION TOGGLE
-# =========================================================
-
-@app.route(
-    "/api/automation/toggle",
-    methods=["POST"]
-)
-def toggle_automation():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    setting = str(
-        data.get(
-            "setting",
-            ""
-        )
-    ).strip()
-
-    value = data.get(
-        "value"
+def protected(fn):
+    from functools import wraps
+
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not session_authenticated():
+            return jsonify({"error": t("login_required")}), 401
+        return fn(*args, **kwargs)
+
+    return wrapper
+
+
+# ------------------------------------------------------------
+# Business profile / settings
+# ------------------------------------------------------------
+
+DEFAULT_PROFILE = {
+    "business_name": APP_NAME,
+    "ceo_name": CEO_NAME,
+    "slogan": SLOGAN,
+    "country": "Cameroon",
+    "city": "Douala",
+    "language": "en",
+    "services": [
+        "Construction",
+        "Renovation",
+        "Design",
+        "Civil Engineering",
+        "Professional Training",
+        "Digital Courses",
+    ],
+}
+
+
+def profile_payload():
+    rows = sb_select(
+        "business_accounts",
+        {"select": "*", "limit": "1"},
     )
+    if rows:
+        profile = DEFAULT_PROFILE.copy()
+        profile.update(rows[0])
+        return profile
+    return DEFAULT_PROFILE.copy()
 
-    allowed = {
-        "ai_replies",
-        "message_automation",
-        "task_automation"
-    }
 
-    if setting not in allowed:
+@app.route("/api/profile", methods=["GET", "POST", "PUT"])
+@protected
+def profile_api():
+    if request.method == "GET":
+        return jsonify(profile_payload())
 
-        return jsonify({
-            "error":
-                "Invalid automation setting."
-        }), 400
-
-    if not isinstance(
-        value,
-        bool
-    ):
-
-        return jsonify({
-            "error":
-                "Automation value must be true or false."
-        }), 400
-
-    try:
-
-        check = supabase_get(
-            AUTOMATION_SETTINGS_URL,
-            {
-                "select":
-                    "id",
-
-                "user_id":
-                    "eq." + user["id"],
-
-                "limit":
-                    "1"
-            }
+    data = request.get_json(silent=True) or {}
+    data["updated_at"] = utc_now()
+    existing = sb_select(
+        "business_accounts",
+        {"select": "id,user_id", "limit": "1"},
+    )
+    saved = None
+    if existing and existing[0].get("id"):
+        saved = sb_update(
+            "business_accounts",
+            {"id": f"eq.{existing[0]['id']}"},
+            data,
         )
+    else:
+        user = get_authenticated_user()
+        if user and user.get("id"):
+            data["user_id"] = user["id"]
+        saved = sb_insert("business_accounts", data)
+    return jsonify({"message": t("saved"), "profile": saved or data})
 
-        existing = (
-            check.json()
-            if check.status_code == 200
-            else []
+
+@app.route("/api/settings", methods=["GET", "POST", "PUT"])
+@protected
+def settings_api():
+    if request.method == "GET":
+        rows = sb_select(
+            "automation_settings",
+            {"select": "*", "limit": "1"},
         )
-
-        if existing:
-
-            response = supabase_update(
-                AUTOMATION_SETTINGS_URL,
-                {
-                    "user_id":
-                        "eq." + user["id"]
-                },
-                {
-                    setting:
-                        value,
-
-                    "updated_at":
-                        now_iso()
-                }
-            )
-
-        else:
-
-            settings = {
-
-                "user_id":
-                    user["id"],
-
-                "ai_replies":
-                    True,
-
-                "message_automation":
-                    True,
-
-                "task_automation":
-                    True,
-
-                "updated_at":
-                    now_iso()
-            }
-
-            settings[setting] = value
-
-            response = supabase_insert(
-                AUTOMATION_SETTINGS_URL,
-                settings
-            )
-
-        if response.status_code not in (
-            200,
-            201,
-            204
-        ):
-
-            return jsonify({
-                "error":
-                    response.text
-            }), response.status_code
-
-        return jsonify({
-
-            "success":
-                True,
-
-            "setting":
-                setting,
-
-            "value":
-                value,
-
-            "automation":
-                first_row(response)
+        return jsonify(rows[0] if rows else {
+            "language": "en",
+            "auto_reply_enabled": True,
+            "ai_enabled": True,
+            "approval_required_for_quotes": True,
+            "approval_required_for_finance": True,
+            "approval_required_for_contracts": True,
+            "approval_required_for_technical_decisions": True,
         })
 
-    except Exception as error:
+    data = request.get_json(silent=True) or {}
+    data["updated_at"] = utc_now()
+    rows = sb_select(
+        "automation_settings",
+        {"select": "id", "limit": "1"},
+    )
+    saved = (
+        sb_update("automation_settings", {"id": f"eq.{rows[0]['id']}"}, data)
+        if rows else sb_insert("automation_settings", data)
+    )
+    return jsonify({"message": t("saved"), "settings": saved or data})
 
-        print(
-            "Automation toggle exception:",
-            error
+
+# ------------------------------------------------------------
+# Generic business data engine
+# This keeps the one-file architecture extensible without
+# creating dozens of Python modules.
+# ------------------------------------------------------------
+
+RESOURCE_MAP = {
+    "customers": "customers",
+    "leads": "leads",
+    "projects": "projects",
+    "inventory": "inventory",
+    "suppliers": "suppliers",
+    "expenses": "expenses",
+    "payments": "payments",
+    "invoices": "invoices",
+    "quotations": "quotations",
+    "receipts": "receipts",
+    "trainers": "trainers",
+    "students": "students",
+    "classes": "classes",
+    "attendance": "attendance",
+    "training-courses": "training_courses",
+    "digital-courses": "digital_courses",
+    "tasks": "tasks",
+    "campaigns": "campaigns",
+    "documents": "documents",
+    "approvals": "approvals",
+    "notifications": "notifications",
+    "messages": "messages",
+    "integrations": "integrations",
+    "ai-conversations": "ai_conversations",
+}
+
+
+def normalize_record(data):
+    record = dict(data)
+    now = utc_now()
+    record.setdefault("created_at", now)
+    record["updated_at"] = now
+    return record
+
+
+def customer_identity(data):
+    phone = str(data.get("phone", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+    name = str(data.get("name", "")).strip()
+    return phone, email, name
+
+
+def upsert_customer(data):
+    data = normalize_record(data)
+    phone, email, _ = customer_identity(data)
+
+    # WhatsApp phone is the strongest practical identifier.
+    if phone:
+        existing = sb_select(
+            "customers",
+            {"select": "*", "phone": f"eq.{phone}", "limit": "1"},
         )
+        if existing:
+            saved = sb_update(
+                "customers",
+                {"id": f"eq.{existing[0]['id']}"},
+                data,
+            )
+            return saved or existing[0]
 
-        traceback.print_exc()
+    if email:
+        existing = sb_select(
+            "customers",
+            {"select": "*", "email": f"eq.{email}", "limit": "1"},
+        )
+        if existing:
+            saved = sb_update(
+                "customers",
+                {"id": f"eq.{existing[0]['id']}"},
+                data,
+            )
+            return saved or existing[0]
 
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
+    saved = sb_insert("customers", data)
+    return saved or data
 
 
-# =========================================================
-# BUSINESS
-# =========================================================
+@app.route("/api/customers", methods=["GET", "POST", "PUT", "DELETE"])
+@protected
+def customers_api():
+    if request.method == "GET":
+        rows = sb_select("customers", {
+            "select": "*",
+            "order": "created_at.desc",
+        })
+        return jsonify({"customers": rows})
 
-@app.route(
-    "/api/business",
-    methods=["GET", "POST"]
-)
-def business_account():
+    data = request.get_json(silent=True) or {}
 
-    user = get_authenticated_user()
+    if request.method == "POST":
+        saved = upsert_customer(data)
+        return jsonify({"message": t("saved"), "customer": saved}), 201
 
-    if not user:
+    record_id = data.get("id") or request.args.get("id")
+    if not record_id:
+        return jsonify({"error": t("invalid_data")}), 400
 
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
+    if request.method == "PUT":
+        data.pop("id", None)
+        saved = sb_update("customers", {"id": f"eq.{record_id}"}, normalize_record(data))
+        return jsonify({"message": t("saved"), "customer": saved})
 
-    user_id = user["id"]
+    return jsonify({"deleted": sb_delete("customers", {"id": f"eq.{record_id}"})})
+
+
+@app.route("/api/<resource>", methods=["GET", "POST", "PUT", "DELETE"])
+@protected
+def generic_resource(resource):
+    if resource not in RESOURCE_MAP:
+        return jsonify({"error": "Unknown resource."}), 404
+
+    table = RESOURCE_MAP[resource]
 
     if request.method == "GET":
+        params = {"select": "*", "order": "created_at.desc"}
+        limit = request.args.get("limit")
+        if limit:
+            params["limit"] = limit
+        rows = sb_select(table, params)
+        return jsonify({"data": rows, "resource": resource})
 
-        try:
+    data = request.get_json(silent=True) or {}
 
-            response = supabase_get(
-                BUSINESS_ACCOUNTS_URL,
-                {
-                    "select":
-                        "*",
+    if request.method == "POST":
+        saved = sb_insert(table, normalize_record(data))
+        return jsonify({"message": t("saved"), "data": saved or data}), 201
 
-                    "user_id":
-                        "eq." + user_id,
+    record_id = data.get("id") or request.args.get("id")
+    if not record_id:
+        return jsonify({"error": t("invalid_data")}), 400
 
-                    "limit":
-                        "1"
-                }
-            )
+    if request.method == "PUT":
+        data.pop("id", None)
+        saved = sb_update(
+            table,
+            {"id": f"eq.{record_id}"},
+            normalize_record(data),
+        )
+        return jsonify({"message": t("saved"), "data": saved})
 
-            if response.status_code != 200:
+    return jsonify({"deleted": sb_delete(table, {"id": f"eq.{record_id}"})})
 
-                return jsonify({
-                    "error":
-                        response.text
-                }), response.status_code
 
-            rows = response.json()
+# ------------------------------------------------------------
+# AI system
+# ------------------------------------------------------------
 
-            return jsonify({
+NEXAFLOW_SYSTEM_PROMPT = f"""
+You are the AI business assistant inside {APP_NAME}.
+CEO: {CEO_NAME}
+Location: Douala, Cameroon.
+Slogan: {SLOGAN}
 
-                "business":
-                    rows[0]
-                    if rows
-                    else None
-            })
+Business areas:
+construction, renovation, design, civil engineering, professional training,
+digital courses, customer service, marketing, projects, inventory, finance,
+documents and business operations.
 
-        except Exception as error:
+Rules:
+- Support English and French.
+- Detect the customer's language and answer in that language.
+- Be practical and professional.
+- Use Cameroon context and XAF/CFA when money is discussed.
+- You may prepare estimates, quotations, recommendations, drafts and reports.
+- Never pretend that a price, contract, purchase, legal commitment or sensitive
+  technical decision has been approved by the CEO.
+- Flag sensitive decisions for CEO approval.
+- Never invent customer records, database IDs, credentials or integrations.
+"""
 
-            print(
-                "Business GET exception:",
-                error
-            )
 
-            traceback.print_exc()
-
-            return jsonify({
-                "error":
-                    str(error)
-            }), 500
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    business_data = {
-
-        "user_id":
-            user_id,
-
-        "business_name":
-            str(
-                data.get(
-                    "business_name",
-                    ""
-                )
-            ).strip(),
-
-        "owner_name":
-            str(
-                data.get(
-                    "owner_name",
-                    ""
-                )
-            ).strip(),
-
-        "phone":
-            str(
-                data.get(
-                    "phone",
-                    ""
-                )
-            ).strip(),
-
-        "email":
-            str(
-                data.get(
-                    "email",
-                    ""
-                )
-            ).strip(),
-
-        "address":
-            str(
-                data.get(
-                    "address",
-                    ""
-                )
-            ).strip(),
-
-        "description":
-            str(
-                data.get(
-                    "description",
-                    ""
-                )
-            ).strip(),
-
-        "logo":
-            str(
-                data.get(
-                    "logo",
-                    ""
-                )
-            ).strip(),
-
-        "updated_at":
-            now_iso()
-    }
-
+def call_openrouter(messages, model):
+    if not OPENROUTER_API_KEY:
+        return None
     try:
-
-        check = supabase_get(
-            BUSINESS_ACCOUNTS_URL,
-            {
-                "select":
-                    "id",
-
-                "user_id":
-                    "eq." + user_id,
-
-                "limit":
-                    "1"
-            }
-        )
-
-        existing = (
-            check.json()
-            if check.status_code == 200
-            else []
-        )
-
-        if existing:
-
-            response = supabase_update(
-                BUSINESS_ACCOUNTS_URL,
-                {
-                    "id":
-                        "eq." + str(
-                            existing[0]["id"]
-                        ),
-
-                    "user_id":
-                        "eq." + user_id
-                },
-                business_data
-            )
-
-        else:
-
-            response = supabase_insert(
-                BUSINESS_ACCOUNTS_URL,
-                business_data
-            )
-
-        if response.status_code not in (
-            200,
-            201
-        ):
-
-            return jsonify({
-                "error":
-                    response.text
-            }), response.status_code
-
-        return jsonify({
-
-            "success":
-                True,
-
-            "business":
-                first_row(response)
-                or business_data,
-
-            "message":
-                "Business settings saved successfully."
-        })
-
-    except Exception as error:
-
-        print(
-            "Business SAVE exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-# =========================================================
-# BUSINESS LOGO
-# =========================================================
-
-@app.route(
-    "/api/business/logo",
-    methods=["POST"]
-)
-def upload_business_logo():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    if "logo" not in request.files:
-
-        return jsonify({
-            "error":
-                "No logo file was provided."
-        }), 400
-
-    logo_file = request.files["logo"]
-
-    if not logo_file.filename:
-
-        return jsonify({
-            "error":
-                "No logo file was selected."
-        }), 400
-
-    allowed = (
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".gif",
-        ".webp"
-    )
-
-    if not logo_file.filename.lower().endswith(
-        allowed
-    ):
-
-        return jsonify({
-            "error":
-                "Unsupported logo format."
-        }), 400
-
-    try:
-
-        file_bytes = logo_file.read()
-
-        if not file_bytes:
-
-            return jsonify({
-                "error":
-                    "The selected logo file is empty."
-            }), 400
-
-        bucket = "business-logos"
-
-        extension = (
-            logo_file.filename
-            .rsplit(".", 1)[-1]
-            .lower()
-        )
-
-        file_path = (
-            str(user["id"])
-            + "/logo."
-            + extension
-        )
-
-        storage_url = (
-            SUPABASE_PROJECT_URL
-            + "/storage/v1/object/"
-            + bucket
-            + "/"
-            + file_path
-        )
-
         response = requests.post(
-            storage_url,
+            "https://openrouter.ai/api/v1/chat/completions",
             headers={
-                "apikey":
-                    SUPABASE_SECRET_KEY,
-
-                "Authorization":
-                    "Bearer "
-                    + SUPABASE_SECRET_KEY,
-
-                "Content-Type":
-                    logo_file.mimetype
-                    or "application/octet-stream",
-
-                "x-upsert":
-                    "true"
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": request.host_url.rstrip("/"),
+                "X-Title": APP_NAME,
             },
-            data=file_bytes,
-            timeout=30
-        )
-
-        print(
-            "Logo upload status:",
-            response.status_code
-        )
-
-        print(
-            "Logo upload response:",
-            response.text
-        )
-
-        if response.status_code not in (
-            200,
-            201
-        ):
-
-            return jsonify({
-                "error":
-                    "Unable to upload logo: "
-                    + response.text
-            }), response.status_code
-
-        logo_url = (
-            SUPABASE_PROJECT_URL
-            + "/storage/v1/object/public/"
-            + bucket
-            + "/"
-            + file_path
-        )
-
-        update_response = supabase_update(
-            BUSINESS_ACCOUNTS_URL,
-            {
-                "user_id":
-                    "eq." + user["id"]
-            },
-            {
-                "logo":
-                    logo_url,
-
-                "updated_at":
-                    now_iso()
-            }
-        )
-
-        print(
-            "Business logo database update:",
-            update_response.status_code
-        )
-
-        if update_response.status_code not in (
-            200,
-            204
-        ):
-
-            return jsonify({
-                "error":
-                    "Logo uploaded but could not be saved "
-                    "to the business profile: "
-                    + update_response.text
-            }), update_response.status_code
-
-        return jsonify({
-
-            "success":
-                True,
-
-            "logo":
-                logo_url,
-
-            "message":
-                "Business logo uploaded successfully."
-        })
-
-    except Exception as error:
-
-        print(
-            "Business logo upload exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# WHATSAPP INTEGRATIONS - GET
-# =========================================================
-
-@app.route(
-    "/api/integrations",
-    methods=["GET"]
-)
-def get_integrations():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    try:
-
-        response = supabase_get(
-            INTEGRATIONS_URL,
-            {
-                "select":
-                    "*",
-
-                "user_id":
-                    "eq." + user["id"],
-
-                "order":
-                    "created_at.desc"
-            }
-        )
-
-        if response.status_code != 200:
-
-            return jsonify({
-                "error":
-                    response.text
-            }), response.status_code
-
-        rows = response.json()
-
-        return jsonify({
-
-            "success":
-                True,
-
-            "integrations":
-                rows,
-
-            "count":
-                len(rows)
-        })
-
-    except Exception as error:
-
-        print(
-            "Integrations GET exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# WHATSAPP INTEGRATIONS - SAVE
-# =========================================================
-
-@app.route(
-    "/api/integrations",
-    methods=["POST"]
-)
-def save_integration():
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    data = request.get_json(
-        silent=True
-    ) or {}
-
-    platform = str(
-        data.get(
-            "platform",
-            "whatsapp"
-        )
-    ).strip().lower()
-
-    if platform != "whatsapp":
-
-        return jsonify({
-            "error":
-                "This endpoint currently supports WhatsApp only."
-        }), 400
-
-    account_name = str(
-        data.get(
-            "account_name",
-            ""
-        )
-    ).strip()
-
-    account_id = str(
-        data.get(
-            "account_id",
-            WHATSAPP_BUSINESS_ACCOUNT_ID
-            or ""
-        )
-    ).strip()
-
-    access_token = str(
-        data.get(
-            "access_token",
-            WHATSAPP_ACCESS_TOKEN
-            or ""
-        )
-    ).strip()
-
-    phone_number = str(
-        data.get(
-            "phone_number",
-            ""
-        )
-    ).strip()
-
-    phone_number_id = str(
-        data.get(
-            "phone_number_id",
-            WHATSAPP_PHONE_NUMBER_ID
-            or ""
-        )
-    ).strip()
-
-    if not phone_number_id:
-
-        return jsonify({
-            "error":
-                "WhatsApp phone number ID is required."
-        }), 400
-
-    integration = {
-
-        "user_id":
-            user["id"],
-
-        "platform":
-            "whatsapp",
-
-        "account_name":
-            account_name,
-
-        "account_id":
-            account_id,
-
-        "access_token":
-            access_token,
-
-        "phone_number":
-            phone_number,
-
-        "status":
-            "connected",
-
-        "settings": {
-            "phone_number_id":
-                phone_number_id
-        },
-
-        "connected_at":
-            now_iso(),
-
-        "updated_at":
-            now_iso()
-    }
-
-    try:
-
-        check = supabase_get(
-            INTEGRATIONS_URL,
-            {
-                "select":
-                    "id",
-
-                "user_id":
-                    "eq." + user["id"],
-
-                "platform":
-                    "eq.whatsapp",
-
-                "account_id":
-                    "eq." + account_id,
-
-                "limit":
-                    "1"
-            }
-        )
-
-        existing = (
-            check.json()
-            if check.status_code == 200
-            else []
-        )
-
-        if existing:
-
-            response = supabase_update(
-                INTEGRATIONS_URL,
-                {
-                    "id":
-                        "eq." + str(
-                            existing[0]["id"]
-                        ),
-
-                    "user_id":
-                        "eq." + user["id"]
-                },
-                integration
-            )
-
-        else:
-
-            response = supabase_insert(
-                INTEGRATIONS_URL,
-                integration
-            )
-
-        if response.status_code not in (
-            200,
-            201
-        ):
-
-            return jsonify({
-                "error":
-                    response.text
-            }), response.status_code
-
-        return jsonify({
-
-            "success":
-                True,
-
-            "integration":
-                first_row(response)
-                or integration,
-
-            "message":
-                "WhatsApp integration saved successfully."
-        })
-
-    except Exception as error:
-
-        print(
-            "Integration SAVE exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# WHATSAPP INTEGRATION DELETE
-# =========================================================
-
-@app.route(
-    "/api/integrations/<int:integration_id>",
-    methods=["DELETE"]
-)
-def delete_integration(integration_id):
-
-    user = get_authenticated_user()
-
-    if not user:
-
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
-
-    try:
-
-        response = supabase_delete(
-            INTEGRATIONS_URL,
-            {
-                "id":
-                    "eq." + str(
-                        integration_id
-                    ),
-
-                "user_id":
-                    "eq." + user["id"]
-            }
-        )
-
-        if response.status_code not in (
-            200,
-            204
-        ):
-
-            return jsonify({
-                "error":
-                    response.text
-            }), response.status_code
-
-        return jsonify({
-
-            "success":
-                True,
-
-            "message":
-                "Integration deleted successfully."
-        })
-
-    except Exception as error:
-
-        print(
-            "Integration DELETE exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
-
-
-# =========================================================
-# WHATSAPP FIND INTEGRATION
-# =========================================================
-
-def find_whatsapp_integration(
-    phone_number_id
-):
-
-    print(
-        "========== WHATSAPP INTEGRATION LOOKUP =========="
-    )
-
-    print(
-        "Incoming phone_number_id:",
-        phone_number_id
-    )
-
-    if not phone_number_id:
-
-        return None
-
-    try:
-
-        response = supabase_get(
-            INTEGRATIONS_URL,
-            {
-                "select":
-                    "*",
-
-                "platform":
-                    "eq.whatsapp"
-            }
-        )
-
-        print(
-            "Integration lookup status:",
-            response.status_code
-        )
-
-        print(
-            "Integration lookup response:",
-            response.text
-        )
-
-        if response.status_code != 200:
-
-            return None
-
-        integrations = response.json()
-
-        for integration in integrations:
-
-            settings = (
-                integration.get(
-                    "settings"
-                )
-                or {}
-            )
-
-            saved_phone_number_id = str(
-                settings.get(
-                    "phone_number_id",
-                    ""
-                )
-            ).strip()
-
-            if (
-                saved_phone_number_id
-                == str(phone_number_id).strip()
-            ):
-
-                print(
-                    "Matching WhatsApp integration found."
-                )
-
-                return integration
-
-        if (
-            WHATSAPP_PHONE_NUMBER_ID
-            and str(
-                WHATSAPP_PHONE_NUMBER_ID
-            ).strip()
-            == str(
-                phone_number_id
-            ).strip()
-        ):
-
-            print(
-                "Using environment WhatsApp configuration."
-            )
-
-            return {
-                "user_id":
-                    None,
-
-                "platform":
-                    "whatsapp",
-
-                "account_id":
-                    WHATSAPP_BUSINESS_ACCOUNT_ID,
-
-                "access_token":
-                    WHATSAPP_ACCESS_TOKEN,
-
-                "phone_number_id":
-                    WHATSAPP_PHONE_NUMBER_ID,
-
-                "settings": {
-                    "phone_number_id":
-                        WHATSAPP_PHONE_NUMBER_ID
-                }
-            }
-
-        print(
-            "No matching WhatsApp integration found."
-        )
-
-        return None
-
-    except Exception as error:
-
-        print(
-            "WhatsApp integration lookup exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return None
-
-
-# =========================================================
-# WHATSAPP CUSTOMER FIND OR CREATE
-# =========================================================
-
-def find_or_create_whatsapp_customer(
-    user_id,
-    phone,
-    name=""
-):
-
-    if not user_id or not phone:
-
-        return None
-
-    phone = str(
-        phone
-    ).strip()
-
-    name = str(
-        name
-    ).strip()
-
-    try:
-
-        response = supabase_get(
-            CUSTOMERS_URL,
-            {
-                "select":
-                    "*",
-
-                "user_id":
-                    "eq." + str(
-                        user_id
-                    ),
-
-                "phone":
-                    "eq." + phone,
-
-                "limit":
-                    "1"
-            }
-        )
-
-        if response.status_code == 200:
-
-            rows = response.json()
-
-            if rows:
-
-                customer = rows[0]
-
-                if name and not customer.get(
-                    "name"
-                ):
-
-                    update_response = supabase_update(
-                        CUSTOMERS_URL,
-                        {
-                            "id":
-                                "eq." + str(
-                                    customer["id"]
-                                ),
-
-                            "user_id":
-                                "eq." + str(
-                                    user_id
-                                )
-                        },
-                        {
-                            "name":
-                                name,
-
-                            "updated_at":
-                                now_iso()
-                        }
-                    )
-
-                    if update_response.status_code in (
-                        200,
-                        204
-                    ):
-
-                        customer["name"] = name
-
-                return customer
-
-        customer_data = {
-
-            "user_id":
-                str(user_id),
-
-            "name":
-                name
-                or phone,
-
-            "phone":
-                phone,
-
-            "email":
-                "",
-
-            "location":
-                "",
-
-            "message":
-                "",
-
-            "ai_reply":
-                "",
-
-            "created_at":
-                now_iso()
-        }
-
-        insert_response = supabase_insert(
-            CUSTOMERS_URL,
-            customer_data
-        )
-
-        if insert_response.status_code not in (
-            200,
-            201
-        ):
-
-            print(
-                "WhatsApp customer creation failed:",
-                insert_response.text
-            )
-
-            return None
-
-        customer = (
-            first_row(insert_response)
-            or customer_data
-        )
-
-        print(
-            "WhatsApp customer created:",
-            customer
-        )
-
-        return customer
-
-    except Exception as error:
-
-        print(
-            "WhatsApp customer find/create exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return None
-
-
-# =========================================================
-# SAVE WHATSAPP MESSAGE
-# =========================================================
-
-def save_whatsapp_message(
-    user_id,
-    customer_id,
-    phone,
-    message_text,
-    direction,
-    status="received",
-    message_id=None
-):
-
-    if not user_id:
-
-        return None
-
-    message_data = {
-
-        "user_id":
-            str(user_id),
-
-        "customer_id":
-            customer_id,
-
-        "platform":
-            "whatsapp",
-
-        "phone":
-            str(phone or ""),
-
-        "message":
-            str(message_text or ""),
-
-        "direction":
-            str(direction or ""),
-
-        "status":
-            str(status or ""),
-
-        "external_message_id":
-            str(message_id or ""),
-
-        "created_at":
-            now_iso()
-    }
-
-    try:
-
-        response = supabase_insert(
-            MESSAGES_URL,
-            message_data
-        )
-
-        print(
-            "WhatsApp message save status:",
-            response.status_code
-        )
-
-        print(
-            "WhatsApp message save response:",
-            response.text
-        )
-
-        if response.status_code not in (
-            200,
-            201
-        ):
-
-            return None
-
-        return (
-            first_row(response)
-            or message_data
-        )
-
-    except Exception as error:
-
-        print(
-            "WhatsApp message save exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return None
-
-
-# =========================================================
-# WHATSAPP SEND MESSAGE
-# =========================================================
-
-def send_whatsapp_message(
-    phone_number_id,
-    access_token,
-    recipient_phone,
-    message_text
-):
-
-    if not (
-        phone_number_id
-        and access_token
-        and recipient_phone
-        and message_text
-    ):
-
-        return None
-
-    url = (
-        "https://graph.facebook.com/v20.0/"
-        + str(phone_number_id)
-        + "/messages"
-    )
-
-    payload = {
-
-        "messaging_product":
-            "whatsapp",
-
-        "to":
-            str(recipient_phone),
-
-        "type":
-            "text",
-
-        "text": {
-            "preview_url":
-                False,
-
-            "body":
-                str(message_text)
-        }
-    }
-
-    try:
-
-        response = requests.post(
-            url,
-            headers={
-                "Authorization":
-                    "Bearer "
-                    + str(access_token),
-
-                "Content-Type":
-                    "application/json"
-            },
-            json=payload,
-            timeout=20
-        )
-
-        print(
-            "WhatsApp send status:",
-            response.status_code
-        )
-
-        print(
-            "WhatsApp send response:",
-            response.text
-        )
-
-        if response.status_code not in (
-            200,
-            201
-        ):
-
-            return None
-
-        return response.json()
-
-    except Exception as error:
-
-        print(
-            "WhatsApp send exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return None
-
-
-# =========================================================
-# WHATSAPP AI RESPONSE
-# =========================================================
-
-def generate_whatsapp_ai_reply(
-    customer_message,
-    customer_name="",
-    user_id=None
-):
-
-    business_context = ""
-
-    if user_id:
-
-        try:
-
-            business_response = supabase_get(
-                BUSINESS_ACCOUNTS_URL,
-                {
-                    "select":
-                        "*",
-
-                    "user_id":
-                        "eq." + str(
-                            user_id
-                        ),
-
-                    "limit":
-                        "1"
-                }
-            )
-
-            if business_response.status_code == 200:
-
-                rows = business_response.json()
-
-                if rows:
-
-                    business = rows[0]
-
-                    business_context = (
-                        "\nBusiness information:\n"
-                        "Business name: "
-                        + str(
-                            business.get(
-                                "business_name",
-                                ""
-                            )
-                        )
-                        + "\nOwner: "
-                        + str(
-                            business.get(
-                                "owner_name",
-                                ""
-                            )
-                        )
-                        + "\nPhone: "
-                        + str(
-                            business.get(
-                                "phone",
-                                ""
-                            )
-                        )
-                        + "\nAddress: "
-                        + str(
-                            business.get(
-                                "address",
-                                ""
-                            )
-                        )
-                        + "\nDescription: "
-                        + str(
-                            business.get(
-                                "description",
-                                ""
-                            )
-                        )
-                    )
-
-        except Exception as error:
-
-            print(
-                "Business context error:",
-                error
-            )
-
-    system_prompt = """
-You are the customer communication assistant for a business.
-
-Reply professionally, politely and naturally.
-
-Detect whether the customer is writing in English or French and answer in the same language.
-
-You may:
-- greet customers
-- answer general questions
-- explain services
-- collect project information
-- collect customer contact details
-- explain training or course information
-- ask useful follow-up questions
-- acknowledge customer requests
-
-Do NOT invent:
-- prices
-- quotations
-- discounts
-- contracts
-- financial commitments
-- technical specifications that require professional verification
-
-For prices, quotations, contracts, major technical decisions, disputes or other sensitive business commitments, tell the customer that the request will be reviewed by the company/CEO.
-
-Keep replies concise and suitable for WhatsApp.
-""" + business_context
-
-    if customer_name:
-
-        system_prompt += (
-            "\nCustomer name: "
-            + customer_name
-        )
-
-    messages = [
-
-        {
-            "role":
-                "system",
-
-            "content":
-                system_prompt
-        },
-
-        {
-            "role":
-                "user",
-
-            "content":
-                str(
-                    customer_message
-                )
-        }
-    ]
-
-    answer, error = call_openrouter(
-        messages,
-        "TASSIMO WhatsApp AI"
-    )
-
-    if answer:
-
-        return answer
-
-    print(
-        "WhatsApp AI reply failed:",
-        error
-    )
-
-    return (
-        "Thank you for contacting us. "
-        "We have received your message and "
-        "will get back to you shortly."
-    )
-# =========================================================
-# SEND WHATSAPP MESSAGE THROUGH META
-# =========================================================
-
-def send_whatsapp_message(
-    integration,
-    recipient_phone,
-    message_text
-):
-
-    if (
-        not integration
-        or not recipient_phone
-        or not message_text
-    ):
-        return None
-
-    settings = (
-        integration.get(
-            "settings"
-        )
-        or {}
-    )
-
-    phone_number_id = str(
-        settings.get(
-            "phone_number_id",
-            WHATSAPP_PHONE_NUMBER_ID
-            or ""
-        )
-    ).strip()
-
-    access_token = str(
-        integration.get(
-            "access_token",
-            WHATSAPP_ACCESS_TOKEN
-            or ""
-        )
-    ).strip()
-
-    if not phone_number_id:
-
-        print(
-            "WhatsApp send error: phone number ID missing."
-        )
-
-        return None
-
-    if not access_token:
-
-        print(
-            "WhatsApp send error: access token missing."
-        )
-
-        return None
-
-    url = (
-        "https://graph.facebook.com/v23.0/"
-        + phone_number_id
-        + "/messages"
-    )
-
-    try:
-
-        print(
-            "Sending WhatsApp reply to:",
-            recipient_phone
-        )
-
-        response = requests.post(
-
-            url,
-
-            headers={
-
-                "Authorization":
-                    "Bearer "
-                    + access_token,
-
-                "Content-Type":
-                    "application/json"
-            },
-
             json={
-
-                "messaging_product":
-                    "whatsapp",
-
-                "to":
-                    recipient_phone,
-
-                "type":
-                    "text",
-
-                "text": {
-
-                    "preview_url":
-                        False,
-
-                    "body":
-                        message_text
-                }
+                "model": model,
+                "messages": messages,
+                "temperature": 0.4,
             },
-
-            timeout=30
+            timeout=60,
         )
-
-        print(
-            "WhatsApp SEND:",
-            response.status_code,
-            response.text
-        )
-
-        if response.status_code not in (
-            200,
-            201
-        ):
-
+        if response.status_code >= 400:
             return None
-
-        return response.json()
-
-    except Exception as error:
-
-        print(
-            "WhatsApp SEND exception:",
-            error
-        )
-
-        traceback.print_exc()
-
+        data = response.json()
+        return data["choices"][0]["message"]["content"]
+    except Exception:
         return None
 
 
-# =========================================================
-# STORE OUTGOING WHATSAPP MESSAGE
-# =========================================================
-
-def store_whatsapp_outgoing_message(
-    integration,
-    customer,
-    recipient_phone,
-    message_text,
-    whatsapp_response
-):
-
-    if not integration:
-        return None
-
-    user_id = integration.get(
-        "user_id"
+def ai_answer(question, conversation=None, context=None):
+    conversation = conversation or []
+    context = context or {}
+    system = NEXAFLOW_SYSTEM_PROMPT + "\nBusiness context:\n" + json.dumps(
+        context, ensure_ascii=False, default=str
     )
+    messages = [{"role": "system", "content": system}]
+    for item in conversation[-12:]:
+        if isinstance(item, dict) and item.get("role") in {"user", "assistant"}:
+            messages.append({
+                "role": item["role"],
+                "content": str(item.get("content", "")),
+            })
+    messages.append({"role": "user", "content": question})
 
-    customer_id = (
-        customer.get("id")
-        if customer
-        else None
-    )
+    answer = call_openrouter(messages, OPENROUTER_PRIMARY_MODEL)
+    if not answer:
+        answer = call_openrouter(messages, OPENROUTER_FALLBACK_MODEL)
+    return answer
 
-    response_messages = (
-        whatsapp_response.get(
-            "messages",
-            []
-        )
-        if isinstance(
-            whatsapp_response,
-            dict
-        )
-        else []
-    )
 
-    external_message_id = ""
+@app.route("/api/ai", methods=["POST"])
+@protected
+def ai_assistant():
+    data = request.get_json(silent=True) or {}
+    question = str(data.get("question", "")).strip()
+    conversation = data.get("conversation", [])
+    context = data.get("context", {})
 
-    if response_messages:
+    if not question:
+        return jsonify({"error": t("invalid_data")}), 400
 
-        external_message_id = str(
-            response_messages[0].get(
-                "id",
-                ""
-            )
-        )
+    answer = ai_answer(question, conversation, context)
+    if not answer:
+        return jsonify({"error": t("ai_unavailable")}), 503
 
-    data = {
-
-        "user_id":
-            user_id,
-
-        "integration_id":
-            integration.get("id"),
-
-        "customer_id":
-            customer_id,
-
-        "platform":
-            "whatsapp",
-
-        "external_message_id":
-            external_message_id,
-
-        "direction":
-            "outbound",
-
-        "sender_name":
-            "NexaFlow AI",
-
-        "sender_phone":
-            recipient_phone,
-
-        "message":
-            message_text,
-
-        "ai_generated":
-            True,
-
-        "ai_reply":
-            message_text,
-
-        "status":
-            "sent",
-
-        "metadata": {
-            "source":
-                "nexaflow_ai"
-        },
-
-        "created_at":
-            now_iso(),
-
-        "updated_at":
-            now_iso()
+    record = {
+        "user_message": question,
+        "ai_reply": answer,
+        "language": language(),
+        "created_at": utc_now(),
     }
+    sb_insert("ai_conversations", record)
 
-    try:
-
-        response = supabase_insert(
-            MESSAGES_URL,
-            data
-        )
-
-        print(
-            "Outgoing WhatsApp SAVE:",
-            response.status_code,
-            response.text
-        )
-
-        if response.status_code not in (
-            200,
-            201
-        ):
-
-            return None
-
-        return (
-            first_row(
-                response
-            )
-            or data
-        )
-
-    except Exception as error:
-
-        print(
-            "Outgoing WhatsApp SAVE exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return None
-
-
-# =========================================================
-# UPDATE INCOMING MESSAGE
-# =========================================================
-
-def update_incoming_message_with_ai_reply(
-    message_id,
-    ai_reply
-):
-
-    if (
-        not message_id
-        or not ai_reply
-    ):
-        return False
-
-    try:
-
-        response = supabase_update(
-
-            MESSAGES_URL,
-
-            {
-                "id":
-                    "eq." + str(
-                        message_id
-                    )
-            },
-
-            {
-                "ai_reply":
-                    ai_reply,
-
-                "status":
-                    "replied",
-
-                "updated_at":
-                    now_iso()
-            }
-        )
-
-        print(
-            "Incoming message AI update:",
-            response.status_code,
-            response.text
-        )
-
-        return response.status_code in (
-            200,
-            204
-        )
-
-    except Exception as error:
-
-        print(
-            "Incoming message update exception:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return False
-
-
-# =========================================================
-# PROCESS WHATSAPP AI REPLY
-#
-# IMPORTANT:
-# This function runs in a BACKGROUND THREAD.
-# The webhook no longer waits for it.
-# =========================================================
-
-def process_whatsapp_ai_reply(
-    integration,
-    stored_message
-):
-
-    try:
-
-        if (
-            not integration
-            or not stored_message
-        ):
-            return False
-
-        user_id = integration.get(
-            "user_id"
-        )
-
-        if not user_id:
-            return False
-
-        print(
-            "================================================"
-        )
-
-        print(
-            "BACKGROUND WHATSAPP AI PROCESS START"
-        )
-
-        print(
-            "User:",
-            user_id
-        )
-
-        print(
-            "Message ID:",
-            stored_message.get("id")
-        )
-
-        print(
-            "================================================"
-        )
-
-        if not whatsapp_automation_enabled(
-            user_id
-        ):
-
-            print(
-                "WhatsApp AI automation is disabled."
-            )
-
-            return False
-
-        message_text = str(
-            stored_message.get(
-                "message",
-                ""
-            )
-        ).strip()
-
-        recipient_phone = str(
-            stored_message.get(
-                "sender_phone",
-                ""
-            )
-        ).strip()
-
-        if (
-            not message_text
-            or not recipient_phone
-        ):
-
-            print(
-                "Missing message text or recipient phone."
-            )
-
-            return False
-
-        customer_id = stored_message.get(
-            "customer_id"
-        )
-
-        customer = None
-
-        if customer_id:
-
-            try:
-
-                response = supabase_get(
-
-                    CUSTOMERS_URL,
-
-                    {
-                        "select":
-                            "*",
-
-                        "id":
-                            "eq." + str(
-                                customer_id
-                            ),
-
-                        "user_id":
-                            "eq." + user_id,
-
-                        "limit":
-                            "1"
-                    }
-                )
-
-                if response.status_code == 200:
-
-                    rows = response.json()
-
-                    if rows:
-                        customer = rows[0]
-
-            except Exception as error:
-
-                print(
-                    "Customer retrieval exception:",
-                    error
-                )
-
-                traceback.print_exc()
-
-        # -------------------------------------------------
-        # GENERATE AI
-        # -------------------------------------------------
-
-        print(
-            "STEP 1: GENERATING AI RESPONSE"
-        )
-
-        ai_reply = generate_whatsapp_ai_reply(
-
-            user_id,
-
-            customer,
-
-            message_text,
-
-            current_message_id=
-                stored_message.get("id")
-        )
-
-        if not ai_reply:
-
-            print(
-                "STEP 1 FAILED: AI could not generate reply."
-            )
-
-            return False
-
-        print(
-            "STEP 1 SUCCESS: AI generated:"
-        )
-
-        print(
-            ai_reply
-        )
-
-        # -------------------------------------------------
-        # SEND THROUGH META
-        # -------------------------------------------------
-
-        print(
-            "STEP 2: SENDING AI RESPONSE THROUGH META"
-        )
-
-        whatsapp_response = send_whatsapp_message(
-
-            integration,
-
-            recipient_phone,
-
-            ai_reply
-        )
-
-        if not whatsapp_response:
-
-            print(
-                "STEP 2 FAILED: Meta failed to send reply."
-            )
-
-            return False
-
-        print(
-            "STEP 2 SUCCESS: WhatsApp reply sent."
-        )
-
-        # -------------------------------------------------
-        # SAVE OUTGOING MESSAGE
-        # -------------------------------------------------
-
-        print(
-            "STEP 3: SAVING OUTGOING MESSAGE"
-        )
-
-        outgoing = store_whatsapp_outgoing_message(
-
-            integration,
-
-            customer,
-
-            recipient_phone,
-
-            ai_reply,
-
-            whatsapp_response
-        )
-
-        if not outgoing:
-
-            print(
-                "STEP 3 FAILED: Could not save outgoing message."
-            )
-
-            # Message was sent even if database save failed.
-            # Continue to update incoming message.
-        else:
-
-            print(
-                "STEP 3 SUCCESS: Outgoing message saved."
-            )
-
-        # -------------------------------------------------
-        # UPDATE INCOMING MESSAGE
-        # -------------------------------------------------
-
-        print(
-            "STEP 4: UPDATING INCOMING MESSAGE"
-        )
-
-        incoming_updated = (
-            update_incoming_message_with_ai_reply(
-
-                stored_message.get("id"),
-
-                ai_reply
-            )
-        )
-
-        print(
-            "Incoming message updated:",
-            incoming_updated
-        )
-
-        # -------------------------------------------------
-        # UPDATE CUSTOMER AI REPLY
-        # -------------------------------------------------
-
-        if customer_id:
-
-            print(
-                "STEP 5: UPDATING CUSTOMER AI REPLY"
-            )
-
-            updated = update_customer_ai_reply(
-
-                user_id,
-
-                customer_id,
-
-                ai_reply
-            )
-
-            print(
-                "Customer ai_reply field updated:",
-                updated
-            )
-
-        print(
-            "================================================"
-        )
-
-        print(
-            "BACKGROUND WHATSAPP AI PROCESS COMPLETE"
-        )
-
-        print(
-            "================================================"
-        )
-
-        return True
-
-    except Exception as error:
-
-        print(
-            "================================================"
-        )
-
-        print(
-            "CRITICAL WHATSAPP AI THREAD ERROR"
-        )
-
-        print(
-            str(error)
-        )
-
-        traceback.print_exc()
-
-        print(
-            "================================================"
-        )
-
-        return False
-
-
-# =========================================================
-# START WHATSAPP AI BACKGROUND THREAD
-# =========================================================
-
-def start_whatsapp_ai_thread(
-    integration,
-    stored_message
-):
-
-    try:
-
-        # Keep the worker non-daemon so the Python process does not discard
-        # the WhatsApp AI job immediately after the webhook returns 200.
-        thread = threading.Thread(
-
-            target=process_whatsapp_ai_reply,
-
-            args=(
-                integration,
-                stored_message
-            ),
-
-            daemon=False,
-            name="whatsapp-ai-worker"
-        )
-
-        thread.start()
-
-        print(
-            "WHATSAPP AI BACKGROUND THREAD STARTED:",
-            thread.name
-        )
-
-        return True
-
-    except Exception as error:
-
-        print(
-            "Failed to start WhatsApp AI thread:",
-            error
-        )
-
-        traceback.print_exc()
-
-        return False
-
-
-# =========================================================
-# WHATSAPP WEBHOOK VERIFY
-# =========================================================
-
-@app.route(
-    "/api/whatsapp/webhook",
-    methods=["GET"]
-)
-def whatsapp_webhook_verify():
-
-    mode = request.args.get(
-        "hub.mode"
-    )
-
-    token = request.args.get(
-        "hub.verify_token"
-    )
-
-    challenge = request.args.get(
-        "hub.challenge"
-    )
-
-    if (
-        mode == "subscribe"
-        and token
-        and WHATSAPP_VERIFY_TOKEN
-        and token == WHATSAPP_VERIFY_TOKEN
-    ):
-
-        print(
-            "WhatsApp webhook verification successful."
-        )
-
-        return challenge or "", 200
-
-    print(
-        "WhatsApp webhook verification failed."
-    )
-
-    return "Forbidden", 403
-
-
-# =========================================================
-# WHATSAPP WEBHOOK
-#
-# IMPORTANT:
-# This endpoint now stores messages and immediately
-# returns 200.
-#
-# AI processing happens AFTER this through threading.
-# =========================================================
-
-@app.route(
-    "/api/whatsapp/webhook",
-    methods=["POST"]
-)
-def whatsapp_webhook():
-
-    print("========== WHATSAPP WEBHOOK START ==========")
-    print("Webhook method:", request.method, flush=True)
-
-    try:
-        payload = request.get_json(silent=True) or {}
-    except Exception as error:
-        print("WHATSAPP PAYLOAD JSON ERROR:", error, flush=True)
-        return jsonify({"success": True}), 200
-
-    print("========== WHATSAPP PAYLOAD RECEIVED ==========")
-    print(payload, flush=True)
-
-    # Meta may send status-only events. They are valid webhooks and must
-    # receive 200, but they do not contain an inbound customer message.
-    if payload.get("object") != "whatsapp_business_account":
-        print(
-            "Webhook object is not whatsapp_business_account:",
-            payload.get("object"),
-            flush=True
-        )
-        return jsonify({
-            "success": True,
-            "processed": 0
-        }), 200
-
-    entries = payload.get("entry") or []
-    processed = 0
-    threads_started = 0
-    status_events = 0
-    errors = 0
-
-    for entry in entries:
-
-        for change in (
-            entry.get("changes") or []
-        ):
-
-            value = change.get(
-                "value"
-            ) or {}
-
-            field = change.get(
-                "field"
-            )
-
-            print(
-                "Webhook field:",
-                field,
-                flush=True
-            )
-
-            metadata = value.get(
-                "metadata"
-            ) or {}
-
-            phone_number_id = str(
-                metadata.get(
-                    "phone_number_id"
-                ) or ""
-            ).strip()
-
-            print(
-                "META PHONE NUMBER ID:",
-                phone_number_id,
-                flush=True
-            )
-
-            # Do not silently lose a message if metadata is missing. The
-            # integration lookup will still be attempted using the configured
-            # phone number ID when available.
-            lookup_phone_number_id = (
-                phone_number_id
-                or str(
-                    WHATSAPP_PHONE_NUMBER_ID
-                    or ""
-                ).strip()
-            )
-
-            integration = find_whatsapp_integration(
-                lookup_phone_number_id
-            )
-
-            if not integration:
-
-                print(
-                    "NO INTEGRATION FOUND FOR PHONE NUMBER ID:",
-                    lookup_phone_number_id,
-                    flush=True
-                )
-
-                errors += 1
-
-                continue
-
-            print(
-                "MATCHED INTEGRATION:",
-                integration.get("id"),
-                flush=True
-            )
-
-            print(
-                "MATCHED USER:",
-                integration.get("user_id"),
-                flush=True
-            )
-
-            messages = (
-                value.get("messages")
-                or []
-            )
-
-            statuses = (
-                value.get("statuses")
-                or []
-            )
-
-            if statuses and not messages:
-
-                status_events += len(
-                    statuses
-                )
-
-                print(
-                    "STATUS EVENT RECEIVED:",
-                    statuses,
-                    flush=True
-                )
-
-            if not messages:
-
-                print(
-                    "NO INBOUND MESSAGES IN THIS WEBHOOK EVENT.",
-                    flush=True
-                )
-
-                continue
-
-            contacts = (
-                value.get("contacts")
-                or []
-            )
-
-            contact_names = {}
-
-            for contact in contacts:
-
-                wa_id = str(
-                    contact.get(
-                        "wa_id"
-                    ) or ""
-                ).strip()
-
-                profile = (
-                    contact.get(
-                        "profile"
-                    )
-                    or {}
-                )
-
-                profile_name = str(
-                    profile.get(
-                        "name"
-                    ) or ""
-                ).strip()
-
-                if wa_id:
-                    contact_names[
-                        wa_id
-                    ] = profile_name
-
-            # Meta normally sends one contact for the message batch, but use
-            # the message's own sender ID whenever possible.
-            default_contact_name = ""
-
-            if contacts:
-
-                default_contact_name = str(
-                    (
-                        contacts[0].get(
-                            "profile"
-                        )
-                        or {}
-                    ).get(
-                        "name"
-                    )
-                    or ""
-                ).strip()
-
-            for incoming in messages:
-
-                try:
-
-                    external_message_id = str(
-                        incoming.get(
-                            "id"
-                        ) or ""
-                    ).strip()
-
-                    print(
-                        "INCOMING META MESSAGE ID:",
-                        external_message_id,
-                        flush=True
-                    )
-
-                    if not external_message_id:
-
-                        print(
-                            "SKIPPING MESSAGE: Meta message ID is missing.",
-                            flush=True
-                        )
-
-                        errors += 1
-
-                        continue
-
-                    if whatsapp_message_exists(
-                        external_message_id
-                    ):
-
-                        print(
-                            "DUPLICATE MESSAGE:",
-                            external_message_id,
-                            flush=True
-                        )
-
-                        continue
-
-                    sender_phone = str(
-                        incoming.get(
-                            "from"
-                        ) or ""
-                    ).strip()
-
-                    message_type = str(
-                        incoming.get(
-                            "type"
-                        ) or ""
-                    ).strip().lower()
-
-                    message_text = ""
-
-                    if message_type == "text":
-
-                        message_text = str(
-                            (
-                                incoming.get(
-                                    "text"
-                                )
-                                or {}
-                            ).get(
-                                "body"
-                            )
-                            or ""
-                        ).strip()
-
-                    elif message_type == "button":
-
-                        button = (
-                            incoming.get(
-                                "button"
-                            )
-                            or {}
-                        )
-
-                        message_text = str(
-                            button.get(
-                                "text"
-                            )
-                            or button.get(
-                                "payload"
-                            )
-                            or ""
-                        ).strip()
-
-                    elif message_type == "interactive":
-
-                        interactive = (
-                            incoming.get(
-                                "interactive"
-                            )
-                            or {}
-                        )
-
-                        interactive_type = str(
-                            interactive.get(
-                                "type"
-                            )
-                            or ""
-                        ).strip()
-
-                        if interactive_type == "button_reply":
-
-                            reply = (
-                                interactive.get(
-                                    "button_reply"
-                                )
-                                or {}
-                            )
-
-                            message_text = str(
-                                reply.get(
-                                    "title"
-                                )
-                                or reply.get(
-                                    "id"
-                                )
-                                or ""
-                            ).strip()
-
-                        elif interactive_type == "list_reply":
-
-                            reply = (
-                                interactive.get(
-                                    "list_reply"
-                                )
-                                or {}
-                            )
-
-                            message_text = str(
-                                reply.get(
-                                    "title"
-                                )
-                                or reply.get(
-                                    "description"
-                                )
-                                or reply.get(
-                                    "id"
-                                )
-                                or ""
-                            ).strip()
-
-                        else:
-
-                            message_text = (
-                                "[interactive message]"
-                            )
-
-                    else:
-
-                        message_text = (
-                            "["
-                            + message_type
-                            + " message]"
-                        )
-
-                    sender_name = (
-                        contact_names.get(
-                            sender_phone
-                        )
-                        or default_contact_name
-                    ).strip()
-
-                    print(
-                        "SENDER:",
-                        sender_phone,
-                        flush=True
-                    )
-
-                    print(
-                        "CUSTOMER NAME:",
-                        sender_name,
-                        flush=True
-                    )
-
-                    print(
-                        "MESSAGE TYPE:",
-                        message_type,
-                        flush=True
-                    )
-
-                    print(
-                        "MESSAGE TEXT:",
-                        message_text,
-                        flush=True
-                    )
-
-                    if (
-                        not sender_phone
-                        or not message_text
-                    ):
-
-                        print(
-                            "SKIPPING MESSAGE: sender phone or message text is empty.",
-                            flush=True
-                        )
-
-                        errors += 1
-
-                        continue
-
-                    # -------------------------------------------------
-                    # STORE INCOMING MESSAGE BEFORE STARTING AI
-                    # -------------------------------------------------
-
-                    stored = store_whatsapp_message(
-
-                        integration,
-
-                        sender_phone,
-
-                        sender_name,
-
-                        message_text,
-
-                        external_message_id
-                    )
-
-                    if not stored:
-
-                        print(
-                            "FAILED TO STORE INCOMING MESSAGE:",
-                            external_message_id,
-                            flush=True
-                        )
-
-                        errors += 1
-
-                        continue
-
-                    processed += 1
-
-                    print(
-                        "INCOMING MESSAGE STORED:",
-                        stored,
-                        flush=True
-                    )
-
-                    # -------------------------------------------------
-                    # START AI PROCESSING
-                    # -------------------------------------------------
-
-                    thread_started = start_whatsapp_ai_thread(
-
-                        integration,
-
-                        stored
-                    )
-
-                    print(
-                        "AI THREAD STARTED:",
-                        thread_started,
-                        flush=True
-                    )
-
-                    if thread_started:
-
-                        threads_started += 1
-
-                    else:
-
-                        errors += 1
-
-                except Exception as error:
-
-                    errors += 1
-
-                    print(
-                        "WHATSAPP MESSAGE PROCESSING ERROR:",
-                        error,
-                        flush=True
-                    )
-
-                    traceback.print_exc()
-
-    print(
-        "========== WHATSAPP WEBHOOK END ==========",
-        flush=True
-    )
-
-    print(
-        "Webhook summary:",
-        {
-            "processed":
-                processed,
-
-            "ai_threads_started":
-                threads_started,
-
-            "status_events":
-                status_events,
-
-            "errors":
-                errors
-        },
-        flush=True
-    )
-
-    # Always acknowledge Meta after the webhook payload has been accepted.
     return jsonify({
-
-        "success":
-            True,
-
-        "processed":
-            processed,
-
-        "ai_threads_started":
-            threads_started,
-
-        "status_events":
-            status_events,
-
-        "errors":
-            errors
-    }), 200
+        "answer": answer,
+        "language": language(),
+        "approval_required": requires_ceo_approval(question),
+    })
 
 
-# =========================================================
-# REPORTS
-# =========================================================
+def requires_ceo_approval(text):
+    sensitive = [
+        "contract", "contrat", "purchase", "achat", "buy", "acheter",
+        "price", "prix", "quote", "devis", "quotation", "devis",
+        "payment", "paiement", "loan", "prêt", "legal", "juridique",
+        "dispute", "litige", "commit", "engagement", "safety", "sécurité",
+    ]
+    lowered = text.lower()
+    return any(word in lowered for word in sensitive)
 
-@app.route(
-    "/api/reports",
-    methods=["GET"]
-)
-def get_reports():
 
-    user = get_authenticated_user()
+@app.route("/api/ai/estimate", methods=["POST"])
+@protected
+def ai_estimate():
+    data = request.get_json(silent=True) or {}
+    description = str(data.get("description", "")).strip()
+    if not description:
+        return jsonify({"error": t("invalid_data")}), 400
 
-    if not user:
+    prompt = f"""
+Prepare a construction estimation assistance draft for:
+{description}
 
-        return jsonify({
-            "error":
-                "Invalid or expired login session."
-        }), 401
+Return structured sections:
+1. Scope
+2. Assumptions
+3. Materials
+4. Quantities
+5. Labour
+6. Equipment
+7. Estimated cost in XAF
+8. Risks
+9. Items requiring CEO/technical approval
 
-    user_id = user["id"]
+Clearly label all prices as estimates, not approved quotations.
+"""
+    answer = ai_answer(prompt, context={"business": profile_payload()})
+    if not answer:
+        return jsonify({"error": t("ai_unavailable")}), 503
+    return jsonify({
+        "estimate": answer,
+        "approval_required": True,
+        "message": t("approval_required"),
+    })
 
+
+# ------------------------------------------------------------
+# Customer communication / CRM
+# ------------------------------------------------------------
+
+def detect_language(text):
+    text = str(text).lower()
+    french_words = {
+        "bonjour", "merci", "devis", "prix", "construction",
+        "maison", "chantier", "combien", "je", "vous", "pour",
+    }
+    score = sum(1 for word in french_words if word in text)
+    return "fr" if score >= 2 else "en"
+
+
+def store_message(channel, direction, customer_id=None, sender=None, text=""):
+    return sb_insert("messages", {
+        "channel": channel,
+        "direction": direction,
+        "customer_id": customer_id,
+        "sender": sender,
+        "message": text,
+        "language": detect_language(text),
+        "created_at": utc_now(),
+    })
+
+
+def whatsapp_send(to, text):
+    if not (WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID):
+        return {"ok": False, "error": "WhatsApp credentials are not configured."}
+
+    url = (
+        f"https://graph.facebook.com/v20.0/"
+        f"{WHATSAPP_PHONE_NUMBER_ID}/messages"
+    )
     try:
+        response = requests.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {WHATSAPP_ACCESS_TOKEN}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "messaging_product": "whatsapp",
+                "to": to,
+                "type": "text",
+                "text": {"body": text},
+            },
+            timeout=30,
+        )
+        return {
+            "ok": response.status_code < 400,
+            "status": response.status_code,
+            "data": response.json() if response.content else {},
+        }
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
 
-        customers_response = supabase_get(
-            CUSTOMERS_URL,
-            {
-                "select":
-                    "*",
 
-                "user_id":
-                    "eq." + user_id,
+def process_whatsapp_message(phone, name, text, message_id=None):
+    customer = upsert_customer({
+        "name": name or phone,
+        "phone": phone,
+        "source": "whatsapp",
+        "language": detect_language(text),
+        "last_message": text,
+        "last_contact_at": utc_now(),
+    })
 
-                "order":
-                    "created_at.desc"
-            }
+    customer_id = customer.get("id") if isinstance(customer, dict) else None
+    store_message("whatsapp", "incoming", customer_id, phone, text)
+
+    context = {
+        "customer": customer,
+        "channel": "whatsapp",
+        "customer_message": text,
+    }
+    reply = ai_answer(text, context=context)
+
+    if not reply:
+        lang = detect_language(text)
+        reply = (
+            "Merci pour votre message. Notre équipe vous répondra bientôt."
+            if lang == "fr"
+            else "Thank you for your message. Our team will get back to you shortly."
         )
 
-        ai_response = supabase_get(
-            AI_CONVERSATIONS_URL,
-            {
-                "select":
-                    "*",
+    sent = whatsapp_send(phone, reply)
+    store_message("whatsapp", "outgoing", customer_id, WHATSAPP_PHONE_NUMBER_ID, reply)
 
-                "user_id":
-                    "eq." + user_id,
+    sb_insert("ai_conversations", {
+        "customer_id": customer_id,
+        "channel": "whatsapp",
+        "user_message": text,
+        "ai_reply": reply,
+        "external_message_id": message_id,
+        "language": detect_language(text),
+        "created_at": utc_now(),
+    })
 
-                "order":
-                    "created_at.desc"
-            }
-        )
+    return {"customer": customer, "reply": reply, "sent": sent}
 
-        business_response = supabase_get(
-            BUSINESS_ACCOUNTS_URL,
-            {
-                "select":
-                    "*",
 
-                "user_id":
-                    "eq." + user_id,
+@app.route("/webhook/whatsapp", methods=["GET", "POST"])
+def whatsapp_webhook():
+    if request.method == "GET":
+        mode = request.args.get("hub.mode")
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
+        if (
+            mode == "subscribe"
+            and WHATSAPP_VERIFY_TOKEN
+            and token == WHATSAPP_VERIFY_TOKEN
+        ):
+            return challenge or "", 200
+        return "Forbidden", 403
 
-                "limit":
-                    "1"
-            }
-        )
+    payload = request.get_json(silent=True) or {}
+    try:
+        entries = payload.get("entry", [])
+        for entry in entries:
+            for change in entry.get("changes", []):
+                value = change.get("value", {})
+                for message in value.get("messages", []):
+                    phone = message.get("from", "")
+                    message_id = message.get("id")
+                    text = (
+                        message.get("text", {}).get("body", "")
+                        if message.get("type") == "text"
+                        else ""
+                    )
+                    contacts = value.get("contacts", [])
+                    name = (
+                        contacts[0].get("profile", {}).get("name", "")
+                        if contacts else ""
+                    )
+                    if phone and text:
+                        process_whatsapp_message(phone, name, text, message_id)
+        return jsonify({"received": True})
+    except Exception:
+        traceback.print_exc()
+        return jsonify({"received": True}), 200
 
-        automation_response = supabase_get(
-            AUTOMATION_SETTINGS_URL,
-            {
-                "select":
-                    "*",
 
-                "user_id":
-                    "eq." + user_id,
+# ------------------------------------------------------------
+# Facebook webhook / messaging foundation
+# ------------------------------------------------------------
 
-                "limit":
-                    "1"
-            }
-        )
+@app.route("/webhook/facebook", methods=["GET", "POST"])
+def facebook_webhook():
+    if request.method == "GET":
+        mode = request.args.get("hub.mode")
+        token = request.args.get("hub.verify_token")
+        challenge = request.args.get("hub.challenge")
+        if mode == "subscribe" and token == FACEBOOK_VERIFY_TOKEN:
+            return challenge or "", 200
+        return "Forbidden", 403
 
-        customers = (
-            customers_response.json()
-            if customers_response.status_code == 200
-            else []
-        )
+    payload = request.get_json(silent=True) or {}
+    for entry in payload.get("entry", []):
+        for messaging in entry.get("messaging", []):
+            sender = messaging.get("sender", {}).get("id")
+            message = messaging.get("message", {})
+            text = message.get("text", "")
+            if sender and text:
+                customer = upsert_customer({
+                    "name": f"Facebook {sender}",
+                    "external_id": sender,
+                    "source": "facebook",
+                    "language": detect_language(text),
+                    "last_message": text,
+                    "last_contact_at": utc_now(),
+                })
+                customer_id = customer.get("id") if isinstance(customer, dict) else None
+                store_message("facebook", "incoming", customer_id, sender, text)
+                reply = ai_answer(
+                    text,
+                    context={"customer": customer, "channel": "facebook"},
+                )
+                if reply:
+                    store_message("facebook", "outgoing", customer_id, "TASSIMO BTP", reply)
+    return jsonify({"received": True})
 
-        ai_conversations = (
-            ai_response.json()
-            if ai_response.status_code == 200
-            else []
-        )
 
-        businesses = (
-            business_response.json()
-            if business_response.status_code == 200
-            else []
-        )
+# ------------------------------------------------------------
+# Analytics / reporting / business intelligence
+# ------------------------------------------------------------
 
-        automation_rows = (
-            automation_response.json()
-            if automation_response.status_code == 200
-            else []
-        )
+def safe_sum(rows, field):
+    total = 0.0
+    for row in rows:
+        try:
+            total += float(row.get(field) or 0)
+        except (ValueError, TypeError):
+            pass
+    return total
 
-        automation = (
 
-            automation_rows[0]
+@app.route("/api/dashboard")
+@protected
+def dashboard_api():
+    customers = sb_count("customers")
+    projects = sb_count("projects")
+    inventory = sb_count("inventory")
+    students = sb_count("students")
+    leads = sb_count("leads")
+    pending = sb_count("approvals")
 
-            if automation_rows
+    expenses = sb_select("expenses", {"select": "*"})
+    payments = sb_select("payments", {"select": "*"})
+    quotations = sb_select("quotations", {"select": "*"})
 
-            else {
+    return jsonify({
+        "business": profile_payload(),
+        "ceo": CEO_NAME,
+        "stats": {
+            "customers": customers,
+            "projects": projects,
+            "inventory_items": inventory,
+            "students": students,
+            "leads": leads,
+            "pending_approvals": pending,
+            "expenses": safe_sum(expenses, "amount"),
+            "payments": safe_sum(payments, "amount"),
+            "quotation_value": safe_sum(quotations, "total"),
+        },
+        "modules": list(RESOURCE_MAP.keys()),
+        "language": language(),
+    })
 
-                "ai_replies":
-                    True,
 
-                "message_automation":
-                    True,
+@app.route("/api/analytics")
+@protected
+def analytics_api():
+    customers = sb_select("customers", {"select": "created_at,source,language"})
+    projects = sb_select("projects", {"select": "status,budget,progress"})
+    expenses = sb_select("expenses", {"select": "amount,category,created_at"})
+    payments = sb_select("payments", {"select": "amount,method,created_at"})
+    students = sb_select("students", {"select": "created_at,status"})
 
-                "task_automation":
-                    True
-            }
-        )
+    return jsonify({
+        "customers": {
+            "total": len(customers),
+            "by_source": count_by(customers, "source"),
+            "by_language": count_by(customers, "language"),
+        },
+        "projects": {
+            "total": len(projects),
+            "by_status": count_by(projects, "status"),
+            "average_progress": average_number(projects, "progress"),
+            "budget": safe_sum(projects, "budget"),
+        },
+        "finance": {
+            "expenses": safe_sum(expenses, "amount"),
+            "payments": safe_sum(payments, "amount"),
+            "expenses_by_category": sum_by(expenses, "category", "amount"),
+        },
+        "training": {
+            "students": len(students),
+            "by_status": count_by(students, "status"),
+        },
+    })
 
+
+def count_by(rows, field):
+    result = {}
+    for row in rows:
+        key = row.get(field) or "unknown"
+        result[key] = result.get(key, 0) + 1
+    return result
+
+
+def sum_by(rows, group_field, value_field):
+    result = {}
+    for row in rows:
+        key = row.get(group_field) or "other"
+        try:
+            value = float(row.get(value_field) or 0)
+        except (ValueError, TypeError):
+            value = 0
+        result[key] = result.get(key, 0) + value
+    return result
+
+
+def average_number(rows, field):
+    values = []
+    for row in rows:
+        try:
+            values.append(float(row.get(field)))
+        except (ValueError, TypeError):
+            pass
+    return round(sum(values) / len(values), 2) if values else 0
+
+
+@app.route("/api/reports/<report_type>")
+@protected
+def reports_api(report_type):
+    report_tables = {
+        "customers": "customers",
+        "projects": "projects",
+        "finance": "expenses",
+        "payments": "payments",
+        "training": "students",
+        "inventory": "inventory",
+        "sales": "quotations",
+        "messages": "messages",
+    }
+    table = report_tables.get(report_type)
+    if not table:
+        return jsonify({"error": "Unknown report."}), 404
+    rows = sb_select(table, {"select": "*", "order": "created_at.desc"})
+    return jsonify({
+        "report": report_type,
+        "generated_at": utc_now(),
+        "rows": rows,
+        "count": len(rows),
+    })
+
+
+@app.route("/api/business-intelligence", methods=["GET", "POST"])
+@protected
+def business_intelligence():
+    if request.method == "GET":
         return jsonify({
-
-            "success":
-                True,
-
-            "report": {
-
-                "business":
-                    businesses[0]
-                    if businesses
-                    else None,
-
-                "total_customers":
-                    len(customers),
-
-                "total_ai_conversations":
-                    len(ai_conversations),
-
-                "total_ai_replies":
-                    len([
-
-                        x
-
-                        for x in ai_conversations
-
-                        if str(
-                            x.get(
-                                "answer",
-                                ""
-                            )
-                        ).strip()
-                    ]),
-
-                "automation":
-                    automation,
-
-                "customers":
-                    customers,
-
-                "ai_conversations":
-                    ai_conversations
-            }
+            "enabled": bool(OPENROUTER_API_KEY),
+            "features": [
+                "customer insights",
+                "sales pipeline analysis",
+                "project risk analysis",
+                "cash-flow assistance",
+                "inventory alerts",
+                "training performance",
+                "marketing recommendations",
+            ],
         })
 
-    except Exception as error:
+    data = request.get_json(silent=True) or {}
+    question = data.get(
+        "question",
+        "Analyze current business performance and give practical recommendations.",
+    )
+    dashboard = dashboard_api().get_json()
+    answer = ai_answer(
+        question,
+        context={"dashboard": dashboard, "profile": profile_payload()},
+    )
+    if not answer:
+        return jsonify({"error": t("ai_unavailable")}), 503
+    return jsonify({"insight": answer})
 
-        print(
-            "Reports GET exception:",
-            error
+
+# ------------------------------------------------------------
+# CEO approvals
+# ------------------------------------------------------------
+
+@app.route("/api/approvals", methods=["GET", "POST", "PUT"])
+@protected
+def approvals_api():
+    if request.method == "GET":
+        rows = sb_select("approvals", {"select": "*", "order": "created_at.desc"})
+        return jsonify({"approvals": rows})
+
+    data = request.get_json(silent=True) or {}
+    data = normalize_record(data)
+    data.setdefault("status", "pending")
+    data.setdefault("requested_by", "AI")
+    saved = sb_insert("approvals", data) if request.method == "POST" else None
+
+    if request.method == "PUT":
+        record_id = data.pop("id", None)
+        decision = str(data.get("status", "")).lower()
+        if decision not in {"approved", "rejected", "pending"}:
+            return jsonify({"error": t("invalid_data")}), 400
+        saved = sb_update(
+            "approvals",
+            {"id": f"eq.{record_id}"},
+            {"status": decision, "updated_at": utc_now()},
         )
 
-        traceback.print_exc()
-
-        return jsonify({
-            "error":
-                str(error)
-        }), 500
+    return jsonify({"message": t("saved"), "approval": saved})
 
 
-# =========================================================
-# APPLICATION START
-# =========================================================
+# ------------------------------------------------------------
+# Health / integrations
+# ------------------------------------------------------------
+
+@app.route("/api/status")
+def status():
+    return jsonify({
+        "ok": True,
+        "application": APP_NAME,
+        "version": "2.0-unified",
+        "time": utc_now(),
+        "supabase_configured": supabase_configured(),
+        "openrouter_configured": bool(OPENROUTER_API_KEY),
+        "whatsapp_configured": bool(
+            WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID
+        ),
+        "facebook_configured": bool(FACEBOOK_PAGE_ACCESS_TOKEN),
+    })
+
+
+@app.route("/api/integrations/status")
+@protected
+def integrations_status():
+    return jsonify({
+        "supabase": supabase_configured(),
+        "openrouter": bool(OPENROUTER_API_KEY),
+        "whatsapp": bool(
+            WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID
+        ),
+        "facebook": bool(FACEBOOK_PAGE_ACCESS_TOKEN),
+        "render": True,
+        "github": True,
+    })
+
+
+# ------------------------------------------------------------
+# Built-in bilingual responsive dashboard
+# This is intentionally self-contained so future pages can use
+# the same application shell without changing the Flask server.
+# ------------------------------------------------------------
+
+DASHBOARD_HTML = r"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TASSIMO BTP — Business Manager</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--nav:#102a43;--nav2:#183b56;--bg:#f4f7fb;--card:#fff;--text:#172b4d;--muted:#667085;
+--line:#e4e7ec;--accent:#e0a72e}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}.app{display:flex;min-height:100vh}.side{width:255px;background:var(--nav);
+color:#fff;position:fixed;inset:0 auto 0 0;padding:18px 12px;overflow:auto}.brand{padding:12px 10px 20px;
+border-bottom:1px solid #ffffff22}.brand b{display:block;font-size:17px}.brand small{opacity:.7}
+.nav{margin-top:12px}.nav button{width:100%;background:none;border:0;color:#fff;text-align:left;padding:11px 12px;
+border-radius:10px;margin:2px 0;cursor:pointer}.nav button:hover,.nav button.active{background:#ffffff18}
+.main{margin-left:255px;width:calc(100% - 255px)}header{height:70px;background:#fff;border-bottom:1px solid var(--line);
+display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:4}
+.menu{display:none}.content{padding:24px}.title h1{margin:0}.muted{color:var(--muted)}.cards{display:grid;
+grid-template-columns:repeat(4,1fr);gap:15px;margin:20px 0}.card{background:var(--card);border:1px solid var(--line);
+border-radius:16px;padding:18px;box-shadow:0 4px 15px #10182808}.stat{font-size:28px;font-weight:800;margin-top:8px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.panel{background:#fff;border:1px solid var(--line);
+border-radius:16px;padding:18px}.actions{display:flex;gap:9px;flex-wrap:wrap}.btn{border:0;border-radius:10px;
+padding:11px 14px;background:var(--nav2);color:#fff;cursor:pointer}.btn.alt{background:#eef2f6;color:var(--nav2)}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
+.form{display:grid;gap:10px}.form input,.form textarea,.form select{padding:11px;border:1px solid #d0d5dd;border-radius:10px}
+.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#eef2f6;font-size:12px}
+#toast{position:fixed;right:18px;bottom:18px;background:#102a43;color:#fff;padding:13px 17px;border-radius:10px;display:none}
+@media(max-width:850px){.side{transform:translateX(-100%);transition:.2s;z-index:10}.side.open{transform:none}.main{margin-left:0;width:100%}
+.menu{display:block;border:0;background:none;font-size:24px}.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}
+.content{padding:15px}header{padding:0 15px}}@media(max-width:480px){.cards{grid-template-columns:1fr 1fr}.stat{font-size:22px}}
+</style></head>
+<body><div class="app">
+<aside class="side" id="side"><div class="brand"><b>🏗️ TASSIMO BTP</b><small>Business Operating System</small></div>
+<nav class="nav" id="nav"></nav></aside>
+<section class="main"><header><button class="menu" onclick="side.classList.toggle('open')">☰</button>
+<div><b id="pageTitle">Dashboard</b><div class="muted" id="welcome"></div></div>
+<div class="actions"><button class="btn alt" onclick="setLang('en')">EN</button><button class="btn alt" onclick="setLang('fr')">FR</button>
+<button class="btn" onclick="logout()">Logout</button></div></header><main class="content" id="content"></main></section></div>
+<div id="toast"></div>
+<script>
+const modules=[
+['dashboard','📊','Dashboard','Tableau de bord'],
+['customers','👥','Customers','Clients'],
+['messages','💬','Messages','Messages'],
+['leads','🎯','Leads & Sales','Prospects & Ventes'],
+['marketing','📣','Marketing','Marketing'],
+['projects','🏗️','Projects','Projets'],
+['construction','📐','Construction AI','IA Construction'],
+['inventory','📦','Inventory','Stock'],
+['finance','💰','Finance','Finances'],
+['documents','📄','Documents','Documents'],
+['training','🎓','Professional Training','Formation'],
+['digital-courses','💻','Digital Courses','Cours numériques'],
+['analytics','📈','Analytics','Analyses'],
+['reports','📋','Reports','Rapports'],
+['automation','⚙️','Automation','Automatisation'],
+['ai','🤖','AI Assistant','Assistant IA'],
+['approvals','✅','CEO Approvals','Approbations CEO'],
+['integrations','🔗','Integrations','Intégrations'],
+['settings','⚙','Settings','Paramètres'],
+['admin','🔐','Administration','Administration']
+];
+let lang=localStorage.getItem('lang')||'en';
+function label(m){return lang==='fr'?m[3]:m[2]}
+nav.innerHTML=modules.map(m=>`<button id="n-${m[0]}" onclick="openPage('${m[0]}')">${m[1]} ${label(m)}</button>`).join('');
+function setLang(x){lang=x;localStorage.setItem('lang',x);location.reload()}
+function toast(x){toastEl=document.getElementById('toast');toastEl.textContent=x;toastEl.style.display='block';setTimeout(()=>toastEl.style.display='none',2500)}
+async function api(url,opt={}){opt.headers={...(opt.headers||{}),'Content-Type':'application/json','X-Language':lang};const r=await fetch(url,opt);if(r.status===401){location.href='/login';return null}const d=await r.json();if(!r.ok)throw new Error(d.error||'Request failed');return d}
+async function logout(){location.href='/logout'}
+function openPage(p){document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+p)?.classList.add('active');
+document.getElementById('pageTitle').textContent=modules.find(x=>x[0]===p)?.[lang==='fr'?3:2]||p;
+side.classList.remove('open');window['page_'+p]?window['page_'+p]():pageGeneric(p)}
+async function page_dashboard(){content.innerHTML=`<div class="title"><h1>${lang==='fr'?'Bonjour':'Welcome'}, TAGNE Simo Innocant</h1>
+<p class="muted">${lang==='fr'?'Construisons l’excellence ensemble.':'Together, let us build excellence.'}</p></div>
+<div class="cards" id="cards"></div><div class="grid"><div class="panel"><h3>${lang==='fr'?'Activité':'Business Activity'}</h3><canvas id="chart"></canvas></div>
+<div class="panel"><h3>${lang==='fr'?'Actions rapides':'Quick Actions'}</h3><div class="actions">
+<button class="btn" onclick="openPage('customers')">+ Customer</button><button class="btn" onclick="openPage('projects')">+ Project</button>
+<button class="btn" onclick="openPage('finance')">+ Expense</button><button class="btn" onclick="openPage('ai')">Ask AI</button></div></div></div>`;
+const d=await api('/api/dashboard');if(!d)return;
+cards.innerHTML=Object.entries(d.stats).slice(0,8).map(([k,v])=>`<div class="card"><div class="muted">${k.replaceAll('_',' ')}</div><div class="stat">${typeof v==='number'?Math.round(v*100)/100:v}</div></div>`).join('');
+new Chart(document.getElementById('chart'),{type:'bar',data:{labels:['Customers','Projects','Leads','Students'],datasets:[{label:'Records',data:[d.stats.customers,d.stats.projects,d.stats.leads,d.stats.students]}]}});
+}
+async function page_customers(){await pageTable('customers','/api/customers','customers')}
+async function page_messages(){await pageTable('messages','/api/messages','messages')}
+async function page_leads(){await pageTable('leads','/api/leads','leads')}
+async function page_projects(){await pageTable('projects','/api/projects','projects')}
+async function page_inventory(){await pageTable('inventory','/api/inventory','inventory')}
+async function page_finance(){await pageTable('finance','/api/expenses','expenses')}
+async function page_documents(){await pageTable('documents','/api/documents','documents')}
+async function page_training(){await pageTable('training','/api/students','students')}
+async function page_digital_courses(){await pageTable('digital-courses','/api/digital-courses','digital courses')}
+async function page_approvals(){await pageTable('approvals','/api/approvals','approvals')}
+async function pageTable(title,url,resource){content.innerHTML=`<div class="panel"><div class="actions"><h2 style="margin-right:auto">${resource}</h2>
+<button class="btn" onclick="location.reload()">↻ Refresh</button></div><div id="tableWrap" class="muted">Loading...</div></div>`;
+try{const d=await api(url);const rows=d?.customers||d?.data||d?.approvals||[];if(!rows.length){tableWrap.innerHTML='<p>No records yet.</p>';return}
+const keys=[...new Set(rows.flatMap(x=>Object.keys(x)))].slice(0,8);tableWrap.innerHTML=`<div style="overflow:auto"><table><thead><tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${keys.map(k=>`<td>${r[k]??''}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}catch(e){tableWrap.textContent=e.message}}
+async function page_ai(){content.innerHTML=`<div class="panel"><h2>🤖 ${lang==='fr'?'Assistant IA':'AI Assistant'}</h2>
+<p class="muted">${lang==='fr'?'Posez une question en français ou en anglais.':'Ask a question in English or French.'}</p>
+<div class="form"><textarea id="q" rows="5" placeholder="Ask about customers, projects, estimates, marketing, finance..."></textarea><button class="btn" onclick="askAI()">Send / Envoyer</button></div><pre id="answer" style="white-space:pre-wrap"></pre></div>`}
+async function askAI(){answer.textContent='...';try{const d=await api('/api/ai',{method:'POST',body:JSON.stringify({question:q.value})});answer.textContent=d.answer+(d.approval_required?'\\n\\n⚠ CEO approval may be required.':'')}catch(e){answer.textContent=e.message}}
+async function page_construction(){content.innerHTML=`<div class="panel"><h2>📐 Construction AI / IA Construction</h2><textarea id="desc" rows="6" style="width:100%;padding:12px" placeholder="Describe the building, renovation or civil engineering work..."></textarea><br><br>
+<button class="btn" onclick="estimate()">Generate Estimate Assistance</button><pre id="est" style="white-space:pre-wrap"></pre></div>`}
+async function estimate(){est.textContent='...';try{const d=await api('/api/ai/estimate',{method:'POST',body:JSON.stringify({description:desc.value})});est.textContent=d.estimate+'\\n\\n'+d.message}catch(e){est.textContent=e.message}}
+async function page_analytics(){content.innerHTML='<div class="grid"><div class="panel"><h3>Customer Analytics</h3><canvas id="ac"></canvas></div><div class="panel"><h3>Finance</h3><canvas id="af"></canvas></div></div>';const d=await api('/api/analytics');new Chart(ac,{type:'doughnut',data:{labels:Object.keys(d.customers.by_source),datasets:[{data:Object.values(d.customers.by_source)}]}});new Chart(af,{type:'bar',data:{labels:Object.keys(d.finance.expenses_by_category),datasets:[{label:'Expenses',data:Object.values(d.finance.expenses_by_category)}]}})}
+async function page_reports(){content.innerHTML='<div class="panel"><h2>Reports / Rapports</h2><div class="actions">'+['customers','projects','finance','payments','training','inventory','sales','messages'].map(x=>`<button class="btn alt" onclick="loadReport('${x}')">${x}</button>`).join('')+'</div><pre id="report" style="white-space:pre-wrap"></pre></div>'}
+async function loadReport(x){try{const d=await api('/api/reports/'+x);report.textContent=JSON.stringify(d,null,2)}catch(e){report.textContent=e.message}}
+async function page_automation(){content.innerHTML='<div class="panel"><h2>Automation / Automatisation</h2><p>AI replies, language detection, customer intent, follow-ups and CEO approval controls.</p><button class="btn" onclick="loadSettings()">Load Automation Settings</button><pre id="set" style="white-space:pre-wrap"></pre></div>'}
+async function loadSettings(){const d=await api('/api/settings');set.textContent=JSON.stringify(d,null,2)}
+async function page_integrations(){const d=await api('/api/integrations/status');content.innerHTML='<div class="cards">'+Object.entries(d).map(([k,v])=>`<div class="card"><b>${k}</b><div class="stat">${v?'✓':'—'}</div></div>`).join('')+'</div>'}
+async function page_settings(){const d=await api('/api/profile');content.innerHTML=`<div class="panel"><h2>Business Profile / Profil de l'entreprise</h2><div class="form">${['business_name','ceo_name','slogan','country','city'].map(k=>`<label>${k}<input id="p_${k}" value="${d[k]||''}"></label>`).join('')}<button class="btn" onclick="saveProfile()">Save / Enregistrer</button></div></div>`}
+async function saveProfile(){const data={};['business_name','ceo_name','slogan','country','city'].forEach(k=>data[k]=document.getElementById('p_'+k).value);await api('/api/profile',{method:'POST',body:JSON.stringify(data)});toast('Saved successfully / Enregistré');}
+async function page_admin(){content.innerHTML='<div class="panel"><h2>Administration / Administration</h2><p>CEO authentication, permissions, security, integrations, database and operational controls are centralized here.</p><pre id="status"></pre></div>';const d=await api('/api/status');status.textContent=JSON.stringify(d,null,2)}
+openPage('dashboard');
+</script></body></html>"""
+
+
+@app.route("/")
+@protected
+def home():
+    return DASHBOARD_HTML
+
+
+@app.route("/index.html")
+@protected
+def index_page():
+    return DASHBOARD_HTML
+
+
+# ------------------------------------------------------------
+# Error handling
+# ------------------------------------------------------------
+
+@app.errorhandler(404)
+def not_found(error):
+    if request.path.startswith("/api/") or request.path.startswith("/webhook/"):
+        return jsonify({"error": "Not found."}), 404
+    return redirect("/")
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"error": "Internal server error."}), 500
+
 
 if __name__ == "__main__":
-
-    port = int(
-        os.environ.get(
-            "PORT",
-            5000
-        )
-    )
-
-    print(
-        "================================================"
-    )
-
-    print(
-        "NexaFlow AI starting..."
-    )
-
-    print(
-        "Port:",
-        port
-    )
-
-    print(
-        "WhatsApp AI background threading: ENABLED"
-    )
-
-    print(
-        "WhatsApp webhook handler: ACTIVE / ROBUST PARSER ENABLED"
-    )
-
-    print(
-        "WhatsApp phone number ID configured:",
-        bool(WHATSAPP_PHONE_NUMBER_ID)
-    )
-
-    print(
-        "WhatsApp access token configured:",
-        bool(WHATSAPP_ACCESS_TOKEN)
-    )
-
-    print(
-        "OpenRouter API key configured:",
-        bool(OPENROUTER_API_KEY)
-    )
-
-    print(
-        "Supabase secret key configured:",
-        bool(SUPABASE_SECRET_KEY)
-    )
-
-    print(
-        "================================================"
-    )
-
-    app.run(
-        host="0.0.0.0",
-        port=port
-    )
+    port = int(os.environ.get("PORT", "5000"))
+    app.run(host="0.0.0.0", port=port, debug=False)
