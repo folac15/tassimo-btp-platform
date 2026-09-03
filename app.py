@@ -1,12 +1,23 @@
-from flask import Flask, jsonify, request, render_template_string
 import os
 from datetime import datetime
 
-app = Flask(__name__)
+from flask import Flask, jsonify, request, render_template_string
+from flask_cors import CORS
+
+from database import db
+
 
 # ============================================================
 # TASSIMO BTP CONSTRUCTION SARL
-# MODULE 1 - AI BUSINESS MANAGER & PLATFORM FOUNDATION
+# MAIN APPLICATION
+# ============================================================
+
+app = Flask(__name__)
+CORS(app)
+
+
+# ============================================================
+# COMPANY INFORMATION
 # ============================================================
 
 COMPANY = {
@@ -16,1317 +27,164 @@ COMPANY = {
     "slogan": "Together, let us build excellence."
 }
 
+
+# ============================================================
+# 10 PLATFORM MODULES
+# ============================================================
+
 MODULES = [
     {
         "id": 1,
-        "icon": "🤖",
-        "en": "AI Business Manager",
-        "fr": "Gestionnaire IA"
+        "name_en": "AI Business Manager",
+        "name_fr": "Gestionnaire IA de l'entreprise",
+        "icon": "🤖"
     },
     {
         "id": 2,
-        "icon": "📣",
-        "en": "Marketing & Social Media",
-        "fr": "Marketing & Réseaux sociaux"
+        "name_en": "Marketing & Social Media",
+        "name_fr": "Marketing & Réseaux sociaux",
+        "icon": "📣"
     },
     {
         "id": 3,
-        "icon": "👥",
-        "en": "CRM & Customers",
-        "fr": "CRM & Clients"
+        "name_en": "CRM & Customer Communication",
+        "name_fr": "CRM & Communication client",
+        "icon": "👥"
     },
     {
         "id": 4,
-        "icon": "🏗️",
-        "en": "Construction AI & Estimation",
-        "fr": "IA Construction & Estimation"
+        "name_en": "Construction AI & Estimation",
+        "name_fr": "IA Construction & Estimation",
+        "icon": "🏗️"
     },
     {
         "id": 5,
-        "icon": "📦",
-        "en": "Projects & Operations",
-        "fr": "Projets & Opérations"
+        "name_en": "Projects & Operations",
+        "name_fr": "Projets & Opérations",
+        "icon": "📋"
     },
     {
         "id": 6,
-        "icon": "💰",
-        "en": "Finance & Documents",
-        "fr": "Finance & Documents"
+        "name_en": "Finance & Documents",
+        "name_fr": "Finance & Documents",
+        "icon": "💰"
     },
     {
         "id": 7,
-        "icon": "🎓",
-        "en": "Professional Training",
-        "fr": "Formation professionnelle"
+        "name_en": "Professional Training",
+        "name_fr": "Formation professionnelle",
+        "icon": "🎓"
     },
     {
         "id": 8,
-        "icon": "🛒",
-        "en": "Digital Training Store",
-        "fr": "Boutique de formations"
+        "name_en": "Digital Training Store",
+        "name_fr": "Boutique de formations numériques",
+        "icon": "🛒"
     },
     {
         "id": 9,
-        "icon": "📊",
-        "en": "Analytics & Intelligence",
-        "fr": "Analyses & Intelligence"
+        "name_en": "Analytics & Business Intelligence",
+        "name_fr": "Analytique & Intelligence d'affaires",
+        "icon": "📊"
     },
     {
         "id": 10,
-        "icon": "⚙️",
-        "en": "Administration & Integrations",
-        "fr": "Administration & Intégrations"
+        "name_en": "Administration & Integrations",
+        "name_fr": "Administration & Intégrations",
+        "icon": "⚙️"
     }
 ]
 
 
 # ============================================================
-# DASHBOARD
+# DATABASE / SYSTEM HELPERS
 # ============================================================
 
-DASHBOARD_HTML = r"""
-<!DOCTYPE html>
-<html lang="en">
+def get_dashboard_data():
+    """
+    Collect the information needed by the CEO dashboard.
 
-<head>
+    The dashboard reads real information from Supabase through
+    the central database layer.
+    """
 
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+    stats = db.get_dashboard_stats()
 
-<meta name="theme-color" content="#0f172a">
+    profile = db.get_company_profile()
 
-<title>TASSIMO BTP | AI Business Platform</title>
+    if not profile:
+        profile = COMPANY.copy()
 
-<style>
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-:root{
-    --primary:#0f172a;
-    --secondary:#1e293b;
-    --accent:#f59e0b;
-    --accent-dark:#d97706;
-    --background:#f1f5f9;
-    --card:#ffffff;
-    --text:#0f172a;
-    --muted:#64748b;
-    --border:#e2e8f0;
-    --success:#16a34a;
-    --danger:#dc2626;
-}
-
-body{
-    font-family:
-        Inter,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Arial,
-        sans-serif;
-
-    background:var(--background);
-    color:var(--text);
-    min-height:100vh;
-}
-
-
-/* ============================================================
-   APP LAYOUT
-   ============================================================ */
-
-.app{
-    display:flex;
-    min-height:100vh;
-}
-
-
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
-
-.sidebar{
-    width:280px;
-    background:var(--primary);
-    color:white;
-    position:fixed;
-    left:0;
-    top:0;
-    bottom:0;
-    overflow-y:auto;
-    z-index:1000;
-    transition:transform .3s ease;
-}
-
-.brand{
-    padding:24px 20px;
-    border-bottom:1px solid rgba(255,255,255,.1);
-}
-
-.brand-name{
-    font-size:19px;
-    font-weight:800;
-    line-height:1.25;
-}
-
-.brand-subtitle{
-    color:#94a3b8;
-    font-size:12px;
-    margin-top:6px;
-}
-
-.ceo-box{
-    margin:18px 14px;
-    padding:14px;
-    background:rgba(255,255,255,.06);
-    border-radius:14px;
-}
-
-.ceo-label{
-    font-size:11px;
-    color:#94a3b8;
-    text-transform:uppercase;
-    letter-spacing:.6px;
-}
-
-.ceo-name{
-    margin-top:5px;
-    font-size:14px;
-    font-weight:700;
-}
-
-.navigation{
-    padding:10px;
-}
-
-.nav-section{
-    color:#64748b;
-    font-size:10px;
-    text-transform:uppercase;
-    letter-spacing:1px;
-    padding:14px 12px 7px;
-}
-
-.nav-item{
-    width:100%;
-    border:0;
-    background:transparent;
-    color:#cbd5e1;
-    padding:12px;
-    border-radius:10px;
-    display:flex;
-    align-items:center;
-    gap:11px;
-    text-align:left;
-    cursor:pointer;
-    margin-bottom:3px;
-    font-size:13px;
-    transition:.2s;
-}
-
-.nav-item:hover{
-    background:rgba(255,255,255,.08);
-    color:white;
-}
-
-.nav-item.active{
-    background:var(--accent);
-    color:#111827;
-    font-weight:700;
-}
-
-.nav-icon{
-    width:24px;
-    text-align:center;
-    font-size:17px;
-}
-
-
-/* ============================================================
-   MAIN
-   ============================================================ */
-
-.main{
-    margin-left:280px;
-    width:calc(100% - 280px);
-    min-width:0;
-}
-
-.topbar{
-    height:74px;
-    background:white;
-    border-bottom:1px solid var(--border);
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 28px;
-    position:sticky;
-    top:0;
-    z-index:900;
-}
-
-.mobile-menu{
-    display:none;
-    border:0;
-    background:transparent;
-    font-size:25px;
-    cursor:pointer;
-}
-
-.topbar-title{
-    font-size:20px;
-    font-weight:800;
-}
-
-.topbar-right{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
-
-.language-btn{
-    border:1px solid var(--border);
-    background:white;
-    border-radius:9px;
-    padding:8px 11px;
-    cursor:pointer;
-    font-weight:700;
-}
-
-.ceo-avatar{
-    width:38px;
-    height:38px;
-    border-radius:50%;
-    background:var(--primary);
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:800;
-}
-
-
-/* ============================================================
-   CONTENT
-   ============================================================ */
-
-.content{
-    padding:28px;
-    max-width:1600px;
-    margin:auto;
-}
-
-.welcome{
-    background:linear-gradient(
-        135deg,
-        #0f172a,
-        #1e293b
-    );
-
-    color:white;
-    border-radius:20px;
-    padding:30px;
-    margin-bottom:22px;
-    position:relative;
-    overflow:hidden;
-}
-
-.welcome:after{
-    content:"";
-    position:absolute;
-    width:220px;
-    height:220px;
-    right:-80px;
-    top:-90px;
-    border-radius:50%;
-    background:rgba(245,158,11,.18);
-}
-
-.welcome-label{
-    color:#fbbf24;
-    font-size:12px;
-    font-weight:800;
-    text-transform:uppercase;
-    letter-spacing:1px;
-}
-
-.welcome h1{
-    margin-top:7px;
-    font-size:29px;
-}
-
-.welcome p{
-    color:#cbd5e1;
-    margin-top:8px;
-    max-width:720px;
-    line-height:1.6;
-}
-
-
-/* ============================================================
-   KPI CARDS
-   ============================================================ */
-
-.stats{
-    display:grid;
-    grid-template-columns:
-        repeat(4,minmax(0,1fr));
-    gap:16px;
-    margin-bottom:22px;
-}
-
-.stat-card{
-    background:white;
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:20px;
-}
-
-.stat-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.stat-icon{
-    width:42px;
-    height:42px;
-    border-radius:11px;
-    background:#f8fafc;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:20px;
-}
-
-.stat-label{
-    color:var(--muted);
-    font-size:12px;
-    margin-top:15px;
-}
-
-.stat-value{
-    font-size:27px;
-    font-weight:800;
-    margin-top:3px;
-}
-
-
-/* ============================================================
-   AI COMMAND CENTER
-   ============================================================ */
-
-.ai-card{
-    background:white;
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:22px;
-    margin-bottom:22px;
-}
-
-.section-title{
-    font-size:17px;
-    font-weight:800;
-}
-
-.section-subtitle{
-    color:var(--muted);
-    font-size:13px;
-    margin-top:5px;
-}
-
-.ai-input-row{
-    display:flex;
-    gap:10px;
-    margin-top:18px;
-}
-
-.ai-input{
-    flex:1;
-    border:1px solid var(--border);
-    border-radius:11px;
-    padding:13px 15px;
-    outline:none;
-    font-size:14px;
-}
-
-.ai-input:focus{
-    border-color:var(--accent);
-}
-
-.ai-button{
-    border:0;
-    background:var(--accent);
-    color:#111827;
-    padding:0 20px;
-    border-radius:11px;
-    font-weight:800;
-    cursor:pointer;
-}
-
-.ai-response{
-    display:none;
-    margin-top:14px;
-    padding:14px;
-    border-radius:11px;
-    background:#f8fafc;
-    border:1px solid var(--border);
-    line-height:1.6;
-    font-size:13px;
-}
-
-
-/* ============================================================
-   MODULES
-   ============================================================ */
-
-.modules{
-    display:grid;
-    grid-template-columns:
-        repeat(5,minmax(0,1fr));
-    gap:14px;
-}
-
-.module-card{
-    background:white;
-    border:1px solid var(--border);
-    border-radius:16px;
-    padding:18px;
-    cursor:pointer;
-    transition:
-        transform .2s,
-        box-shadow .2s,
-        border-color .2s;
-}
-
-.module-card:hover{
-    transform:translateY(-2px);
-    box-shadow:0 10px 25px rgba(15,23,42,.08);
-    border-color:#cbd5e1;
-}
-
-.module-icon{
-    font-size:26px;
-}
-
-.module-number{
-    color:var(--muted);
-    font-size:11px;
-    margin-top:14px;
-}
-
-.module-name{
-    font-weight:750;
-    font-size:14px;
-    margin-top:5px;
-    line-height:1.35;
-}
-
-
-/* ============================================================
-   MOBILE OVERLAY
-   ============================================================ */
-
-.overlay{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.45);
-    z-index:999;
-}
-
-
-/* ============================================================
-   RESPONSIVE TABLET
-   ============================================================ */
-
-@media(max-width:1200px){
-
-    .modules{
-        grid-template-columns:
-            repeat(3,minmax(0,1fr));
+    return {
+        "company": profile,
+        "stats": stats,
+        "modules": MODULES,
+        "generated_at": datetime.utcnow().isoformat() + "Z"
     }
-
-    .stats{
-        grid-template-columns:
-            repeat(2,minmax(0,1fr));
-    }
-
-}
-
-
-/* ============================================================
-   RESPONSIVE MOBILE
-   ============================================================ */
-
-@media(max-width:768px){
-
-    .sidebar{
-        transform:translateX(-100%);
-        width:280px;
-    }
-
-    .sidebar.open{
-        transform:translateX(0);
-    }
-
-    .overlay.show{
-        display:block;
-    }
-
-    .main{
-        margin-left:0;
-        width:100%;
-    }
-
-    .topbar{
-        padding:0 15px;
-        height:64px;
-    }
-
-    .mobile-menu{
-        display:block;
-    }
-
-    .topbar-title{
-        font-size:16px;
-        margin-right:auto;
-        margin-left:10px;
-    }
-
-    .ceo-avatar{
-        display:none;
-    }
-
-    .content{
-        padding:15px;
-    }
-
-    .welcome{
-        padding:22px;
-        border-radius:16px;
-    }
-
-    .welcome h1{
-        font-size:23px;
-    }
-
-    .stats{
-        grid-template-columns:
-            repeat(2,minmax(0,1fr));
-        gap:10px;
-    }
-
-    .stat-card{
-        padding:15px;
-    }
-
-    .stat-value{
-        font-size:22px;
-    }
-
-    .ai-card{
-        padding:16px;
-    }
-
-    .ai-input-row{
-        flex-direction:column;
-    }
-
-    .ai-button{
-        height:45px;
-    }
-
-    .modules{
-        grid-template-columns:
-            repeat(2,minmax(0,1fr));
-        gap:10px;
-    }
-
-    .module-card{
-        padding:14px;
-    }
-
-}
-
-
-/* ============================================================
-   SMALL PHONES
-   ============================================================ */
-
-@media(max-width:420px){
-
-    .stats{
-        grid-template-columns:1fr 1fr;
-    }
-
-    .module-name{
-        font-size:13px;
-    }
-
-    .welcome p{
-        font-size:13px;
-    }
-
-    .language-btn{
-        padding:7px 9px;
-    }
-
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-<div class="app">
-
-    <div class="overlay"
-         id="overlay"
-         onclick="closeSidebar()">
-    </div>
-
-
-    <!-- SIDEBAR -->
-
-    <aside class="sidebar" id="sidebar">
-
-        <div class="brand">
-
-            <div class="brand-name">
-                TASSIMO BTP
-            </div>
-
-            <div class="brand-subtitle">
-                CONSTRUCTION SARL
-            </div>
-
-        </div>
-
-
-        <div class="ceo-box">
-
-            <div class="ceo-label"
-                 data-en="CEO / PDG"
-                 data-fr="DG / PDG">
-                CEO / PDG
-            </div>
-
-            <div class="ceo-name">
-                TAGNE Simo Innocant
-            </div>
-
-        </div>
-
-
-        <nav class="navigation">
-
-            <div class="nav-section"
-                 data-en="Main"
-                 data-fr="Principal">
-                Main
-            </div>
-
-
-            {% for module in modules %}
-
-            <button
-                class="nav-item {% if module.id == 1 %}active{% endif %}"
-                onclick="selectModule({{ module.id }})">
-
-                <span class="nav-icon">
-                    {{ module.icon }}
-                </span>
-
-                <span
-                    data-en="{{ module.en }}"
-                    data-fr="{{ module.fr }}">
-                    {{ module.en }}
-                </span>
-
-            </button>
-
-            {% endfor %}
-
-        </nav>
-
-    </aside>
-
-
-    <!-- MAIN -->
-
-    <main class="main">
-
-
-        <!-- TOPBAR -->
-
-        <header class="topbar">
-
-            <button
-                class="mobile-menu"
-                onclick="openSidebar()">
-                ☰
-            </button>
-
-            <div class="topbar-title"
-                 id="pageTitle">
-                AI Business Manager
-            </div>
-
-
-            <div class="topbar-right">
-
-                <button
-                    class="language-btn"
-                    onclick="toggleLanguage()"
-                    id="languageButton">
-                    FR
-                </button>
-
-                <div class="ceo-avatar">
-                    TS
-                </div>
-
-            </div>
-
-        </header>
-
-
-        <!-- CONTENT -->
-
-        <section class="content">
-
-
-            <!-- WELCOME -->
-
-            <div class="welcome">
-
-                <div class="welcome-label"
-                     data-en="TASSIMO AI BUSINESS PLATFORM"
-                     data-fr="PLATEFORME DE GESTION IA TASSIMO">
-                    TASSIMO AI BUSINESS PLATFORM
-                </div>
-
-                <h1
-                    data-en="Welcome, CEO"
-                    data-fr="Bienvenue, PDG">
-                    Welcome, CEO
-                </h1>
-
-                <p
-                    data-en="Your central business command center for construction, customers, marketing, finance, projects and professional training."
-                    data-fr="Votre centre de contrôle central pour la construction, les clients, le marketing, les finances, les projets et la formation professionnelle.">
-                    Your central business command center for construction,
-                    customers, marketing, finance, projects and professional training.
-                </p>
-
-            </div>
-
-
-            <!-- STATS -->
-
-            <div class="stats">
-
-
-                <div class="stat-card">
-
-                    <div class="stat-top">
-
-                        <div>
-                            <div class="stat-label"
-                                 data-en="CUSTOMERS"
-                                 data-fr="CLIENTS">
-                                CUSTOMERS
-                            </div>
-
-                            <div class="stat-value">
-                                0
-                            </div>
-                        </div>
-
-                        <div class="stat-icon">
-                            👥
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-top">
-
-                        <div>
-                            <div class="stat-label"
-                                 data-en="PROJECTS"
-                                 data-fr="PROJETS">
-                                PROJECTS
-                            </div>
-
-                            <div class="stat-value">
-                                0
-                            </div>
-                        </div>
-
-                        <div class="stat-icon">
-                            🏗️
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-top">
-
-                        <div>
-                            <div class="stat-label"
-                                 data-en="REVENUE"
-                                 data-fr="REVENUS">
-                                REVENUE
-                            </div>
-
-                            <div class="stat-value">
-                                0 FCFA
-                            </div>
-                        </div>
-
-                        <div class="stat-icon">
-                            💰
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-top">
-
-                        <div>
-                            <div class="stat-label"
-                                 data-en="AI STATUS"
-                                 data-fr="ÉTAT DE L'IA">
-                                AI STATUS
-                            </div>
-
-                            <div class="stat-value"
-                                 style="color:#16a34a;font-size:18px;"
-                                 data-en="Ready"
-                                 data-fr="Prête">
-                                Ready
-                            </div>
-                        </div>
-
-                        <div class="stat-icon">
-                            🤖
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- AI COMMAND CENTER -->
-
-            <div class="ai-card">
-
-                <div class="section-title"
-                     data-en="AI Business Command Center"
-                     data-fr="Centre de commande IA">
-                    AI Business Command Center
-                </div>
-
-                <div class="section-subtitle"
-                     data-en="Give the TASSIMO AI assistant a business command."
-                     data-fr="Donnez une commande commerciale à l'assistant IA TASSIMO.">
-                    Give the TASSIMO AI assistant a business command.
-                </div>
-
-
-                <div class="ai-input-row">
-
-                    <input
-                        id="aiCommand"
-                        class="ai-input"
-                        type="text"
-                        placeholder="Example: Prepare today's business report"
-                        data-placeholder-en="Example: Prepare today's business report"
-                        data-placeholder-fr="Exemple : Prépare le rapport commercial d'aujourd'hui">
-
-                    <button
-                        class="ai-button"
-                        onclick="runAI()"
-                        data-en="Ask AI"
-                        data-fr="Demander à l'IA">
-                        Ask AI
-                    </button>
-
-                </div>
-
-
-                <div
-                    id="aiResponse"
-                    class="ai-response">
-                </div>
-
-            </div>
-
-
-            <!-- MODULES -->
-
-            <div class="ai-card">
-
-                <div class="section-title"
-                     data-en="Business Modules"
-                     data-fr="Modules de l'entreprise">
-                    Business Modules
-                </div>
-
-                <div class="section-subtitle"
-                     data-en="Your complete TASSIMO business system."
-                     data-fr="Votre système complet de gestion TASSIMO.">
-                    Your complete TASSIMO business system.
-                </div>
-
-            </div>
-
-
-            <div class="modules">
-
-                {% for module in modules %}
-
-                <div
-                    class="module-card"
-                    onclick="selectModule({{ module.id }})">
-
-                    <div class="module-icon">
-                        {{ module.icon }}
-                    </div>
-
-                    <div class="module-number">
-                        MODULE {{ module.id }}
-                    </div>
-
-                    <div
-                        class="module-name"
-                        data-en="{{ module.en }}"
-                        data-fr="{{ module.fr }}">
-                        {{ module.en }}
-                    </div>
-
-                </div>
-
-                {% endfor %}
-
-            </div>
-
-
-        </section>
-
-    </main>
-
-</div>
-
-
-<script>
-
-let currentLanguage = "en";
-
-
-const moduleNames = {
-{% for module in modules %}
-    {{ module.id }}: {
-        en: "{{ module.en }}",
-        fr: "{{ module.fr }}"
-    }{% if not loop.last %},{% endif %}
-{% endfor %}
-};
-
-
-function openSidebar(){
-
-    document
-        .getElementById("sidebar")
-        .classList.add("open");
-
-    document
-        .getElementById("overlay")
-        .classList.add("show");
-}
-
-
-function closeSidebar(){
-
-    document
-        .getElementById("sidebar")
-        .classList.remove("open");
-
-    document
-        .getElementById("overlay")
-        .classList.remove("show");
-}
-
-
-function selectModule(moduleId){
-
-    const module = moduleNames[moduleId];
-
-    document
-        .getElementById("pageTitle")
-        .textContent =
-        module[currentLanguage];
-
-    closeSidebar();
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach((item, index) => {
-
-            item.classList.toggle(
-                "active",
-                index === moduleId - 1
-            );
-
-        });
-
-    if(moduleId !== 1){
-
-        const response =
-            document.getElementById("aiResponse");
-
-        response.style.display = "block";
-
-        response.textContent =
-            currentLanguage === "en"
-            ? module.en + " is part of the TASSIMO platform and will be activated during its development phase."
-            : module.fr + " fait partie de la plateforme TASSIMO et sera activé pendant sa phase de développement.";
-
-    }
-
-}
-
-
-function toggleLanguage(){
-
-    currentLanguage =
-        currentLanguage === "en"
-        ? "fr"
-        : "en";
-
-    updateLanguage();
-
-}
-
-
-function updateLanguage(){
-
-    document
-        .querySelectorAll("[data-en]")
-        .forEach(element => {
-
-            element.textContent =
-                element.getAttribute(
-                    "data-" + currentLanguage
-                );
-
-        });
-
-
-    const input =
-        document.getElementById("aiCommand");
-
-    input.placeholder =
-        input.getAttribute(
-            "data-placeholder-" + currentLanguage
-        );
-
-
-    document
-        .getElementById("languageButton")
-        .textContent =
-        currentLanguage === "en"
-        ? "FR"
-        : "EN";
-
-
-    const active =
-        document.querySelector(
-            ".nav-item.active"
-        );
-
-    if(active){
-
-        const index =
-            Array.from(
-                document.querySelectorAll(
-                    ".nav-item"
-                )
-            ).indexOf(active);
-
-        if(index >= 0){
-
-            document.getElementById(
-                "pageTitle"
-            ).textContent =
-                moduleNames[index + 1][
-                    currentLanguage
-                ];
-
-        }
-
-    }
-
-}
-
-
-async function runAI(){
-
-    const input =
-        document.getElementById("aiCommand");
-
-    const response =
-        document.getElementById("aiResponse");
-
-    const command =
-        input.value.trim();
-
-    if(!command){
-
-        response.style.display = "block";
-
-        response.textContent =
-            currentLanguage === "en"
-            ? "Please enter a command."
-            : "Veuillez saisir une commande.";
-
-        return;
-    }
-
-
-    response.style.display = "block";
-
-    response.textContent =
-        currentLanguage === "en"
-        ? "TASSIMO AI is processing your command..."
-        : "L'IA TASSIMO traite votre commande...";
-
-
-    try{
-
-        const result =
-            await fetch("/api/ai", {
-
-                method:"POST",
-
-                headers:{
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body:JSON.stringify({
-                    command:command,
-                    language:currentLanguage
-                })
-
-            });
-
-
-        const data =
-            await result.json();
-
-
-        response.textContent =
-            data.reply ||
-            (
-                currentLanguage === "en"
-                ? "The AI command has been received."
-                : "La commande IA a été reçue."
-            );
-
-    }
-    catch(error){
-
-        response.textContent =
-            currentLanguage === "en"
-            ? "The command was received, but the AI service is not connected yet."
-            : "La commande a été reçue, mais le service IA n'est pas encore connecté.";
-
-    }
-
-}
-
-
-document
-    .getElementById("aiCommand")
-    .addEventListener(
-        "keydown",
-        function(event){
-
-            if(event.key === "Enter"){
-                runAI();
-            }
-
-        }
-    );
-
-</script>
-
-</body>
-</html>
-"""
 
 
 # ============================================================
-# ROUTES
+# DASHBOARD PAGE
 # ============================================================
 
 @app.route("/")
-def home():
+def dashboard():
+
+    data = get_dashboard_data()
 
     return render_template_string(
         DASHBOARD_HTML,
-        modules=MODULES
+        company=data["company"],
+        stats=data["stats"],
+        modules=data["modules"]
     )
 
 
-@app.route("/api/status")
-def status():
+# ============================================================
+# API: SYSTEM STATUS
+# ============================================================
+
+@app.route("/api/status", methods=["GET"])
+def api_status():
+
+    stats = db.get_dashboard_stats()
 
     return jsonify({
         "success": True,
-        "platform": "TASSIMO BTP CONSTRUCTION SARL",
+        "application": "TASSIMO BTP CONSTRUCTION SARL",
         "status": "online",
-        "module": 1,
-        "module_name": "AI Business Manager & Foundation",
-        "language_support": ["English", "French"],
-        "timestamp": datetime.utcnow().isoformat()
+        "database_connected": stats.get(
+            "database_connected",
+            False
+        ),
+        "timestamp": datetime.utcnow().isoformat() + "Z"
     })
 
 
-@app.route("/api/company")
-def company():
+# ============================================================
+# API: COMPANY
+# ============================================================
+
+@app.route("/api/company", methods=["GET"])
+def api_company():
+
+    profile = db.get_company_profile()
+
+    if not profile:
+        profile = COMPANY
 
     return jsonify({
         "success": True,
-        "company": COMPANY
+        "company": profile
     })
 
 
-@app.route("/api/modules")
-def modules():
+# ============================================================
+# API: MODULES
+# ============================================================
+
+@app.route("/api/modules", methods=["GET"])
+def api_modules():
 
     return jsonify({
         "success": True,
@@ -1334,8 +192,94 @@ def modules():
     })
 
 
+# ============================================================
+# API: DASHBOARD STATISTICS
+# ============================================================
+
+@app.route("/api/dashboard", methods=["GET"])
+def api_dashboard():
+
+    data = get_dashboard_data()
+
+    return jsonify({
+        "success": True,
+        "company": data["company"],
+        "stats": data["stats"],
+        "modules": data["modules"],
+        "generated_at": data["generated_at"]
+    })
+
+
+# ============================================================
+# API: CUSTOMERS
+# ============================================================
+
+@app.route("/api/customers", methods=["GET"])
+def api_customers():
+
+    customers = db.get_customers(limit=100)
+
+    return jsonify({
+        "success": True,
+        "count": len(customers),
+        "customers": customers
+    })
+
+
+# ============================================================
+# API: PROJECTS
+# ============================================================
+
+@app.route("/api/projects", methods=["GET"])
+def api_projects():
+
+    projects = db.get_projects(limit=100)
+
+    return jsonify({
+        "success": True,
+        "count": len(projects),
+        "projects": projects
+    })
+
+
+# ============================================================
+# API: PAYMENTS
+# ============================================================
+
+@app.route("/api/payments", methods=["GET"])
+def api_payments():
+
+    payments = db.get_payments(limit=100)
+
+    return jsonify({
+        "success": True,
+        "count": len(payments),
+        "payments": payments
+    })
+
+
+# ============================================================
+# API: COURSES
+# ============================================================
+
+@app.route("/api/courses", methods=["GET"])
+def api_courses():
+
+    courses = db.get_courses(limit=100)
+
+    return jsonify({
+        "success": True,
+        "count": len(courses),
+        "courses": courses
+    })
+
+
+# ============================================================
+# API: AI COMMAND FOUNDATION
+# ============================================================
+
 @app.route("/api/ai", methods=["POST"])
-def ai_command():
+def api_ai():
 
     data = request.get_json(silent=True) or {}
 
@@ -1349,62 +293,962 @@ def ai_command():
 
     if not command:
 
+        message = (
+            "Please enter a command."
+            if language != "fr"
+            else
+            "Veuillez entrer une commande."
+        )
+
         return jsonify({
             "success": False,
-            "reply": (
-                "Please enter a business command."
-                if language != "fr"
-                else
-                "Veuillez saisir une commande commerciale."
-            )
+            "message": message
         }), 400
 
-
-    # --------------------------------------------------------
-    # OpenAI connection will be activated in the AI layer.
-    # --------------------------------------------------------
-
-    openai_key_exists = bool(
+    openai_configured = bool(
         os.getenv("OPENAI_API_KEY")
     )
 
+    if language == "fr":
 
-    if not openai_key_exists:
-
-        reply = (
-            "Your command has been received by the "
-            "TASSIMO AI Business Manager. The OpenAI "
-            "intelligence connection will be activated "
-            "during the AI integration stage."
-            if language != "fr"
-            else
-            "Votre commande a été reçue par le "
-            "Gestionnaire IA TASSIMO. La connexion "
-            "à l'intelligence OpenAI sera activée "
-            "pendant l'étape d'intégration de l'IA."
+        response_text = (
+            "Commande reçue. Le moteur IA central de "
+            "TASSIMO BTP est en cours de connexion. "
+            "L'intégration complète permettra à l'IA de "
+            "coordonner les différents modules."
         )
 
-        return jsonify({
-            "success": True,
-            "ai_connected": False,
-            "reply": reply
-        })
+    else:
 
+        response_text = (
+            "Command received. The central TASSIMO BTP AI "
+            "engine is being connected. The complete "
+            "integration will allow AI to coordinate the "
+            "different platform modules."
+        )
 
     return jsonify({
         "success": True,
-        "ai_connected": True,
-        "reply": (
-            "AI connection detected. Full business intelligence "
-            "processing will be activated as we complete the "
-            "AI Business Manager module."
-            if language != "fr"
-            else
-            "Connexion IA détectée. Le traitement complet de "
-            "l'intelligence commerciale sera activé au fur et "
-            "à mesure de la finalisation du module Gestionnaire IA."
-        )
+        "command": command,
+        "language": language,
+        "openai_configured": openai_configured,
+        "response": response_text
     })
+
+
+# ============================================================
+# DASHBOARD HTML
+# ============================================================
+
+DASHBOARD_HTML = r"""
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+TASSIMO BTP CONSTRUCTION SARL
+</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#1f2937;
+    min-height:100vh;
+}
+
+/* =========================================================
+   LAYOUT
+========================================================= */
+
+.app{
+    display:flex;
+    min-height:100vh;
+}
+
+.sidebar{
+    width:260px;
+    background:#111827;
+    color:white;
+    position:fixed;
+    top:0;
+    left:0;
+    bottom:0;
+    padding:20px 15px;
+    z-index:1000;
+    overflow-y:auto;
+}
+
+.main{
+    margin-left:260px;
+    width:calc(100% - 260px);
+    min-height:100vh;
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.brand{
+    padding:10px;
+    margin-bottom:25px;
+}
+
+.brand h2{
+    font-size:18px;
+    line-height:1.4;
+}
+
+.brand p{
+    font-size:12px;
+    color:#9ca3af;
+    margin-top:5px;
+}
+
+.nav{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.nav button{
+    border:none;
+    background:transparent;
+    color:#d1d5db;
+    text-align:left;
+    padding:12px;
+    border-radius:9px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.nav button:hover{
+    background:#1f2937;
+    color:white;
+}
+
+.nav button.active{
+    background:#2563eb;
+    color:white;
+}
+
+/* =========================================================
+   MOBILE HEADER
+========================================================= */
+
+.mobile-header{
+    display:none;
+    height:65px;
+    background:white;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 15px;
+    border-bottom:1px solid #e5e7eb;
+    position:sticky;
+    top:0;
+    z-index:900;
+}
+
+.menu-btn{
+    border:none;
+    background:#111827;
+    color:white;
+    width:42px;
+    height:42px;
+    border-radius:8px;
+    font-size:20px;
+    cursor:pointer;
+}
+
+.overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    z-index:950;
+}
+
+/* =========================================================
+   CONTENT
+========================================================= */
+
+.content{
+    padding:25px;
+}
+
+.topbar{
+    background:white;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:20px;
+    border:1px solid #e5e7eb;
+}
+
+.topbar h1{
+    font-size:25px;
+    margin-bottom:7px;
+}
+
+.topbar p{
+    color:#6b7280;
+    font-size:14px;
+}
+
+.language{
+    margin-top:15px;
+    display:flex;
+    gap:8px;
+}
+
+.language button{
+    border:1px solid #d1d5db;
+    background:white;
+    padding:7px 12px;
+    border-radius:7px;
+    cursor:pointer;
+}
+
+.language button.active{
+    background:#2563eb;
+    color:white;
+    border-color:#2563eb;
+}
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.stat{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:15px;
+    padding:20px;
+}
+
+.stat .icon{
+    font-size:25px;
+    margin-bottom:10px;
+}
+
+.stat h3{
+    font-size:27px;
+    margin-bottom:5px;
+}
+
+.stat p{
+    color:#6b7280;
+    font-size:13px;
+}
+
+/* =========================================================
+   AI COMMAND
+========================================================= */
+
+.ai-box{
+    background:#111827;
+    color:white;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+.ai-box h2{
+    font-size:18px;
+    margin-bottom:7px;
+}
+
+.ai-box p{
+    color:#d1d5db;
+    font-size:13px;
+    margin-bottom:15px;
+}
+
+.ai-form{
+    display:flex;
+    gap:10px;
+}
+
+.ai-form input{
+    flex:1;
+    min-width:0;
+    padding:13px;
+    border:none;
+    border-radius:8px;
+    outline:none;
+}
+
+.ai-form button{
+    border:none;
+    background:#2563eb;
+    color:white;
+    padding:0 18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.ai-response{
+    margin-top:15px;
+    display:none;
+    background:#1f2937;
+    padding:12px;
+    border-radius:8px;
+    font-size:13px;
+}
+
+/* =========================================================
+   MODULES
+========================================================= */
+
+.section-title{
+    margin:25px 0 12px;
+    font-size:19px;
+}
+
+.modules{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.module{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:15px;
+    padding:18px;
+    transition:.2s;
+}
+
+.module:hover{
+    transform:translateY(-2px);
+    box-shadow:0 5px 18px rgba(0,0,0,.06);
+}
+
+.module-icon{
+    font-size:30px;
+    margin-bottom:12px;
+}
+
+.module h3{
+    font-size:15px;
+    margin-bottom:7px;
+}
+
+.module p{
+    font-size:12px;
+    color:#6b7280;
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer{
+    text-align:center;
+    color:#6b7280;
+    font-size:12px;
+    padding:30px 10px;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media(max-width:1000px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .modules{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:700px){
+
+    .sidebar{
+        transform:translateX(-100%);
+        transition:.25s;
+        width:270px;
+    }
+
+    .sidebar.open{
+        transform:translateX(0);
+    }
+
+    .overlay.open{
+        display:block;
+    }
+
+    .main{
+        margin-left:0;
+        width:100%;
+    }
+
+    .mobile-header{
+        display:flex;
+    }
+
+    .content{
+        padding:15px;
+    }
+
+    .topbar{
+        padding:17px;
+    }
+
+    .topbar h1{
+        font-size:21px;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+    }
+
+    .stat{
+        padding:15px;
+    }
+
+    .stat h3{
+        font-size:23px;
+    }
+
+    .modules{
+        grid-template-columns:1fr;
+    }
+
+    .ai-form{
+        flex-direction:column;
+    }
+
+    .ai-form button{
+        padding:12px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- ======================================================
+     SIDEBAR
+====================================================== -->
+
+<aside class="sidebar" id="sidebar">
+
+    <div class="brand">
+
+        <h2>
+            TASSIMO BTP
+        </h2>
+
+        <p>
+            CONSTRUCTION SARL
+        </p>
+
+    </div>
+
+    <nav class="nav">
+
+        <button class="active">
+            🏠 Dashboard
+        </button>
+
+        <button>
+            🤖 AI Manager
+        </button>
+
+        <button>
+            📣 Marketing
+        </button>
+
+        <button>
+            👥 Customers / CRM
+        </button>
+
+        <button>
+            🏗️ Construction
+        </button>
+
+        <button>
+            📋 Projects
+        </button>
+
+        <button>
+            💰 Finance
+        </button>
+
+        <button>
+            🎓 Training
+        </button>
+
+        <button>
+            🛒 Digital Store
+        </button>
+
+        <button>
+            📊 Analytics
+        </button>
+
+        <button>
+            ⚙️ Administration
+        </button>
+
+    </nav>
+
+</aside>
+
+<div
+    class="overlay"
+    id="overlay"
+    onclick="closeMenu()">
+</div>
+
+<!-- ======================================================
+     MAIN
+====================================================== -->
+
+<main class="main">
+
+    <header class="mobile-header">
+
+        <button
+            class="menu-btn"
+            onclick="openMenu()">
+            ☰
+        </button>
+
+        <strong>
+            TASSIMO BTP
+        </strong>
+
+        <span>
+            🏗️
+        </span>
+
+    </header>
+
+    <div class="content">
+
+        <!-- COMPANY -->
+
+        <section class="topbar">
+
+            <h1 id="companyName">
+                {{ company.get("name", "TASSIMO BTP CONSTRUCTION SARL") }}
+            </h1>
+
+            <p>
+                CEO:
+                {{ company.get("ceo", "TAGNE Simo Innocant") }}
+            </p>
+
+            <p>
+                {{ company.get("location", "Douala – Logpom, Cameroon") }}
+            </p>
+
+            <p>
+                {{ company.get("slogan", "Together, let us build excellence.") }}
+            </p>
+
+            <div class="language">
+
+                <button
+                    id="enBtn"
+                    class="active"
+                    onclick="setLanguage('en')">
+                    English
+                </button>
+
+                <button
+                    id="frBtn"
+                    onclick="setLanguage('fr')">
+                    Français
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- STATISTICS -->
+
+        <section class="stats">
+
+            <div class="stat">
+
+                <div class="icon">
+                    👥
+                </div>
+
+                <h3>
+                    {{ stats.get("customers", 0) }}
+                </h3>
+
+                <p
+                    data-en="Customers & Prospects"
+                    data-fr="Clients & Prospects">
+                    Customers & Prospects
+                </p>
+
+            </div>
+
+            <div class="stat">
+
+                <div class="icon">
+                    🏗️
+                </div>
+
+                <h3>
+                    {{ stats.get("projects", 0) }}
+                </h3>
+
+                <p
+                    data-en="Construction Projects"
+                    data-fr="Projets de construction">
+                    Construction Projects
+                </p>
+
+            </div>
+
+            <div class="stat">
+
+                <div class="icon">
+                    💳
+                </div>
+
+                <h3>
+                    {{ stats.get("payments", 0) }}
+                </h3>
+
+                <p
+                    data-en="Payments"
+                    data-fr="Paiements">
+                    Payments
+                </p>
+
+            </div>
+
+            <div class="stat">
+
+                <div class="icon">
+                    🎓
+                </div>
+
+                <h3>
+                    {{ stats.get("courses", 0) }}
+                </h3>
+
+                <p
+                    data-en="Training Courses"
+                    data-fr="Formations">
+                    Training Courses
+                </p>
+
+            </div>
+
+        </section>
+
+        <!-- AI -->
+
+        <section class="ai-box">
+
+            <h2
+                data-en="🤖 TASSIMO AI Business Manager"
+                data-fr="🤖 Gestionnaire IA TASSIMO">
+                🤖 TASSIMO AI Business Manager
+            </h2>
+
+            <p
+                data-en="Give the AI a business command."
+                data-fr="Donnez une commande commerciale à l'IA.">
+                Give the AI a business command.
+            </p>
+
+            <div class="ai-form">
+
+                <input
+                    id="aiCommand"
+                    type="text"
+                    placeholder="Example: Show today's business report."
+                >
+
+                <button
+                    onclick="sendAICommand()"
+                    data-en="Send"
+                    data-fr="Envoyer">
+                    Send
+                </button>
+
+            </div>
+
+            <div
+                class="ai-response"
+                id="aiResponse">
+            </div>
+
+        </section>
+
+        <!-- MODULES -->
+
+        <h2
+            class="section-title"
+            data-en="Platform Modules"
+            data-fr="Modules de la plateforme">
+            Platform Modules
+        </h2>
+
+        <section class="modules">
+
+            {% for module in modules %}
+
+            <div class="module">
+
+                <div class="module-icon">
+                    {{ module.icon }}
+                </div>
+
+                <h3 class="module-name">
+                    {{ module.name_en }}
+                </h3>
+
+                <p
+                    class="module-description"
+                    data-en="{{ module.name_en }}"
+                    data-fr="{{ module.name_fr }}">
+                    {{ module.name_en }}
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        </section>
+
+        <div class="footer">
+
+            TASSIMO BTP CONSTRUCTION SARL © 2026
+
+        </div>
+
+    </div>
+
+</main>
+
+</div>
+
+<script>
+
+let currentLanguage = "en";
+
+
+/* =========================================================
+   MOBILE MENU
+========================================================= */
+
+function openMenu(){
+
+    document
+        .getElementById("sidebar")
+        .classList
+        .add("open");
+
+    document
+        .getElementById("overlay")
+        .classList
+        .add("open");
+}
+
+
+function closeMenu(){
+
+    document
+        .getElementById("sidebar")
+        .classList
+        .remove("open");
+
+    document
+        .getElementById("overlay")
+        .classList
+        .remove("open");
+}
+
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+function setLanguage(language){
+
+    currentLanguage = language;
+
+    document
+        .getElementById("enBtn")
+        .classList
+        .toggle("active", language === "en");
+
+    document
+        .getElementById("frBtn")
+        .classList
+        .toggle("active", language === "fr");
+
+
+    document
+        .querySelectorAll("[data-en]")
+        .forEach(element => {
+
+            element.textContent =
+                element.getAttribute(
+                    language === "fr"
+                    ? "data-fr"
+                    : "data-en"
+                );
+
+        });
+
+
+    const input =
+        document.getElementById("aiCommand");
+
+    if(language === "fr"){
+
+        input.placeholder =
+            "Exemple : Affiche le rapport commercial d'aujourd'hui.";
+
+    }else{
+
+        input.placeholder =
+            "Example: Show today's business report.";
+
+    }
+
+}
+
+
+/* =========================================================
+   AI COMMAND
+========================================================= */
+
+async function sendAICommand(){
+
+    const input =
+        document.getElementById("aiCommand");
+
+    const responseBox =
+        document.getElementById("aiResponse");
+
+    const command =
+        input.value.trim();
+
+
+    if(!command){
+
+        responseBox.style.display = "block";
+
+        responseBox.textContent =
+            currentLanguage === "fr"
+            ? "Veuillez entrer une commande."
+            : "Please enter a command.";
+
+        return;
+    }
+
+
+    responseBox.style.display = "block";
+
+    responseBox.textContent =
+        currentLanguage === "fr"
+        ? "Traitement..."
+        : "Processing...";
+
+
+    try{
+
+        const response =
+            await fetch("/api/ai", {
+
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:JSON.stringify({
+
+                    command:command,
+
+                    language:currentLanguage
+
+                })
+
+            });
+
+
+        const data =
+            await response.json();
+
+
+        responseBox.textContent =
+            data.response ||
+            data.message ||
+            (
+                currentLanguage === "fr"
+                ? "Aucune réponse."
+                : "No response."
+            );
+
+
+    }catch(error){
+
+        responseBox.textContent =
+            currentLanguage === "fr"
+            ? "Une erreur est survenue."
+            : "An error occurred.";
+
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>
+"""
 
 
 # ============================================================
@@ -1414,13 +1258,14 @@ def ai_command():
 if __name__ == "__main__":
 
     port = int(
-        os.environ.get(
+        os.getenv(
             "PORT",
-            5000
+            "5000"
         )
     )
 
     app.run(
         host="0.0.0.0",
-        port=port
+        port=port,
+        debug=False
     )
