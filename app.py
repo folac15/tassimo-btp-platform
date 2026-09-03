@@ -1663,7 +1663,6 @@ def call_openrouter(
 
     return None, last_error
 
-
 # =========================================================
 # AI ASSISTANT
 # =========================================================
@@ -1737,9 +1736,11 @@ def ai_reply():
                 "user",
                 "assistant"
             ):
+
                 continue
 
             if content is None:
+
                 continue
 
             content = str(
@@ -1747,6 +1748,7 @@ def ai_reply():
             ).strip()
 
             if not content:
+
                 continue
 
             messages.append({
@@ -1783,7 +1785,8 @@ def ai_reply():
         )
 
         return jsonify({
-            "success": False,
+            "success":
+                False,
             "answer":
                 "NexaFlow AI is temporarily unable to respond. "
                 "Please try again in a moment.",
@@ -1805,7 +1808,6 @@ def ai_reply():
         "conversation_saved":
             saved
     })
-
 
 # =========================================================
 # CUSTOMERS - GET
