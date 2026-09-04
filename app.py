@@ -47,6 +47,19 @@ WHATSAPP_VERIFY_TOKEN = os.environ.get("WHATSAPP_VERIFY_TOKEN", "")
 WHATSAPP_ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN", "")
 WHATSAPP_PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "")
 WHATSAPP_BUSINESS_ACCOUNT_ID = os.environ.get("WHATSAPP_BUSINESS_ACCOUNT_ID", "")
+META_GRAPH_VERSION = os.environ.get("META_GRAPH_VERSION", "v20.0")
+INSTAGRAM_VERIFY_TOKEN = os.environ.get("INSTAGRAM_VERIFY_TOKEN", "")
+INSTAGRAM_ACCESS_TOKEN = os.environ.get("INSTAGRAM_ACCESS_TOKEN", "")
+INSTAGRAM_BUSINESS_ACCOUNT_ID = os.environ.get("INSTAGRAM_BUSINESS_ACCOUNT_ID", "")
+TIKTOK_ACCESS_TOKEN = os.environ.get("TIKTOK_ACCESS_TOKEN", "")
+TIKTOK_CLIENT_KEY = os.environ.get("TIKTOK_CLIENT_KEY", "")
+LINKEDIN_ACCESS_TOKEN = os.environ.get("LINKEDIN_ACCESS_TOKEN", "")
+LINKEDIN_ORGANIZATION_ID = os.environ.get("LINKEDIN_ORGANIZATION_ID", "")
+YOUTUBE_ACCESS_TOKEN = os.environ.get("YOUTUBE_ACCESS_TOKEN", "")
+YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY", "")
+YOUTUBE_CHANNEL_ID = os.environ.get("YOUTUBE_CHANNEL_ID", "")
+AI_AUTO_PUBLISH = os.environ.get("AI_AUTO_PUBLISH", "true").lower() == "true"
+
 
 FACEBOOK_VERIFY_TOKEN = os.environ.get("FACEBOOK_VERIFY_TOKEN", "")
 FACEBOOK_PAGE_ACCESS_TOKEN = os.environ.get("FACEBOOK_PAGE_ACCESS_TOKEN", "")
@@ -1175,13 +1188,160 @@ def integrations_status():
     return jsonify({
         "supabase": supabase_configured(),
         "openrouter": bool(OPENROUTER_API_KEY),
-        "whatsapp": bool(
-            WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID
-        ),
+        "whatsapp": bool(WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID),
         "facebook": bool(FACEBOOK_PAGE_ACCESS_TOKEN),
+        "instagram": bool(INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_BUSINESS_ACCOUNT_ID),
+        "tiktok": bool(TIKTOK_ACCESS_TOKEN),
+        "linkedin": bool(LINKEDIN_ACCESS_TOKEN and LINKEDIN_ORGANIZATION_ID),
+        "youtube": bool(YOUTUBE_ACCESS_TOKEN or YOUTUBE_API_KEY),
+        "ai_auto_publish": AI_AUTO_PUBLISH,
         "render": True,
         "github": True,
     })
+
+
+# ------------------------------------------------------------
+# Unified multi-channel messaging + AI publishing intelligence
+# ------------------------------------------------------------
+
+SOCIAL_CHANNELS = ["whatsapp", "facebook", "instagram", "tiktok", "linkedin", "youtube"]
+
+def _post_json(url, headers=None, payload=None, timeout=30):
+    try:
+        r = requests.post(url, headers=headers or {}, json=payload or {}, timeout=timeout)
+        try:
+            data = r.json()
+        except Exception:
+            data = {"raw": r.text}
+        return {"ok": r.status_code < 400, "status": r.status_code, "data": data}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+def social_send(channel, recipient, text, metadata=None):
+    metadata = metadata or {}
+    if channel == "whatsapp":
+        return whatsapp_send(recipient, text)
+    if channel == "facebook" and FACEBOOK_PAGE_ACCESS_TOKEN:
+        url = f"https://graph.facebook.com/{META_GRAPH_VERSION}/me/messages"
+        return _post_json(url, {"Authorization": f"Bearer {FACEBOOK_PAGE_ACCESS_TOKEN}", "Content-Type": "application/json"}, {"recipient": {"id": recipient}, "message": {"text": text}})
+    if channel == "instagram" and INSTAGRAM_ACCESS_TOKEN:
+        url = f"https://graph.facebook.com/{META_GRAPH_VERSION}/{INSTAGRAM_BUSINESS_ACCOUNT_ID}/messages"
+        return _post_json(url, {"Authorization": f"Bearer {INSTAGRAM_ACCESS_TOKEN}", "Content-Type": "application/json"}, {"recipient": {"id": recipient}, "message": {"text": text}})
+    return {"ok": False, "error": f"{channel} outbound API is not configured or approved."}
+
+def ai_content_strategy(channel, objective="engagement", audience="potential construction and renovation customers"):
+    prompt = (
+        f"Create a social media content strategy for TASSIMO BTP CONSTRUCTION SARL on {channel}. "
+        f"Objective: {objective}. Target audience: {audience}. "
+        "Use Cameroon context. Recommend hook, format, CTA, topic, posting angle and measurable KPI. "
+        "Use previous performance data when supplied; do not invent performance numbers."
+    )
+    return ai_answer(prompt, context={"channel": channel, "objective": objective, "audience": audience})
+
+def save_social_post(channel, text, media_url="", status="draft", target_audience="", campaign=""):
+    return sb_insert("social_posts", {
+        "channel": channel, "content": text, "media_url": media_url, "status": status,
+        "target_audience": target_audience, "campaign": campaign, "ai_generated": True,
+        "created_at": utc_now(), "updated_at": utc_now()
+    })
+
+def save_social_metrics(channel, post_id, metrics):
+    clean = {k: metrics.get(k, 0) for k in (
+        "impressions", "reach", "likes", "comments", "shares", "saves",
+        "clicks", "video_views", "watch_time", "conversions", "ad_spend"
+    )}
+    impressions = float(clean.get("impressions") or 0)
+    interactions = sum(float(clean.get(k) or 0) for k in ("likes", "comments", "shares", "saves", "clicks"))
+    clean["engagement_rate"] = round((interactions / impressions) * 100, 4) if impressions else 0
+    clean.update({"channel": channel, "post_id": post_id, "measured_at": utc_now()})
+    return sb_insert("social_metrics", clean)
+
+def ai_learning_report(channel=None):
+    params = {"select": "*", "order": "measured_at.desc", "limit": "500"}
+    if channel:
+        params["channel"] = f"eq.{channel}"
+    rows = sb_select("social_metrics", params)
+    if not rows:
+        return {"channel": channel or "all", "data": [], "recommendation": "No performance data is stored yet. Start publishing and collecting metrics."}
+    summary = {}
+    for r in rows:
+        ch = r.get("channel", "unknown")
+        summary.setdefault(ch, {"posts": 0, "impressions": 0, "interactions": 0, "clicks": 0, "conversions": 0})
+        summary[ch]["posts"] += 1
+        summary[ch]["impressions"] += float(r.get("impressions") or 0)
+        summary[ch]["interactions"] += sum(float(r.get(k) or 0) for k in ("likes", "comments", "shares", "saves"))
+        summary[ch]["clicks"] += float(r.get("clicks") or 0)
+        summary[ch]["conversions"] += float(r.get("conversions") or 0)
+    return {"channel": channel or "all", "summary": summary, "recommendation": ai_answer(
+        "Analyze this social/advertising performance data and recommend what TASSIMO BTP should change in its next video, image or text post. "
+        "Identify the strongest audience signals, hooks, formats, topics, CTAs and channels. Do not invent facts. Data: " + json.dumps(summary, default=str)
+    )}
+
+@app.route("/api/messages", methods=["GET", "POST"])
+@protected
+def unified_messages_api():
+    if request.method == "GET":
+        channel = request.args.get("channel", "").strip().lower()
+        params = {"select": "*", "order": "created_at.desc", "limit": "500"}
+        if channel in SOCIAL_CHANNELS or channel == "ai":
+            params["channel"] = f"eq.{channel}"
+        return jsonify({"messages": sb_select("messages", params), "channels": SOCIAL_CHANNELS + ["ai"]})
+    data = request.get_json(silent=True) or {}
+    channel = str(data.get("channel", "")).lower().strip()
+    text = str(data.get("message", "")).strip()
+    recipient = str(data.get("recipient", "")).strip()
+    if channel not in SOCIAL_CHANNELS or not text:
+        return jsonify({"error": "Channel and message are required."}), 400
+    result = social_send(channel, recipient, text, data) if recipient else {"ok": False, "error": "Recipient is required."}
+    sb_insert("messages", {"channel": channel, "direction": "outgoing", "sender": "TASSIMO AI", "message": text, "language": detect_language(text), "created_at": utc_now()})
+    return jsonify({"sent": result.get("ok", False), "result": result})
+
+@app.route("/api/messages/ai-draft", methods=["POST"])
+@protected
+def messages_ai_draft():
+    data = request.get_json(silent=True) or {}
+    text = str(data.get("message", "")).strip()
+    channel = str(data.get("channel", "whatsapp")).lower()
+    if not text:
+        return jsonify({"error": "Message is required."}), 400
+    answer = ai_answer(text, context={"channel": channel, "customer": data.get("customer", {})})
+    return jsonify({"draft": answer, "approval_required": requires_ceo_approval(text)})
+
+@app.route("/api/social/ai-post", methods=["POST"])
+@protected
+def ai_social_post():
+    data = request.get_json(silent=True) or {}
+    channels = data.get("channels") or SOCIAL_CHANNELS
+    if isinstance(channels, str):
+        channels = [channels]
+    objective = str(data.get("objective", "engagement and qualified leads"))
+    audience = str(data.get("audience", "customers interested in construction, renovation, design and training in Cameroon"))
+    topic = str(data.get("topic", ""))
+    results = []
+    for channel in [c for c in channels if c in SOCIAL_CHANNELS]:
+        prompt = (f"Create a ready-to-publish {channel} post for TASSIMO BTP. Topic: {topic or 'a useful construction/renovation insight'}. "
+                  f"Objective: {objective}. Target audience: {audience}. "
+                  "Use the channel's appropriate style. Make it specific, credible, concise and action-oriented. "
+                  "Do not invent projects, prices or results. Return only the post copy.")
+        copy = ai_answer(prompt, context={"channel": channel, "audience": audience})
+        saved = save_social_post(channel, copy or "", status="approved_for_ai_publish", target_audience=audience)
+        results.append({"channel": channel, "copy": copy, "saved": saved})
+    return jsonify({"ai_generated": True, "auto_publish_enabled": AI_AUTO_PUBLISH, "results": results})
+
+@app.route("/api/social/learning", methods=["GET"])
+@protected
+def social_learning():
+    return jsonify(ai_learning_report(request.args.get("channel") or None))
+
+@app.route("/api/social/metrics", methods=["POST"])
+@protected
+def social_metrics():
+    data = request.get_json(silent=True) or {}
+    channel = str(data.get("channel", "")).lower()
+    if channel not in SOCIAL_CHANNELS:
+        return jsonify({"error": "Unsupported channel."}), 400
+    saved = save_social_metrics(channel, data.get("post_id", ""), data)
+    return jsonify({"saved": saved, "learning": ai_learning_report(channel)})
 
 
 # ------------------------------------------------------------
@@ -1329,7 +1489,15 @@ toast(lang==='fr'?'Client enregistré avec succès.':'Customer saved successfull
 function editCustomer(id){const c=customerRows.find(r=>String(r.id)===String(id));if(c)showCustomerForm(c)}
 async function deleteCustomer(id){if(!id)return;if(!confirm(lang==='fr'?'Supprimer ce client ?':'Delete this customer?'))return;try{await api('/api/customers?id='+encodeURIComponent(id),{method:'DELETE',body:JSON.stringify({id})});toast(lang==='fr'?'Client supprimé.':'Customer deleted.');await loadCustomers()}catch(e){toast(e.message)}}
 
-async function page_messages(){await pageTable('messages','/api/messages','messages')}
+async function page_messages(){
+content.innerHTML=`<div class="panel"><div class="actions"><h2 style="margin-right:auto">💬 ${lang==='fr'?'Centre de messagerie':'Unified Messages'}</h2><button class="btn" onclick="loadMessages()">↻ Refresh</button></div>
+<div class="actions" style="margin:15px 0">${['all','whatsapp','facebook','instagram','tiktok','linkedin','youtube','ai'].map(c=>`<button class="btn alt" onclick="loadMessages('${c}')">${c==='ai'?'🤖 TASSIMO AI':c==='all'?'🌐 All':c}</button>`).join('')}</div>
+<div class="grid"><div class="panel"><h3>🤖 AI Publishing</h3><p class="muted">AI creates the content strategy and posts across connected channels.</p><input id="postTopic" placeholder="Topic / Sujet"><input id="postAudience" placeholder="Target customers / Clients ciblés"><button class="btn" onclick="generateAIPost()">Generate AI Posts</button><pre id="postResult" style="white-space:pre-wrap"></pre></div>
+<div class="panel"><h3>📈 Ad & Content Learning</h3><p class="muted">The AI studies impressions, reach, clicks, engagement, views, comments, shares, saves and conversions to improve the next post.</p><button class="btn" onclick="loadLearning()">Analyze Performance</button><pre id="learningResult" style="white-space:pre-wrap"></pre></div></div>
+<div id="messageList" class="muted">Loading...</div></div>`;await loadMessages()}
+async function loadMessages(channel=''){const d=await api('/api/messages'+(channel&&channel!=='all'?'?channel='+encodeURIComponent(channel):''));const rows=d?.messages||[];messageList.innerHTML=rows.length?`<div style="overflow:auto"><table><thead><tr><th>Channel</th><th>Direction</th><th>Message</th><th>Language</th><th>Time</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.channel||''}</td><td>${r.direction||''}</td><td>${String(r.message||'').slice(0,180)}</td><td>${r.language||''}</td><td>${r.created_at||''}</td></tr>`).join('')}</tbody></table></div>`:'<p>No messages yet.</p>'}
+async function generateAIPost(){postResult.textContent='Generating...';try{const d=await api('/api/social/ai-post',{method:'POST',body:JSON.stringify({channels:['whatsapp','facebook','instagram','tiktok','linkedin','youtube'],topic:postTopic.value,audience:postAudience.value})});postResult.textContent=JSON.stringify(d,null,2)}catch(e){postResult.textContent=e.message}}
+async function loadLearning(){learningResult.textContent='Analyzing...';try{const d=await api('/api/social/learning');learningResult.textContent=JSON.stringify(d,null,2)}catch(e){learningResult.textContent=e.message}}
 async function page_leads(){await pageTable('leads','/api/leads','leads')}
 async function page_projects(){await pageTable('projects','/api/projects','projects')}
 async function page_inventory(){await pageTable('inventory','/api/inventory','inventory')}
