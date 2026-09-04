@@ -336,8 +336,15 @@ function setLang(x){localStorage.setItem('lang',x);location.reload()}
 paintLogin();
 document.getElementById('login').onsubmit=async e=>{
  e.preventDefault();
- const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json','X-Language':loginLang},
- body:JSON.stringify({email:email.value,password:password.value})});
+ const r=await fetch('/login',{
+ method:'POST',
+ credentials:'same-origin',
+ headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({
+  email:email.value,
+  password:password.value
+ })
+});
  const d=await r.json(); if(r.ok) location.href='/'; else error.textContent=d.error||loginI18n[loginLang].failed;
 }
 </script></main></body></html>"""
