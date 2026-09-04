@@ -17,14 +17,26 @@ import traceback
 # ============================================================
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change-this-in-render")
+
+# Stable secret key for login sessions
+app.secret_key = os.environ.get(
+    "FLASK_SECRET_KEY",
+    "change-this-in-render"
+)
+
+# Login/session configuration
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SECURE=True,
     SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_PATH="/",
     PERMANENT_SESSION_LIFETIME=timedelta(hours=12),
 )
-CORS(app, supports_credentials=True)
+
+CORS(
+    app,
+    supports_credentials=True
+)
 
 APP_NAME = "TASSIMO BTP CONSTRUCTION SARL"
 CEO_NAME = "TAGNE Simo Innocant"
