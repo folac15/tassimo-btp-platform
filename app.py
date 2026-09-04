@@ -1631,10 +1631,11 @@ async function page_admin(){content.innerHTML=`<div class="panel"><h2>${tr('admi
 openPage('dashboard');
 </script></body></html>"""
 
-
 @app.route("/")
-@protected
 def home():
+    if not session_authenticated():
+        return redirect("/login")
+
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
@@ -1642,8 +1643,10 @@ def home():
 
 
 @app.route("/index.html")
-@protected
 def index_page():
+    if not session_authenticated():
+        return redirect("/login")
+
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
