@@ -1,5 +1,5 @@
 
-from flask import Flask, jsonify, request, session, redirect, send_from_directory
+from flask import Flask, jsonify, request, session, redirect, send_from_directory, render_template
 from flask_cors import CORS
 from datetime import datetime, timezone, timedelta
 import os
@@ -1533,8 +1533,22 @@ function startBilingualObserver(){
   bilingualObserver.observe(document.body,{childList:true,subtree:true,characterData:true});
   applyBilingualText();
 }
+function openPage(p){
+  if(p==='customers'){
+    window.location.href='/customers';
+    return;
+  }
 
-function openPage(p){document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+p)?.classList.add('active');document.getElementById('pageTitle').textContent=modules.find(x=>x[0]===p)?.[lang==='fr'?3:2]||p;document.getElementById('welcome').textContent='';side.classList.remove('open');window['page_'+p]?window['page_'+p]():pageGeneric(p);setTimeout(enforceBilingualUI,80)}
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  document.getElementById('n-'+p)?.classList.add('active');
+  document.getElementById('pageTitle').textContent=modules.find(x=>x[0]===p)?.[lang==='fr'?3:2]||p;
+  document.getElementById('welcome').textContent='';
+  side.classList.remove('open');
+  window['page_'+p]?window['page_'+p]():pageGeneric(p);
+  setTimeout(enforceBilingualUI,80);
+}
+
+
 renderShellLabels();
 startBilingualObserver();
 async function page_dashboard(){
@@ -1630,7 +1644,10 @@ async function saveProfile(){const data={};['business_name','ceo_name','slogan',
 async function page_admin(){content.innerHTML=`<div class="panel"><h2>${tr('admin')}</h2><p>${tr('permissions')}</p><pre id="status"></pre></div>`;const d=await api('/api/status');status.textContent=JSON.stringify(d,null,2)}
 openPage('dashboard');
 </script></body></html>"""
-
+@app.route("/customers")
+@protected
+def customers_page():
+    return render_template("customers.html")
 @app.route("/")
 def home():
     if not session_authenticated():
