@@ -288,7 +288,7 @@ def get_authenticated_user():
 
 def login_page():
     return """<!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -309,20 +309,24 @@ font-weight:700;font-size:16px;cursor:pointer}.row{display:flex;gap:8px;margin-t
 </style></head>
 <body><main class="card">
 <div class="logo">🏗️</div><div class="center">
-<h2>TASSIMO BTP CONSTRUCTION SARL</h2><p class="muted">CEO Dashboard / Tableau de bord du CEO</p>
+<h2>TASSIMO BTP CONSTRUCTION SARL</h2><p class="muted" id="loginTitle">Tableau de bord du CEO</p>
 </div><form id="login">
-<div class="field"><label>Email / E-mail</label><input id="email" type="email" required></div>
-<div class="field"><label>Password / Mot de passe</label><input id="password" type="password" required></div>
-<button>Sign in / Se connecter</button><div id="error" class="error"></div></form>
+<div class="field"><label id="emailLabel">E-mail</label><input id="email" type="email" required></div>
+<div class="field"><label id="passwordLabel">Mot de passe</label><input id="password" type="password" required></div>
+<button id="signInBtn">Se connecter</button><div id="error" class="error"></div></form>
 <div class="row"><button class="lang" onclick="setLang('en')" type="button">English</button>
 <button class="lang" onclick="setLang('fr')" type="button">Français</button></div>
 <script>
-function setLang(x){localStorage.setItem('lang',x)}
+const loginLang=localStorage.getItem('lang')||'fr';
+const loginI18n={fr:{title:'Tableau de bord du CEO',email:'E-mail',password:'Mot de passe',sign:'Se connecter',english:'English',french:'Français',failed:'Échec de la connexion.'},en:{title:'CEO Dashboard',email:'Email',password:'Password',sign:'Sign in',english:'English',french:'Français',failed:'Login failed.'}};
+function paintLogin(){const d=loginI18n[loginLang];document.documentElement.lang=loginLang;document.getElementById('loginTitle').textContent=d.title;document.getElementById('emailLabel').textContent=d.email;document.getElementById('passwordLabel').textContent=d.password;document.getElementById('signInBtn').textContent=d.sign;}
+function setLang(x){localStorage.setItem('lang',x);location.reload()}
+paintLogin();
 document.getElementById('login').onsubmit=async e=>{
  e.preventDefault();
- const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
+ const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json','X-Language':loginLang},
  body:JSON.stringify({email:email.value,password:password.value})});
- const d=await r.json(); if(r.ok) location.href='/'; else error.textContent=d.error||'Login failed';
+ const d=await r.json(); if(r.ok) location.href='/'; else error.textContent=d.error||loginI18n[loginLang].failed;
 }
 </script></main></body></html>"""
 
@@ -397,7 +401,7 @@ DEFAULT_PROFILE = {
     "slogan": SLOGAN,
     "country": "Cameroon",
     "city": "Douala",
-    "language": "en",
+    "language": "fr",
     "services": [
         "Construction",
         "Renovation",
@@ -457,7 +461,7 @@ def settings_api():
             {"select": "*", "limit": "1"},
         )
         return jsonify(rows[0] if rows else {
-            "language": "en",
+            "language": "fr",
             "auto_reply_enabled": True,
             "ai_enabled": True,
             "approval_required_for_quotes": True,
@@ -1351,7 +1355,7 @@ def social_metrics():
 # ------------------------------------------------------------
 
 DASHBOARD_HTML = r"""<!doctype html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1383,56 +1387,146 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 .content{padding:15px}header{padding:0 15px}}@media(max-width:480px){.cards{grid-template-columns:1fr 1fr}.stat{font-size:22px}}
 </style></head>
 <body><div class="app">
-<aside class="side" id="side"><div class="brand"><b>🏗️ TASSIMO BTP</b><small>Business Operating System</small></div>
+<aside class="side" id="side"><div class="brand"><b>🏗️ TASSIMO BTP</b><small>Système de gestion d’entreprise</small></div>
 <nav class="nav" id="nav"></nav></aside>
 <section class="main"><header><button class="menu" onclick="side.classList.toggle('open')">☰</button>
-<div><b id="pageTitle">Dashboard</b><div class="muted" id="welcome"></div></div>
+<div><b id="pageTitle">Tableau de bord</b><div class="muted" id="welcome"></div></div>
 <div class="actions"><button class="btn alt" onclick="setLang('en')">EN</button><button class="btn alt" onclick="setLang('fr')">FR</button>
-<button class="btn" onclick="logout()">Logout</button></div></header><main class="content" id="content"></main></section></div>
+<button class="btn" onclick="logout()">Déconnexion</button></div></header><main class="content" id="content"></main></section></div>
 <div id="toast"></div>
 <script>
 const modules=[
-['dashboard','📊','Dashboard','Tableau de bord'],
-['customers','👥','Customers','Clients'],
-['messages','💬','Messages','Messages'],
-['leads','🎯','Leads & Sales','Prospects & Ventes'],
-['marketing','📣','Marketing','Marketing'],
-['projects','🏗️','Projects','Projets'],
-['construction','📐','Construction AI','IA Construction'],
-['inventory','📦','Inventory','Stock'],
-['finance','💰','Finance','Finances'],
-['documents','📄','Documents','Documents'],
-['training','🎓','Professional Training','Formation'],
-['digital-courses','💻','Digital Courses','Cours numériques'],
-['analytics','📈','Analytics','Analyses'],
-['reports','📋','Reports','Rapports'],
-['automation','⚙️','Automation','Automatisation'],
-['ai','🤖','AI Assistant','Assistant IA'],
-['approvals','✅','CEO Approvals','Approbations CEO'],
-['integrations','🔗','Integrations','Intégrations'],
-['settings','⚙','Settings','Paramètres'],
-['admin','🔐','Administration','Administration']
+ ['dashboard','📊','Dashboard','Tableau de bord'],['customers','👥','Customers','Clients'],['messages','💬','Messages','Messages'],
+ ['leads','🎯','Leads & Sales','Prospects & Ventes'],['marketing','📣','Marketing','Marketing'],['projects','🏗️','Projects','Projets'],
+ ['construction','📐','Construction AI','IA Construction'],['inventory','📦','Inventory','Stock'],['finance','💰','Finance','Finances'],
+ ['documents','📄','Documents','Documents'],['training','🎓','Professional Training','Formation professionnelle'],['digital-courses','💻','Digital Courses','Cours numériques'],
+ ['analytics','📈','Analytics','Analyses'],['reports','📋','Reports','Rapports'],['automation','⚙️','Automation','Automatisation'],
+ ['ai','🤖','AI Assistant','Assistant IA'],['approvals','✅','CEO Approvals','Approbations du CEO'],['integrations','🔗','Integrations','Intégrations'],
+ ['settings','⚙','Settings','Paramètres'],['admin','🔐','Administration','Administration']
 ];
-let lang=localStorage.getItem('lang')||'en';
+const I18N={
+ en:{business_os:'Business Operating System',logout:'Logout',welcome:'Welcome',slogan:'Together, let us build excellence.',activity:'Business Activity',quick_actions:'Quick Actions',
+ customers:'Customers',expenses:'Expenses',inventory_items:'Inventory Items',leads:'Leads',payments:'Payments',pending_approvals:'Pending Approvals',projects:'Projects',quotation_value:'Quotation Value',students:'Students',records:'Records',
+ add_customer:'Add Customer',add_project:'Add Project',add_expense:'Add Expense',ask_ai:'Ask AI',refresh:'Refresh',all:'All',loading:'Loading...',no_records:'No records yet.',no_messages:'No messages yet.',
+ unified_messages:'Unified Messages',channel:'Channel',direction:'Direction',message:'Message',language:'Language',time:'Time',incoming:'Incoming',outgoing:'Outgoing',
+ ai_publishing:'AI Publishing',ai_publish_desc:'AI creates the content strategy and posts across connected channels.',topic:'Topic',target_customers:'Target customers',generate_ai_posts:'Generate AI Posts',
+ learning:'Ad & Content Learning',learning_desc:'AI studies impressions, reach, clicks, engagement, views, comments, shares, saves and conversions to improve the next post.',analyze:'Analyze Performance',
+ generate:'Generating...',analyzing:'Analyzing...',no_customers:'No customers found.',
+ new_customer:'New Customer',edit_customer:'Edit Customer',save_customer:'Save Customer',cancel:'Cancel',search_customers:'Search customers...',name:'Name',phone:'Phone',company:'Company',location:'Location',status:'Status',source:'Source',last_message:'Last Message',created:'Created',category:'Category',description:'Description',budget:'Budget',progress:'Progress',actions:'Actions',edit:'Edit',delete:'Delete',active:'Active',lead:'Lead',inactive:'Inactive',
+ ai_assistant:'AI Assistant',ask_question:'Ask a question in English or French.',send:'Send',construction_ai:'Construction AI',describe_work:'Describe the building, renovation or civil engineering work...',estimate:'Generate Estimate Assistance',reports:'Reports',automation:'Automation',integrations:'Integrations',settings:'Settings',admin:'Administration',
+ business_profile:'Business Profile',save:'Save',saved:'Saved successfully',customer_analytics:'Customer Analytics',finance:'Finance',report_customers:'Customers',report_projects:'Projects',report_finance:'Finance',report_payments:'Payments',report_training:'Training',report_inventory:'Inventory',report_sales:'Sales',report_messages:'Messages',
+ permissions:'CEO authentication, permissions, security, integrations, database and operational controls are centralized here.',unknown:'Unknown resource.'},
+ fr:{business_os:'Système de gestion d’entreprise',logout:'Déconnexion',welcome:'Bonjour',slogan:'Construisons l’excellence ensemble.',activity:'Activité de l’entreprise',quick_actions:'Actions rapides',
+ customers:'Clients',expenses:'Dépenses',inventory_items:'Articles en stock',leads:'Prospects',payments:'Paiements',pending_approvals:'Approbations en attente',projects:'Projets',quotation_value:'Valeur des devis',students:'Étudiants',records:'Enregistrements',
+ add_customer:'Ajouter un client',add_project:'Ajouter un projet',add_expense:'Ajouter une dépense',ask_ai:'Demander à l’IA',refresh:'Actualiser',all:'Tous',loading:'Chargement...',no_records:'Aucun enregistrement pour le moment.',no_messages:'Aucun message pour le moment.',
+ unified_messages:'Centre de messagerie',channel:'Canal',direction:'Sens',message:'Message',language:'Langue',time:'Heure',incoming:'Entrant',outgoing:'Sortant',
+ ai_publishing:'Publication par l’IA',ai_publish_desc:'L’IA crée la stratégie de contenu et publie sur les canaux connectés.',topic:'Sujet',target_customers:'Clients cibles',generate_ai_posts:'Générer les publications IA',
+ learning:'Apprentissage publicitaire et contenu',learning_desc:'L’IA analyse les impressions, la portée, les clics, l’engagement, les vues, les commentaires, les partages, les enregistrements et les conversions afin d’améliorer la prochaine publication.',analyze:'Analyser les performances',
+ generate:'Génération...',analyzing:'Analyse...',no_customers:'Aucun client trouvé.',
+ new_customer:'Nouveau client',edit_customer:'Modifier le client',save_customer:'Enregistrer le client',cancel:'Annuler',search_customers:'Rechercher un client...',name:'Nom',phone:'Téléphone',company:'Entreprise',location:'Localisation',status:'Statut',source:'Source',last_message:'Dernier message',created:'Date de création',category:'Catégorie',description:'Description',budget:'Budget',progress:'Avancement',actions:'Actions',edit:'Modifier',delete:'Supprimer',active:'Actif',lead:'Prospect',inactive:'Inactif',
+ ai_assistant:'Assistant IA',ask_question:'Posez une question en français ou en anglais.',send:'Envoyer',construction_ai:'IA Construction',describe_work:'Décrivez les travaux de construction, rénovation ou génie civil...',estimate:'Générer une assistance d’estimation',reports:'Rapports',automation:'Automatisation',integrations:'Intégrations',settings:'Paramètres',admin:'Administration',
+ business_profile:'Profil de l’entreprise',save:'Enregistrer',saved:'Enregistré avec succès',customer_analytics:'Analyse des clients',finance:'Finances',report_customers:'Clients',report_projects:'Projets',report_finance:'Finances',report_payments:'Paiements',report_training:'Formation',report_inventory:'Stock',report_sales:'Ventes',report_messages:'Messages',
+ permissions:'L’authentification du CEO, les autorisations, la sécurité, les intégrations, la base de données et les contrôles opérationnels sont centralisés ici.',unknown:'Ressource inconnue.'}
+};
+
+// Central bilingual UI layer: every interface label must have EN + FR values.
+Object.assign(I18N.en,{ dashboard:'Dashboard',messages:'Messages',business:'Business',activity_label:'Activity',quick_actions_label:'Quick Actions', customers_label:'Customers',expenses_label:'Expenses',inventory_items_label:'Inventory Items',leads_label:'Leads',payments_label:'Payments', pending_approvals_label:'Pending Approvals',projects_label:'Projects',quotation_value_label:'Quotation Value',students_label:'Students', add_customer_label:'Add Customer',add_project_label:'Add Project',add_expense_label:'Add Expense',ask_ai_label:'Ask AI', no_messages_label:'No messages yet.',records_label:'Records'});
+Object.assign(I18N.fr,{ dashboard:'Tableau de bord',messages:'Messages',business:'Entreprise',activity_label:'Activité',quick_actions_label:'Actions rapides', customers_label:'Clients',expenses_label:'Dépenses',inventory_items_label:'Articles en stock',leads_label:'Prospects',payments_label:'Paiements', pending_approvals_label:'Approbations en attente',projects_label:'Projets',quotation_value_label:'Valeur des devis',students_label:'Étudiants', add_customer_label:'Ajouter un client',add_project_label:'Ajouter un projet',add_expense_label:'Ajouter une dépense',ask_ai_label:'Demander à l’IA', no_messages_label:'Aucun message pour le moment.',records_label:'Enregistrements'});
+function tr(key){return (I18N[lang]&&I18N[lang][key])||I18N.en[key]||key}
+function channelLabel(c){const m={whatsapp:'WhatsApp',facebook:'Facebook',instagram:'Instagram',tiktok:'TikTok',linkedin:'LinkedIn',youtube:'YouTube',ai:'🤖 TASSIMO AI'};return m[c]||c}
+function directionLabel(v){return v==='incoming'?tr('incoming'):v==='outgoing'?tr('outgoing'):v||''}
+function resourceLabel(r){const map={customers:'customers',projects:'projects',inventory:'inventory_items',leads:'leads',finance:'finance',expenses:'expenses',payments:'payments',documents:'documents',training:'report_training','digital courses':'digital-courses',approvals:'pending_approvals',messages:'messages',message:'messages'};const key=map[r]||r;return tr(key)}
+function fieldLabel(k){const map={name:'name',phone:'phone',email:'email',company:'company',location:'location',status:'status',source:'source',last_message:'last_message',created_at:'created',amount:'payments',category:'category',description:'description',budget:'budget',progress:'progress',total:'quotation_value'};return tr(map[k]||k.replaceAll('_',' '))}
+let lang=localStorage.getItem('lang')||'fr';
 function label(m){return lang==='fr'?m[3]:m[2]}
+function renderShellLabels(){document.querySelector('.brand small').textContent=tr('business_os');document.querySelector('header .btn:not(.alt)').textContent=tr('logout')}
 nav.innerHTML=modules.map(m=>`<button id="n-${m[0]}" onclick="openPage('${m[0]}')">${m[1]} ${label(m)}</button>`).join('');
 function setLang(x){lang=x;localStorage.setItem('lang',x);location.reload()}
-function toast(x){toastEl=document.getElementById('toast');toastEl.textContent=x;toastEl.style.display='block';setTimeout(()=>toastEl.style.display='none',2500)}
-async function api(url,opt={}){opt.headers={...(opt.headers||{}),'Content-Type':'application/json','X-Language':lang};const r=await fetch(url,opt);if(r.status===401){location.href='/login';return null}const d=await r.json();if(!r.ok)throw new Error(d.error||'Request failed');return d}
+function toast(x){const toastEl=document.getElementById('toast');toastEl.textContent=x;toastEl.style.display='block';setTimeout(()=>toastEl.style.display='none',2500)}
+async function api(url,opt={}){opt.headers={...(opt.headers||{}),'Content-Type':'application/json','X-Language':lang};const r=await fetch(url,opt);if(r.status===401){location.href='/login';return null}const d=await r.json();if(!r.ok)throw new Error(d.error||tr('unknown'));return d}
 async function logout(){location.href='/logout'}
-function openPage(p){document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+p)?.classList.add('active');
-document.getElementById('pageTitle').textContent=modules.find(x=>x[0]===p)?.[lang==='fr'?3:2]||p;
-side.classList.remove('open');window['page_'+p]?window['page_'+p]():pageGeneric(p)}
-async function page_dashboard(){content.innerHTML=`<div class="title"><h1>${lang==='fr'?'Bonjour':'Welcome'}, TAGNE Simo Innocant</h1>
-<p class="muted">${lang==='fr'?'Construisons l’excellence ensemble.':'Together, let us build excellence.'}</p></div>
-<div class="cards" id="cards"></div><div class="grid"><div class="panel"><h3>${lang==='fr'?'Activité':'Business Activity'}</h3><canvas id="chart"></canvas></div>
-<div class="panel"><h3>${lang==='fr'?'Actions rapides':'Quick Actions'}</h3><div class="actions">
-<button class="btn" onclick="openPage('customers')">+ Customer</button><button class="btn" onclick="openPage('projects')">+ Project</button>
-<button class="btn" onclick="openPage('finance')">+ Expense</button><button class="btn" onclick="openPage('ai')">Ask AI</button></div></div></div>`;
-const d=await api('/api/dashboard');if(!d)return;
-cards.innerHTML=Object.entries(d.stats).slice(0,8).map(([k,v])=>`<div class="card"><div class="muted">${k.replaceAll('_',' ')}</div><div class="stat">${typeof v==='number'?Math.round(v*100)/100:v}</div></div>`).join('');
-new Chart(document.getElementById('chart'),{type:'bar',data:{labels:['Customers','Projects','Leads','Students'],datasets:[{label:'Records',data:[d.stats.customers,d.stats.projects,d.stats.leads,d.stats.students]}]}});
+// ============================================================
+// COMPLETE BILINGUAL UI ENGINE
+// Every platform-generated interface string is translated at runtime.
+// Customer names, customer messages and database values are NEVER translated.
+// ============================================================
+const EXTRA_EN_FR={
+  'Business Operating System':'Système de gestion d’entreprise',
+  'Logout':'Déconnexion','Dashboard':'Tableau de bord','Customers':'Clients','Expenses':'Dépenses',
+  'Inventory Items':'Articles en stock','Leads':'Prospects','Leads & Sales':'Prospects & Ventes','Payments':'Paiements',
+  'Pending Approvals':'Approbations en attente','Projects':'Projets','Quotation Value':'Valeur des devis','Students':'Étudiants',
+  'Quick Actions':'Actions rapides','Business Activity':'Activité de l’entreprise','Activity':'Activité',
+  '+ Customer':'+ Ajouter un client','+ Project':'+ Ajouter un projet','+ Expense':'+ Ajouter une dépense','Ask AI':'Demander à l’IA',
+  'Open Messages':'Ouvrir la messagerie','Refresh':'Actualiser','All':'Tous','Loading...':'Chargement...',
+  'No records yet.':'Aucun enregistrement pour le moment.','No messages yet.':'Aucun message pour le moment.',
+  'Unified Messages':'Centre de messagerie','Channel':'Canal','Direction':'Sens','Message':'Message','Language':'Langue','Time':'Heure',
+  'Incoming':'Entrant','Outgoing':'Sortant','AI Publishing':'Publication par l’IA',
+  'AI creates the content strategy and posts across connected channels.':'L’IA crée la stratégie de contenu et publie sur les canaux connectés.',
+  'Topic':'Sujet','Target customers':'Clients cibles','Generate AI Posts':'Générer les publications IA',
+  'Ad & Content Learning':'Apprentissage publicitaire et contenu','Analyze Performance':'Analyser les performances',
+  'Generating...':'Génération...','Analyzing...':'Analyse...','No customers found.':'Aucun client trouvé.',
+  'New Customer':'Nouveau client','Edit Customer':'Modifier le client','Save Customer':'Enregistrer le client','Cancel':'Annuler',
+  'Search customers...':'Rechercher un client...','Customer name':'Nom du client','Name':'Nom','Phone':'Téléphone','Email':'E-mail',
+  'Company':'Entreprise','Location':'Localisation','Status':'Statut','Source':'Source','Last Message':'Dernier message','Created':'Créé le',
+  'Date Created':'Date de création','Category':'Catégorie','Description':'Description','Budget':'Budget','Progress':'Avancement',
+  'Actions':'Actions','Edit':'Modifier','Delete':'Supprimer','Active':'Actif','Inactive':'Inactif','Lead':'Prospect',
+  'AI Assistant':'Assistant IA','Ask a question in English or French.':'Posez une question en français ou en anglais.',
+  'Send':'Envoyer','Construction AI':'IA Construction','Describe the building, renovation or civil engineering work...':'Décrivez les travaux de construction, rénovation ou génie civil...',
+  'Generate Estimate Assistance':'Générer une assistance d’estimation','Reports':'Rapports','Automation':'Automatisation',
+  'Integrations':'Intégrations','Settings':'Paramètres','Administration':'Administration','Business Profile':'Profil de l’entreprise',
+  'Save':'Enregistrer','Saved successfully':'Enregistré avec succès','Customer Analytics':'Analyse des clients','Finance':'Finances',
+  'Training':'Formation','Inventory':'Stock','Sales':'Ventes','Messages':'Messages','Unknown resource.':'Ressource inconnue.',
+  'Load Automation Settings':'Charger les paramètres d’automatisation','Business Name':'Nom de l’entreprise','Country':'Pays','City':'Ville',
+  'CEO authentication, permissions, security, integrations, database and operational controls are centralized here.':'L’authentification du CEO, les autorisations, la sécurité, les intégrations, la base de données et les contrôles opérationnels sont centralisés ici.',
+  'AI replies, language detection, customer intent, follow-ups and CEO approval controls.':'Réponses IA, détection de langue, intention du client, relances et contrôles d’approbation du CEO.',
+  'Open Messages':'Ouvrir la messagerie','Records':'Enregistrements','Loading':'Chargement','Request failed':'La requête a échoué',
+  'Authentication required.':'Authentification requise.','Invalid credentials.':'Identifiants invalides.','Login successful.':'Connexion réussie.',
+  'Logged out.':'Déconnexion réussie.','Invalid data.':'Données invalides.','Not found.':'Ressource introuvable.',
+  'Internal server error.':'Erreur interne du serveur.','Unsupported channel.':'Canal non pris en charge.',
+  'CEO approval may be required.':'Une approbation du CEO peut être requise.'
+};
+const EXTRA_FR_EN=Object.fromEntries(Object.entries(EXTRA_EN_FR).map(([en,fr])=>[fr,en]));
+function applyBilingualText(){
+  const map=lang==='fr'?EXTRA_EN_FR:EXTRA_FR_EN;
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  let node;
+  while(node=walker.nextNode()){
+    if(node.parentElement && ['SCRIPT','STYLE'].includes(node.parentElement.tagName)) continue;
+    const raw=node.nodeValue;
+    const trimmed=raw.trim();
+    if(map[trimmed]) node.nodeValue=raw.replace(trimmed,map[trimmed]);
+  }
+  document.querySelectorAll('input[placeholder],textarea[placeholder],select[aria-label],button[aria-label]').forEach(el=>{
+    const attr=el.hasAttribute('placeholder')?'placeholder':'aria-label';
+    const value=el.getAttribute(attr);
+    if(value && map[value]) el.setAttribute(attr,map[value]);
+  });
+  document.documentElement.lang=lang;
 }
+function enforceBilingualUI(){applyBilingualText()}
+let bilingualObserver=null;
+function startBilingualObserver(){
+  if(bilingualObserver) bilingualObserver.disconnect();
+  bilingualObserver=new MutationObserver(()=>{
+    clearTimeout(window.__bilingualTimer);
+    window.__bilingualTimer=setTimeout(applyBilingualText,20);
+  });
+  bilingualObserver.observe(document.body,{childList:true,subtree:true,characterData:true});
+  applyBilingualText();
+}
+
+function openPage(p){document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+p)?.classList.add('active');document.getElementById('pageTitle').textContent=modules.find(x=>x[0]===p)?.[lang==='fr'?3:2]||p;document.getElementById('welcome').textContent='';side.classList.remove('open');window['page_'+p]?window['page_'+p]():pageGeneric(p);setTimeout(enforceBilingualUI,80)}
+renderShellLabels();
+startBilingualObserver();
+async function page_dashboard(){
+content.innerHTML=`<div class="title"><h1>${tr('welcome')}, TAGNE Simo Innocant</h1><p class="muted">${tr('slogan')}</p></div><div class="cards" id="cards"></div><div class="grid"><div class="panel"><h3>${tr('activity')}</h3><canvas id="chart"></canvas></div><div class="panel"><h3>${tr('quick_actions')}</h3><div class="actions"><button class="btn" onclick="openPage('customers')">+ ${tr('add_customer')}</button><button class="btn" onclick="openPage('projects')">+ ${tr('add_project')}</button><button class="btn" onclick="openPage('finance')">+ ${tr('add_expense')}</button><button class="btn" onclick="openPage('ai')">${tr('ask_ai')}</button></div></div></div><div class="panel" style="margin-top:18px"><h3>💬 ${tr('unified_messages')}</h3><div id="dashboardMessages" class="muted">${tr('loading')}</div><button class="btn alt" style="margin-top:12px" onclick="openPage('messages')">${lang==='fr'?'Ouvrir la messagerie':'Open Messages'}</button></div>`;
+const d=await api('/api/dashboard');if(!d)return;
+const statKeys=['customers','expenses','inventory_items','leads','payments','pending_approvals','projects','quotation_value'];
+cards.innerHTML=statKeys.map(k=>`<div class="card"><div class="muted">${tr(k)}</div><div class="stat">${typeof d.stats[k]==='number'?Math.round(d.stats[k]*100)/100:d.stats[k]??0}</div></div>`).join('');
+new Chart(document.getElementById('chart'),{type:'bar',data:{labels:[tr('customers'),tr('projects'),tr('leads'),tr('students')],datasets:[{label:tr('records'),data:[d.stats.customers,d.stats.projects,d.stats.leads,d.stats.students]}]}});
+try{const md=await api('/api/messages');const rows=md?.messages||[];dashboardMessages.innerHTML=rows.length?rows.slice(0,5).map(r=>`<div style="padding:9px 0;border-bottom:1px solid #eee"><b>${channelLabel(r.channel||'')}</b> · ${directionLabel(r.direction)}<br>${escapeHtml(String(r.message||'').slice(0,180))}</div>`).join(''):tr('no_messages')}catch(e){dashboardMessages.textContent=tr('no_messages')}
+}
+
 let customerRows=[];
 
 async function page_customers(){
@@ -1489,43 +1583,32 @@ toast(lang==='fr'?'Client enregistré avec succès.':'Customer saved successfull
 function editCustomer(id){const c=customerRows.find(r=>String(r.id)===String(id));if(c)showCustomerForm(c)}
 async function deleteCustomer(id){if(!id)return;if(!confirm(lang==='fr'?'Supprimer ce client ?':'Delete this customer?'))return;try{await api('/api/customers?id='+encodeURIComponent(id),{method:'DELETE',body:JSON.stringify({id})});toast(lang==='fr'?'Client supprimé.':'Customer deleted.');await loadCustomers()}catch(e){toast(e.message)}}
 
-async function page_messages(){
-content.innerHTML=`<div class="panel"><div class="actions"><h2 style="margin-right:auto">💬 ${lang==='fr'?'Centre de messagerie':'Unified Messages'}</h2><button class="btn" onclick="loadMessages()">↻ Refresh</button></div>
-<div class="actions" style="margin:15px 0">${['all','whatsapp','facebook','instagram','tiktok','linkedin','youtube','ai'].map(c=>`<button class="btn alt" onclick="loadMessages('${c}')">${c==='ai'?'🤖 TASSIMO AI':c==='all'?'🌐 All':c}</button>`).join('')}</div>
-<div class="grid"><div class="panel"><h3>🤖 AI Publishing</h3><p class="muted">AI creates the content strategy and posts across connected channels.</p><input id="postTopic" placeholder="Topic / Sujet"><input id="postAudience" placeholder="Target customers / Clients ciblés"><button class="btn" onclick="generateAIPost()">Generate AI Posts</button><pre id="postResult" style="white-space:pre-wrap"></pre></div>
-<div class="panel"><h3>📈 Ad & Content Learning</h3><p class="muted">The AI studies impressions, reach, clicks, engagement, views, comments, shares, saves and conversions to improve the next post.</p><button class="btn" onclick="loadLearning()">Analyze Performance</button><pre id="learningResult" style="white-space:pre-wrap"></pre></div></div>
-<div id="messageList" class="muted">Loading...</div></div>`;await loadMessages()}
-async function loadMessages(channel=''){const d=await api('/api/messages'+(channel&&channel!=='all'?'?channel='+encodeURIComponent(channel):''));const rows=d?.messages||[];messageList.innerHTML=rows.length?`<div style="overflow:auto"><table><thead><tr><th>Channel</th><th>Direction</th><th>Message</th><th>Language</th><th>Time</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.channel||''}</td><td>${r.direction||''}</td><td>${String(r.message||'').slice(0,180)}</td><td>${r.language||''}</td><td>${r.created_at||''}</td></tr>`).join('')}</tbody></table></div>`:'<p>No messages yet.</p>'}
-async function generateAIPost(){postResult.textContent='Generating...';try{const d=await api('/api/social/ai-post',{method:'POST',body:JSON.stringify({channels:['whatsapp','facebook','instagram','tiktok','linkedin','youtube'],topic:postTopic.value,audience:postAudience.value})});postResult.textContent=JSON.stringify(d,null,2)}catch(e){postResult.textContent=e.message}}
-async function loadLearning(){learningResult.textContent='Analyzing...';try{const d=await api('/api/social/learning');learningResult.textContent=JSON.stringify(d,null,2)}catch(e){learningResult.textContent=e.message}}
+async function page_messages(){content.innerHTML=`<div class="panel"><div class="actions"><h2 style="margin-right:auto">💬 ${tr('unified_messages')}</h2><button class="btn" onclick="loadMessages()">↻ ${tr('refresh')}</button></div><div class="actions" style="margin:15px 0">${['all','whatsapp','facebook','instagram','tiktok','linkedin','youtube','ai'].map(c=>`<button class="btn alt" onclick="loadMessages('${c}')">${c==='all'?'🌐 '+tr('all'):channelLabel(c)}</button>`).join('')}</div><div class="grid"><div class="panel"><h3>🤖 ${tr('ai_publishing')}</h3><p class="muted">${tr('ai_publish_desc')}</p><input id="postTopic" placeholder="${tr('topic')}"><input id="postAudience" placeholder="${tr('target_customers')}"><button class="btn" onclick="generateAIPost()">${tr('generate_ai_posts')}</button><pre id="postResult" style="white-space:pre-wrap"></pre></div><div class="panel"><h3>📈 ${tr('learning')}</h3><p class="muted">${tr('learning_desc')}</p><button class="btn" onclick="loadLearning()">${tr('analyze')}</button><pre id="learningResult" style="white-space:pre-wrap"></pre></div></div><div id="messageList" class="muted">${tr('loading')}</div></div>`;await loadMessages()}
+async function loadMessages(channel=''){const d=await api('/api/messages'+(channel&&channel!=='all'?'?channel='+encodeURIComponent(channel):''));const rows=d?.messages||[];messageList.innerHTML=rows.length?`<div style="overflow:auto"><table><thead><tr><th>${tr('channel')}</th><th>${tr('direction')}</th><th>${tr('message')}</th><th>${tr('language')}</th><th>${tr('time')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${channelLabel(r.channel||'')}</td><td>${directionLabel(r.direction)}</td><td>${escapeHtml(String(r.message||'').slice(0,180))}</td><td>${r.language==='fr'?'Français':r.language==='en'?'English':r.language||''}</td><td>${r.created_at||''}</td></tr>`).join('')}</tbody></table></div>`:`<p>${tr('no_messages')}</p>`}
+async function generateAIPost(){postResult.textContent=tr('generate');try{const d=await api('/api/social/ai-post',{method:'POST',body:JSON.stringify({channels:['whatsapp','facebook','instagram','tiktok','linkedin','youtube'],topic:postTopic.value,audience:postAudience.value,language:lang})});postResult.textContent=JSON.stringify(d,null,2)}catch(e){postResult.textContent=e.message}}
+async function loadLearning(){learningResult.textContent=tr('analyzing');try{const d=await api('/api/social/learning');learningResult.textContent=JSON.stringify(d,null,2)}catch(e){learningResult.textContent=e.message}}
 async function page_leads(){await pageTable('leads','/api/leads','leads')}
 async function page_projects(){await pageTable('projects','/api/projects','projects')}
 async function page_inventory(){await pageTable('inventory','/api/inventory','inventory')}
 async function page_finance(){await pageTable('finance','/api/expenses','expenses')}
 async function page_documents(){await pageTable('documents','/api/documents','documents')}
 async function page_training(){await pageTable('training','/api/students','students')}
-async function page_digital_courses(){await pageTable('digital-courses','/api/digital-courses','digital courses')}
+async function page_digital_courses(){await pageTable('digital-courses','/api/digital-courses','digital-courses')}
 async function page_approvals(){await pageTable('approvals','/api/approvals','approvals')}
-async function pageTable(title,url,resource){content.innerHTML=`<div class="panel"><div class="actions"><h2 style="margin-right:auto">${resource}</h2>
-<button class="btn" onclick="location.reload()">↻ Refresh</button></div><div id="tableWrap" class="muted">Loading...</div></div>`;
-try{const d=await api(url);const rows=d?.customers||d?.data||d?.approvals||[];if(!rows.length){tableWrap.innerHTML='<p>No records yet.</p>';return}
-const keys=[...new Set(rows.flatMap(x=>Object.keys(x)))].slice(0,8);tableWrap.innerHTML=`<div style="overflow:auto"><table><thead><tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${keys.map(k=>`<td>${r[k]??''}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}catch(e){tableWrap.textContent=e.message}}
-async function page_ai(){content.innerHTML=`<div class="panel"><h2>🤖 ${lang==='fr'?'Assistant IA':'AI Assistant'}</h2>
-<p class="muted">${lang==='fr'?'Posez une question en français ou en anglais.':'Ask a question in English or French.'}</p>
-<div class="form"><textarea id="q" rows="5" placeholder="Ask about customers, projects, estimates, marketing, finance..."></textarea><button class="btn" onclick="askAI()">Send / Envoyer</button></div><pre id="answer" style="white-space:pre-wrap"></pre></div>`}
-async function askAI(){answer.textContent='...';try{const d=await api('/api/ai',{method:'POST',body:JSON.stringify({question:q.value})});answer.textContent=d.answer+(d.approval_required?'\\n\\n⚠ CEO approval may be required.':'')}catch(e){answer.textContent=e.message}}
-async function page_construction(){content.innerHTML=`<div class="panel"><h2>📐 Construction AI / IA Construction</h2><textarea id="desc" rows="6" style="width:100%;padding:12px" placeholder="Describe the building, renovation or civil engineering work..."></textarea><br><br>
-<button class="btn" onclick="estimate()">Generate Estimate Assistance</button><pre id="est" style="white-space:pre-wrap"></pre></div>`}
-async function estimate(){est.textContent='...';try{const d=await api('/api/ai/estimate',{method:'POST',body:JSON.stringify({description:desc.value})});est.textContent=d.estimate+'\\n\\n'+d.message}catch(e){est.textContent=e.message}}
-async function page_analytics(){content.innerHTML='<div class="grid"><div class="panel"><h3>Customer Analytics</h3><canvas id="ac"></canvas></div><div class="panel"><h3>Finance</h3><canvas id="af"></canvas></div></div>';const d=await api('/api/analytics');new Chart(ac,{type:'doughnut',data:{labels:Object.keys(d.customers.by_source),datasets:[{data:Object.values(d.customers.by_source)}]}});new Chart(af,{type:'bar',data:{labels:Object.keys(d.finance.expenses_by_category),datasets:[{label:'Expenses',data:Object.values(d.finance.expenses_by_category)}]}})}
-async function page_reports(){content.innerHTML='<div class="panel"><h2>Reports / Rapports</h2><div class="actions">'+['customers','projects','finance','payments','training','inventory','sales','messages'].map(x=>`<button class="btn alt" onclick="loadReport('${x}')">${x}</button>`).join('')+'</div><pre id="report" style="white-space:pre-wrap"></pre></div>'}
+async function pageTable(title,url,resource){content.innerHTML=`<div class="panel"><div class="actions"><h2 style="margin-right:auto">${resourceLabel(resource)}</h2><button class="btn" onclick="openPage('${title}')">↻ ${tr('refresh')}</button></div><div id="tableWrap" class="muted">${tr('loading')}</div></div>`;try{const d=await api(url);const rows=d?.customers||d?.data||d?.approvals||[];if(!rows.length){tableWrap.innerHTML=`<p>${tr('no_records')}</p>`;return}const keys=[...new Set(rows.flatMap(x=>Object.keys(x)))].slice(0,8);tableWrap.innerHTML=`<div style="overflow:auto"><table><thead><tr>${keys.map(k=>`<th>${fieldLabel(k)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${keys.map(k=>`<td>${escapeHtml(r[k]??'')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}catch(e){tableWrap.textContent=e.message}}
+async function page_ai(){content.innerHTML=`<div class="panel"><h2>🤖 ${tr('ai_assistant')}</h2><p class="muted">${tr('ask_question')}</p><div class="form"><textarea id="q" rows="5" placeholder="${lang==='fr'?'Posez votre question sur les clients, projets, devis, marketing ou finances...':'Ask about customers, projects, estimates, marketing or finance...'}"></textarea><button class="btn" onclick="askAI()">${tr('send')}</button></div><pre id="answer" style="white-space:pre-wrap"></pre></div>`}
+async function askAI(){answer.textContent='...';try{const d=await api('/api/ai',{method:'POST',body:JSON.stringify({question:q.value})});answer.textContent=d.answer+(d.approval_required?(lang==='fr'?'\n\n⚠ Une approbation du CEO peut être requise.':'\n\n⚠ CEO approval may be required.'):'')}catch(e){answer.textContent=e.message}}
+async function page_construction(){content.innerHTML=`<div class="panel"><h2>📐 ${tr('construction_ai')}</h2><textarea id="desc" rows="6" style="width:100%;padding:12px" placeholder="${tr('describe_work')}"></textarea><br><br><button class="btn" onclick="estimate()">${tr('estimate')}</button><pre id="est" style="white-space:pre-wrap"></pre></div>`}
+async function estimate(){est.textContent='...';try{const d=await api('/api/ai/estimate',{method:'POST',body:JSON.stringify({description:desc.value})});est.textContent=d.estimate+'\n\n'+d.message}catch(e){est.textContent=e.message}}
+async function page_analytics(){content.innerHTML=`<div class="grid"><div class="panel"><h3>${tr('customer_analytics')}</h3><canvas id="ac"></canvas></div><div class="panel"><h3>${tr('finance')}</h3><canvas id="af"></canvas></div></div>`;const d=await api('/api/analytics');new Chart(ac,{type:'doughnut',data:{labels:Object.keys(d.customers.by_source),datasets:[{data:Object.values(d.customers.by_source)}]}});new Chart(af,{type:'bar',data:{labels:Object.keys(d.finance.expenses_by_category),datasets:[{label:tr('expenses'),data:Object.values(d.finance.expenses_by_category)}]}})}
+async function page_reports(){const names=['customers','projects','finance','payments','training','inventory','sales','messages'];content.innerHTML=`<div class="panel"><h2>${tr('reports')}</h2><div class="actions">${names.map(x=>`<button class="btn alt" onclick="loadReport('${x}')">${tr('report_'+x)}</button>`).join('')}</div><pre id="report" style="white-space:pre-wrap"></pre></div>`}
 async function loadReport(x){try{const d=await api('/api/reports/'+x);report.textContent=JSON.stringify(d,null,2)}catch(e){report.textContent=e.message}}
-async function page_automation(){content.innerHTML='<div class="panel"><h2>Automation / Automatisation</h2><p>AI replies, language detection, customer intent, follow-ups and CEO approval controls.</p><button class="btn" onclick="loadSettings()">Load Automation Settings</button><pre id="set" style="white-space:pre-wrap"></pre></div>'}
+async function page_automation(){content.innerHTML=`<div class="panel"><h2>${tr('automation')}</h2><p>${lang==='fr'?'Réponses IA, détection de langue, intention du client, relances et contrôles d’approbation du CEO.':'AI replies, language detection, customer intent, follow-ups and CEO approval controls.'}</p><button class="btn" onclick="loadSettings()">${lang==='fr'?'Charger les paramètres d’automatisation':'Load Automation Settings'}</button><pre id="set" style="white-space:pre-wrap"></pre></div>`}
 async function loadSettings(){const d=await api('/api/settings');set.textContent=JSON.stringify(d,null,2)}
-async function page_integrations(){const d=await api('/api/integrations/status');content.innerHTML='<div class="cards">'+Object.entries(d).map(([k,v])=>`<div class="card"><b>${k}</b><div class="stat">${v?'✓':'—'}</div></div>`).join('')+'</div>'}
-async function page_settings(){const d=await api('/api/profile');content.innerHTML=`<div class="panel"><h2>Business Profile / Profil de l'entreprise</h2><div class="form">${['business_name','ceo_name','slogan','country','city'].map(k=>`<label>${k}<input id="p_${k}" value="${d[k]||''}"></label>`).join('')}<button class="btn" onclick="saveProfile()">Save / Enregistrer</button></div></div>`}
-async function saveProfile(){const data={};['business_name','ceo_name','slogan','country','city'].forEach(k=>data[k]=document.getElementById('p_'+k).value);await api('/api/profile',{method:'POST',body:JSON.stringify(data)});toast('Saved successfully / Enregistré');}
-async function page_admin(){content.innerHTML='<div class="panel"><h2>Administration / Administration</h2><p>CEO authentication, permissions, security, integrations, database and operational controls are centralized here.</p><pre id="status"></pre></div>';const d=await api('/api/status');status.textContent=JSON.stringify(d,null,2)}
+async function page_integrations(){const d=await api('/api/integrations/status');content.innerHTML=`<div class="cards">${Object.entries(d).map(([k,v])=>`<div class="card"><b>${k==='ai_auto_publish'?'Publication automatique IA':k}</b><div class="stat">${v?'✓':'—'}</div></div>`).join('')}</div>`}
+async function page_settings(){const d=await api('/api/profile');const labels={business_name:lang==='fr'?'Nom de l’entreprise':'Business Name',ceo_name:'CEO',slogan:lang==='fr'?'Slogan':'Slogan',country:lang==='fr'?'Pays':'Country',city:lang==='fr'?'Ville':'City'};content.innerHTML=`<div class="panel"><h2>${tr('business_profile')}</h2><div class="form">${['business_name','ceo_name','slogan','country','city'].map(k=>`<label>${labels[k]}<input id="p_${k}" value="${escapeHtml(d[k]||'')}"></label>`).join('')}<button class="btn" onclick="saveProfile()">${tr('save')}</button></div></div>`}
+async function saveProfile(){const data={};['business_name','ceo_name','slogan','country','city'].forEach(k=>data[k]=document.getElementById('p_'+k).value);await api('/api/profile',{method:'POST',body:JSON.stringify(data)});toast(tr('saved'))}
+async function page_admin(){content.innerHTML=`<div class="panel"><h2>${tr('admin')}</h2><p>${tr('permissions')}</p><pre id="status"></pre></div>`;const d=await api('/api/status');status.textContent=JSON.stringify(d,null,2)}
 openPage('dashboard');
 </script></body></html>"""
 
@@ -1533,13 +1616,19 @@ openPage('dashboard');
 @app.route("/")
 @protected
 def home():
-    return DASHBOARD_HTML
+    response = app.make_response(DASHBOARD_HTML)
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.route("/index.html")
 @protected
 def index_page():
-    return DASHBOARD_HTML
+    response = app.make_response(DASHBOARD_HTML)
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    return response
 
 
 # ------------------------------------------------------------
