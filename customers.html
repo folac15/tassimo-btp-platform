@@ -1,0 +1,4150 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+>
+
+<title>TASSIMO BTP — Customers</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+:root{
+    --primary:#183b56;
+    --primary-dark:#102c40;
+    --secondary:#2f6f95;
+    --success:#16805c;
+    --warning:#b7791f;
+    --danger:#c0392b;
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --border:#e4e7ec;
+    --text:#17202a;
+    --muted:#667085;
+    --soft:#eef4f8;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+}
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.topbar{
+    background:linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-dark)
+    );
+    color:white;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    position:sticky;
+    top:0;
+    z-index:100;
+    box-shadow:0 4px 18px rgba(0,0,0,.12);
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.brand-logo{
+    width:44px;
+    height:44px;
+    border-radius:12px;
+    background:rgba(255,255,255,.12);
+    display:grid;
+    place-items:center;
+    font-size:23px;
+}
+
+.brand h1{
+    font-size:18px;
+    line-height:1.2;
+}
+
+.brand small{
+    opacity:.75;
+    display:block;
+    margin-top:3px;
+}
+
+.top-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.lang-btn{
+    border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.08);
+    color:white;
+    padding:9px 12px;
+    border-radius:9px;
+    cursor:pointer;
+    font-weight:700;
+}
+
+.lang-btn.active{
+    background:white;
+    color:var(--primary);
+}
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+.container{
+    width:min(1400px,100%);
+    margin:auto;
+    padding:20px;
+}
+
+.page-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.page-title h2{
+    font-size:27px;
+    margin-bottom:5px;
+}
+
+.page-title p{
+    color:var(--muted);
+}
+
+.header-actions{
+    display:flex;
+    gap:9px;
+    flex-wrap:wrap;
+}
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.btn{
+    border:0;
+    border-radius:10px;
+    padding:11px 15px;
+    cursor:pointer;
+    font-weight:700;
+    transition:.2s ease;
+    font-size:14px;
+}
+
+.btn:hover{
+    transform:translateY(-1px);
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-secondary{
+    background:#edf2f6;
+    color:var(--primary);
+}
+
+.btn-success{
+    background:#e8f7f1;
+    color:var(--success);
+}
+
+.btn-danger{
+    background:#fdecea;
+    color:var(--danger);
+}
+
+.btn-warning{
+    background:#fff5df;
+    color:var(--warning);
+}
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.stat-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 5px 18px rgba(16,24,40,.04);
+}
+
+.stat-label{
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:8px;
+}
+
+.stat-value{
+    font-size:27px;
+    font-weight:800;
+    color:var(--primary);
+}
+
+.stat-description{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:5px;
+}
+
+/* =========================================================
+   SEARCH / FILTER BAR
+========================================================= */
+
+.toolbar{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:15px;
+    margin-bottom:18px;
+}
+
+.search-row{
+    display:grid;
+    grid-template-columns:1fr auto auto auto;
+    gap:10px;
+}
+
+.search-box{
+    position:relative;
+}
+
+.search-box input{
+    width:100%;
+    padding:13px 14px 13px 42px;
+    border:1px solid var(--border);
+    border-radius:11px;
+    font-size:15px;
+    outline:none;
+}
+
+.search-box input:focus,
+.form-control:focus,
+select:focus,
+textarea:focus{
+    border-color:var(--secondary);
+    box-shadow:0 0 0 3px rgba(47,111,149,.1);
+}
+
+.search-icon{
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    color:var(--muted);
+}
+
+select{
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:12px;
+    background:white;
+    min-width:145px;
+    outline:none;
+}
+
+.filter-count{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:10px;
+}
+
+/* =========================================================
+   CUSTOMER TABLE
+========================================================= */
+
+.table-card{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+}
+
+.table-header{
+    padding:16px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.table-header h3{
+    font-size:17px;
+}
+
+.table-wrapper{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1000px;
+}
+
+th{
+    background:#f8fafc;
+    color:#475467;
+    text-align:left;
+    padding:13px;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    border-bottom:1px solid var(--border);
+}
+
+td{
+    padding:14px 13px;
+    border-bottom:1px solid #edf0f3;
+    font-size:14px;
+    vertical-align:middle;
+}
+
+tr:hover td{
+    background:#fafcff;
+}
+
+.customer-cell{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:190px;
+}
+
+.avatar{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:var(--soft);
+    color:var(--primary);
+    display:grid;
+    place-items:center;
+    font-weight:800;
+    flex-shrink:0;
+}
+
+.customer-name{
+    font-weight:800;
+}
+
+.customer-sub{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:3px;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:800;
+}
+
+.badge-active{
+    background:#e8f7f1;
+    color:var(--success);
+}
+
+.badge-lead{
+    background:#fff5df;
+    color:var(--warning);
+}
+
+.badge-inactive{
+    background:#f1f3f5;
+    color:#667085;
+}
+
+.badge-high{
+    background:#fdecea;
+    color:var(--danger);
+}
+
+.badge-normal{
+    background:#edf2f6;
+    color:var(--primary);
+}
+
+.source{
+    font-size:12px;
+    color:var(--muted);
+}
+
+.actions-cell{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+}
+
+.icon-btn{
+    border:1px solid var(--border);
+    background:white;
+    border-radius:8px;
+    padding:7px 9px;
+    cursor:pointer;
+}
+
+.icon-btn:hover{
+    background:#f5f8fa;
+}
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.empty{
+    padding:55px 20px;
+    text-align:center;
+}
+
+.empty-icon{
+    font-size:44px;
+    margin-bottom:12px;
+}
+
+.empty h3{
+    margin-bottom:7px;
+}
+
+.empty p{
+    color:var(--muted);
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+    z-index:500;
+}
+
+.modal.show{
+    display:flex;
+}
+
+.modal-box{
+    background:white;
+    width:min(900px,100%);
+    max-height:92vh;
+    overflow:auto;
+    border-radius:20px;
+    box-shadow:0 25px 80px rgba(0,0,0,.2);
+}
+
+.modal-header{
+    padding:19px 20px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    position:sticky;
+    top:0;
+    background:white;
+    z-index:2;
+}
+
+.modal-header h3{
+    font-size:19px;
+}
+
+.close{
+    border:0;
+    background:#f2f4f7;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.modal-body{
+    padding:20px;
+}
+
+.modal-footer{
+    padding:15px 20px;
+    border-top:1px solid var(--border);
+    display:flex;
+    justify-content:flex-end;
+    gap:9px;
+    position:sticky;
+    bottom:0;
+    background:white;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:15px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.form-group.full{
+    grid-column:1/-1;
+}
+
+.form-group label{
+    font-size:13px;
+    font-weight:800;
+    color:#344054;
+}
+
+.form-control,
+textarea{
+    width:100%;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px;
+    font-size:14px;
+    outline:none;
+    background:white;
+}
+
+textarea{
+    min-height:100px;
+    resize:vertical;
+}
+
+.required{
+    color:var(--danger);
+}
+
+/* =========================================================
+   CUSTOMER DETAILS
+========================================================= */
+
+.profile-header{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    padding-bottom:18px;
+    margin-bottom:18px;
+    border-bottom:1px solid var(--border);
+}
+
+.profile-avatar{
+    width:68px;
+    height:68px;
+    border-radius:18px;
+    background:var(--soft);
+    color:var(--primary);
+    display:grid;
+    place-items:center;
+    font-size:25px;
+    font-weight:800;
+}
+
+.profile-name{
+    font-size:22px;
+    font-weight:800;
+}
+
+.profile-meta{
+    color:var(--muted);
+    margin-top:4px;
+}
+
+.detail-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+.detail{
+    padding:13px;
+    border:1px solid var(--border);
+    border-radius:11px;
+    background:#fafbfc;
+}
+
+.detail-label{
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-bottom:5px;
+}
+
+.detail-value{
+    font-weight:700;
+    word-break:break-word;
+}
+
+.quick-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:18px;
+}
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+.toast{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    background:#17202a;
+    color:white;
+    padding:13px 17px;
+    border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);
+    display:none;
+    z-index:1000;
+    max-width:350px;
+}
+
+.toast.show{
+    display:block;
+}
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading{
+    padding:45px;
+    text-align:center;
+    color:var(--muted);
+}
+
+.spinner{
+    width:30px;
+    height:30px;
+    border:3px solid #e5e7eb;
+    border-top-color:var(--primary);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+    margin:0 auto 12px;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:900px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .search-row{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .search-box{
+        grid-column:1/-1;
+    }
+
+}
+
+@media(max-width:600px){
+
+    .topbar{
+        padding:13px;
+    }
+
+    .brand h1{
+        font-size:15px;
+    }
+
+    .brand small{
+        font-size:10px;
+    }
+
+    .container{
+        padding:13px;
+    }
+
+    .page-header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .page-title h2{
+        font-size:22px;
+    }
+
+    .header-actions{
+        width:100%;
+    }
+
+    .header-actions .btn{
+        flex:1;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+        gap:9px;
+    }
+
+    .stat-card{
+        padding:14px;
+    }
+
+    .stat-value{
+        font-size:22px;
+    }
+
+    .search-row{
+        grid-template-columns:1fr;
+    }
+
+    .search-box{
+        grid-column:auto;
+    }
+
+    select{
+        width:100%;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .form-group.full{
+        grid-column:auto;
+    }
+
+    .detail-grid{
+        grid-template-columns:1fr;
+    }
+
+    .modal{
+        padding:0;
+        align-items:flex-end;
+    }
+
+    .modal-box{
+        width:100%;
+        max-height:96vh;
+        border-radius:20px 20px 0 0;
+    }
+
+    .modal-footer{
+        padding-bottom:20px;
+    }
+
+    .modal-footer .btn{
+        flex:1;
+    }
+
+    .top-actions{
+        gap:4px;
+    }
+
+    .lang-btn{
+        padding:7px 8px;
+        font-size:11px;
+    }
+
+}
+
+/* =========================================================
+   ACCESSIBILITY
+========================================================= */
+
+button:focus,
+input:focus,
+select:focus,
+textarea:focus{
+    outline:none;
+}
+
+button{
+    -webkit-tap-highlight-color:transparent;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- =======================================================
+     TOP BAR
+======================================================= -->
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <div class="brand-logo">
+            🏗️
+        </div>
+
+        <div>
+            <h1>TASSIMO BTP CONSTRUCTION SARL</h1>
+            <small id="businessSubtitle">
+                Gestion des clients
+            </small>
+        </div>
+
+    </div>
+
+    <div class="top-actions">
+
+        <button
+            class="lang-btn active"
+            id="frBtn"
+            onclick="changeLanguage('fr')"
+        >
+            FR
+        </button>
+
+        <button
+            class="lang-btn"
+            id="enBtn"
+            onclick="changeLanguage('en')"
+        >
+            EN
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- =======================================================
+     MAIN
+======================================================= -->
+
+<main class="container">
+
+    <section class="page-header">
+
+        <div class="page-title">
+
+            <h2 id="pageTitle">
+                Clients
+            </h2>
+
+            <p id="pageDescription">
+                Gérez les clients, prospects et relations commerciales
+                de TASSIMO BTP.
+            </p>
+
+        </div>
+
+        <div class="header-actions">
+
+            <button
+                class="btn btn-secondary"
+                onclick="loadCustomers()"
+                id="refreshBtn"
+            >
+                ↻ Actualiser
+            </button>
+
+            <button
+                class="btn btn-primary"
+                onclick="openCustomerForm()"
+                id="addBtn"
+            >
+                + Ajouter un client
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         STATISTICS
+    ==================================================== -->
+
+    <section class="stats">
+
+        <div class="stat-card">
+
+            <div
+                class="stat-label"
+                id="totalLabel"
+            >
+                Total clients
+            </div>
+
+            <div
+                class="stat-value"
+                id="totalCustomers"
+            >
+                0
+            </div>
+
+            <div
+                class="stat-description"
+                id="totalDescription"
+            >
+                Tous les clients enregistrés
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div
+                class="stat-label"
+                id="activeLabel"
+            >
+                Clients actifs
+            </div>
+
+            <div
+                class="stat-value"
+                id="activeCustomers"
+            >
+                0
+            </div>
+
+            <div
+                class="stat-description"
+                id="activeDescription"
+            >
+                Relations commerciales actives
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div
+                class="stat-label"
+                id="leadLabel"
+            >
+                Prospects
+            </div>
+
+            <div
+                class="stat-value"
+                id="leadCustomers"
+            >
+                0
+            </div>
+
+            <div
+                class="stat-description"
+                id="leadDescription"
+            >
+                Clients potentiels
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div
+                class="stat-label"
+                id="sourceLabel"
+            >
+                Sources
+            </div>
+
+            <div
+                class="stat-value"
+                id="sourceCustomers"
+            >
+                0
+            </div>
+
+            <div
+                class="stat-description"
+                id="sourceDescription"
+            >
+                Canaux d'acquisition
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         SEARCH / FILTER
+    ==================================================== -->
+
+    <section class="toolbar">
+
+        <div class="search-row">
+
+            <div class="search-box">
+
+                <span class="search-icon">
+                    🔎
+                </span>
+
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Rechercher un client..."
+                    oninput="renderCustomers()"
+                >
+
+            </div>
+
+
+            <select
+                id="statusFilter"
+                onchange="renderCustomers()"
+            >
+
+                <option value="">
+                    Tous les statuts
+                </option>
+
+                <option value="active">
+                    Actif
+                </option>
+
+                <option value="lead">
+                    Prospect
+                </option>
+
+                <option value="inactive">
+                    Inactif
+                </option>
+
+            </select>
+
+
+            <select
+                id="sourceFilter"
+                onchange="renderCustomers()"
+            >
+
+                <option value="">
+                    Toutes les sources
+                </option>
+
+            </select>
+
+
+            <button
+                class="btn btn-secondary"
+                onclick="clearFilters()"
+                id="clearFilterBtn"
+            >
+                Effacer
+            </button>
+
+        </div>
+
+        <div
+            class="filter-count"
+            id="filterCount"
+        >
+            0 client
+        </div>
+
+    </section>
+
+
+    <!-- ===================================================
+         CUSTOMER TABLE
+    ==================================================== -->
+
+    <section class="table-card">
+
+        <div class="table-header">
+
+            <h3 id="tableTitle">
+                Liste des clients
+            </h3>
+
+            <span
+                class="source"
+                id="tableHint"
+            >
+                Données synchronisées avec le système
+            </span>
+
+        </div>
+
+
+        <div
+            class="table-wrapper"
+            id="customerContainer"
+        >
+
+            <div class="loading">
+
+                <div class="spinner"></div>
+
+                <div id="loadingText">
+                    Chargement des clients...
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =======================================================
+     CUSTOMER FORM MODAL
+======================================================= -->
+
+<div
+    class="modal"
+    id="customerModal"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3 id="formTitle">
+                Nouveau client
+            </h3>
+
+            <button
+                class="close"
+                onclick="closeModal('customerModal')"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+
+                    <label>
+                        <span id="nameLabel">Nom complet</span>
+                        <span class="required">*</span>
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="c_name"
+                        autocomplete="name"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label id="phoneLabel">
+                        Téléphone / WhatsApp
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="c_phone"
+                        type="tel"
+                        autocomplete="tel"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label id="emailLabel">
+                        Email
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="c_email"
+                        type="email"
+                        autocomplete="email"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label id="companyLabel">
+                        Entreprise
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="c_company"
+                        autocomplete="organization"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label id="locationLabel">
+                        Localisation
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="c_location"
+                        autocomplete="address-level2"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label id="statusLabel">
+                        Statut
+                    </label>
+
+                    <select
+                        class="form-control"
+                        id="c_status"
+                    >
+
+                        <option value="active">
+                            Actif
+                        </option>
+
+                        <option value="lead">
+                            Prospect
+                        </option>
+
+                        <option value="inactive">
+                            Inactif
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label id="categoryLabel">
+                        Type de client
+                    </label>
+
+                    <select
+                        class="form-control"
+                        id="c_category"
+                    >
+
+                        <option value="">
+                            -- Sélectionner --
+                        </option>
+
+                        <option value="individual">
+                            Particulier
+                        </option>
+
+                        <option value="company">
+                            Entreprise
+                        </option>
+
+                        <option value="developer">
+                            Promoteur immobilier
+                        </option>
+
+                        <option value="institution">
+                            Institution
+                        </option>
+
+                        <option value="government">
+                            Administration publique
+                        </option>
+
+                        <option value="contractor">
+                            Entrepreneur / Partenaire
+                        </option>
+
+                        <option value="training">
+                            Formation professionnelle
+                        </option>
+
+                        <option value="other">
+                            Autre
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label id="sourceFormLabel">
+                        Source
+                    </label>
+
+                    <select
+                        class="form-control"
+                        id="c_source"
+                    >
+
+                        <option value="">
+                            -- Sélectionner --
+                        </option>
+
+                        <option value="whatsapp">
+                            WhatsApp
+                        </option>
+
+                        <option value="facebook">
+                            Facebook
+                        </option>
+
+                        <option value="instagram">
+                            Instagram
+                        </option>
+
+                        <option value="tiktok">
+                            TikTok
+                        </option>
+
+                        <option value="linkedin">
+                            LinkedIn
+                        </option>
+
+                        <option value="youtube">
+                            YouTube
+                        </option>
+
+                        <option value="website">
+                            Site web
+                        </option>
+
+                        <option value="referral">
+                            Recommandation
+                        </option>
+
+                        <option value="walk-in">
+                            Visite directe
+                        </option>
+
+                        <option value="other">
+                            Autre
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label id="budgetLabel">
+                        Budget estimé
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="c_budget"
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="FCFA"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label id="priorityLabel">
+                        Priorité
+                    </label>
+
+                    <select
+                        class="form-control"
+                        id="c_priority"
+                    >
+
+                        <option value="normal">
+                            Normale
+                        </option>
+
+                        <option value="high">
+                            Haute
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group full">
+
+                    <label id="serviceLabel">
+                        Service / besoin recherché
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="c_service"
+                        placeholder="Construction, rénovation, architecture..."
+                    >
+
+                </div>
+
+
+                <div class="form-group full">
+
+                    <label id="descriptionLabel">
+                        Notes / description
+                    </label>
+
+                    <textarea
+                        id="c_description"
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button
+                class="btn btn-secondary"
+                onclick="closeModal('customerModal')"
+                id="cancelBtn"
+            >
+                Annuler
+            </button>
+
+            <button
+                class="btn btn-primary"
+                onclick="saveCustomer()"
+                id="saveBtn"
+            >
+                Enregistrer le client
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =======================================================
+     CUSTOMER DETAILS MODAL
+======================================================= -->
+
+<div
+    class="modal"
+    id="detailsModal"
+>
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h3 id="detailsTitle">
+                Profil client
+            </h3>
+
+            <button
+                class="close"
+                onclick="closeModal('detailsModal')"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            class="modal-body"
+            id="detailsBody"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- =======================================================
+     TOAST
+======================================================= -->
+
+<div
+    class="toast"
+    id="toast"
+></div>
+
+
+<script>
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let customers = [];
+
+let editingCustomerId = null;
+
+let language =
+    localStorage.getItem("lang") || "fr";
+
+
+/* =========================================================
+   TRANSLATIONS
+========================================================= */
+
+const TEXT = {
+
+    fr: {
+
+        subtitle:
+            "Gestion des clients",
+
+        title:
+            "Clients",
+
+        description:
+            "Gérez les clients, prospects et relations commerciales de TASSIMO BTP.",
+
+        refresh:
+            "↻ Actualiser",
+
+        add:
+            "+ Ajouter un client",
+
+        total:
+            "Total clients",
+
+        totalDescription:
+            "Tous les clients enregistrés",
+
+        active:
+            "Clients actifs",
+
+        activeDescription:
+            "Relations commerciales actives",
+
+        leads:
+            "Prospects",
+
+        leadsDescription:
+            "Clients potentiels",
+
+        sources:
+            "Sources",
+
+        sourcesDescription:
+            "Canaux d'acquisition",
+
+        search:
+            "Rechercher un client...",
+
+        allStatuses:
+            "Tous les statuts",
+
+        activeStatus:
+            "Actif",
+
+        leadStatus:
+            "Prospect",
+
+        inactiveStatus:
+            "Inactif",
+
+        allSources:
+            "Toutes les sources",
+
+        clear:
+            "Effacer",
+
+        list:
+            "Liste des clients",
+
+        tableHint:
+            "Données synchronisées avec le système",
+
+        loading:
+            "Chargement des clients...",
+
+        noCustomers:
+            "Aucun client trouvé",
+
+        noCustomersDescription:
+            "Commencez par ajouter un client ou modifiez votre recherche.",
+
+        name:
+            "Nom",
+
+        phone:
+            "Téléphone",
+
+        email:
+            "Email",
+
+        company:
+            "Entreprise",
+
+        location:
+            "Localisation",
+
+        status:
+            "Statut",
+
+        source:
+            "Source",
+
+        lastMessage:
+            "Dernier message",
+
+        created:
+            "Créé le",
+
+        actions:
+            "Actions",
+
+        view:
+            "Voir",
+
+        edit:
+            "Modifier",
+
+        delete:
+            "Supprimer",
+
+        newCustomer:
+            "Nouveau client",
+
+        editCustomer:
+            "Modifier le client",
+
+        fullName:
+            "Nom complet",
+
+        phoneWhatsApp:
+            "Téléphone / WhatsApp",
+
+        customerCategory:
+            "Type de client",
+
+        sourceForm:
+            "Source",
+
+        estimatedBudget:
+            "Budget estimé",
+
+        priority:
+            "Priorité",
+
+        service:
+            "Service / besoin recherché",
+
+        notes:
+            "Notes / description",
+
+        normal:
+            "Normale",
+
+        high:
+            "Haute",
+
+        cancel:
+            "Annuler",
+
+        save:
+            "Enregistrer le client",
+
+        profile:
+            "Profil client",
+
+        contact:
+            "Contact",
+
+        customerSince:
+            "Client depuis",
+
+        lastContact:
+            "Dernier contact",
+
+        category:
+            "Type",
+
+        budget:
+            "Budget",
+
+        quickActions:
+            "Actions rapides",
+
+        call:
+            "Appeler",
+
+        whatsapp:
+            "WhatsApp",
+
+        emailAction:
+            "Email",
+
+        messages:
+            "Messages",
+
+        projects:
+            "Projets",
+
+        confirmDelete:
+            "Voulez-vous vraiment supprimer ce client ?",
+
+        saved:
+            "Client enregistré avec succès.",
+
+        deleted:
+            "Client supprimé avec succès.",
+
+        required:
+            "Veuillez saisir au moins un nom, téléphone ou email.",
+
+        error:
+            "Une erreur est survenue.",
+
+        client:
+            "client",
+
+        clients:
+            "clients"
+
+    },
+
+
+    en: {
+
+        subtitle:
+            "Customer Management",
+
+        title:
+            "Customers",
+
+        description:
+            "Manage TASSIMO BTP customers, prospects and business relationships.",
+
+        refresh:
+            "↻ Refresh",
+
+        add:
+            "+ Add Customer",
+
+        total:
+            "Total Customers",
+
+        totalDescription:
+            "All registered customers",
+
+        active:
+            "Active Customers",
+
+        activeDescription:
+            "Active business relationships",
+
+        leads:
+            "Leads",
+
+        leadsDescription:
+            "Potential customers",
+
+        sources:
+            "Sources",
+
+        sourcesDescription:
+            "Acquisition channels",
+
+        search:
+            "Search customers...",
+
+        allStatuses:
+            "All statuses",
+
+        activeStatus:
+            "Active",
+
+        leadStatus:
+            "Lead",
+
+        inactiveStatus:
+            "Inactive",
+
+        allSources:
+            "All sources",
+
+        clear:
+            "Clear",
+
+        list:
+            "Customer List",
+
+        tableHint:
+            "Data synchronized with the system",
+
+        loading:
+            "Loading customers...",
+
+        noCustomers:
+            "No customers found",
+
+        noCustomersDescription:
+            "Start by adding a customer or change your search.",
+
+        name:
+            "Name",
+
+        phone:
+            "Phone",
+
+        email:
+            "Email",
+
+        company:
+            "Company",
+
+        location:
+            "Location",
+
+        status:
+            "Status",
+
+        source:
+            "Source",
+
+        lastMessage:
+            "Last Message",
+
+        created:
+            "Created",
+
+        actions:
+            "Actions",
+
+        view:
+            "View",
+
+        edit:
+            "Edit",
+
+        delete:
+            "Delete",
+
+        newCustomer:
+            "New Customer",
+
+        editCustomer:
+            "Edit Customer",
+
+        fullName:
+            "Full Name",
+
+        phoneWhatsApp:
+            "Phone / WhatsApp",
+
+        customerCategory:
+            "Customer Type",
+
+        sourceForm:
+            "Source",
+
+        estimatedBudget:
+            "Estimated Budget",
+
+        priority:
+            "Priority",
+
+        service:
+            "Service / Requirement",
+
+        notes:
+            "Notes / Description",
+
+        normal:
+            "Normal",
+
+        high:
+            "High",
+
+        cancel:
+            "Cancel",
+
+        save:
+            "Save Customer",
+
+        profile:
+            "Customer Profile",
+
+        contact:
+            "Contact",
+
+        customerSince:
+            "Customer Since",
+
+        lastContact:
+            "Last Contact",
+
+        category:
+            "Type",
+
+        budget:
+            "Budget",
+
+        quickActions:
+            "Quick Actions",
+
+        call:
+            "Call",
+
+        whatsapp:
+            "WhatsApp",
+
+        emailAction:
+            "Email",
+
+        messages:
+            "Messages",
+
+        projects:
+            "Projects",
+
+        confirmDelete:
+            "Do you really want to delete this customer?",
+
+        saved:
+            "Customer saved successfully.",
+
+        deleted:
+            "Customer deleted successfully.",
+
+        required:
+            "Please enter at least a name, phone or email.",
+
+        error:
+            "An error occurred.",
+
+        client:
+            "customer",
+
+        clients:
+            "customers"
+
+    }
+
+};
+
+
+function t(key){
+
+    return TEXT[language][key]
+        || TEXT.fr[key]
+        || key;
+
+}
+
+
+/* =========================================================
+   ESCAPING
+========================================================= */
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+
+}
+
+
+/* =========================================================
+   API
+========================================================= */
+
+async function api(url, options = {}){
+
+    options.headers = {
+
+        ...(options.headers || {}),
+
+        "Content-Type":
+            "application/json",
+
+        "X-Language":
+            language
+
+    };
+
+
+    const response =
+        await fetch(url, options);
+
+
+    if(response.status === 401){
+
+        window.location.href =
+            "/login";
+
+        return null;
+
+    }
+
+
+    let data = {};
+
+    try{
+
+        data =
+            await response.json();
+
+    }catch(error){
+
+        data = {};
+
+    }
+
+
+    if(!response.ok){
+
+        throw new Error(
+            data.error ||
+            t("error")
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+/* =========================================================
+   LOAD CUSTOMERS
+========================================================= */
+
+async function loadCustomers(){
+
+    showLoading();
+
+    try{
+
+        const data =
+            await api("/api/customers");
+
+
+        if(!data){
+
+            return;
+
+        }
+
+
+        customers =
+            Array.isArray(data.customers)
+                ? data.customers
+                : [];
+
+
+        populateSourceFilter();
+
+        updateStatistics();
+
+        renderCustomers();
+
+    }catch(error){
+
+        showError(
+            error.message
+            || t("error")
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function showLoading(){
+
+    document.getElementById(
+        "customerContainer"
+    ).innerHTML = `
+
+        <div class="loading">
+
+            <div class="spinner"></div>
+
+            <div>
+                ${escapeHtml(t("loading"))}
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+function showError(message){
+
+    document.getElementById(
+        "customerContainer"
+    ).innerHTML = `
+
+        <div class="empty">
+
+            <div class="empty-icon">
+                ⚠️
+            </div>
+
+            <h3>
+                ${escapeHtml(message)}
+            </h3>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+function updateStatistics(){
+
+    const total =
+        customers.length;
+
+
+    const active =
+        customers.filter(
+            c =>
+                String(c.status || "")
+                    .toLowerCase()
+                === "active"
+        ).length;
+
+
+    const leads =
+        customers.filter(
+            c =>
+                String(c.status || "")
+                    .toLowerCase()
+                === "lead"
+        ).length;
+
+
+    const sources =
+        new Set(
+            customers
+                .map(c => c.source)
+                .filter(Boolean)
+        ).size;
+
+
+    document.getElementById(
+        "totalCustomers"
+    ).textContent = total;
+
+
+    document.getElementById(
+        "activeCustomers"
+    ).textContent = active;
+
+
+    document.getElementById(
+        "leadCustomers"
+    ).textContent = leads;
+
+
+    document.getElementById(
+        "sourceCustomers"
+    ).textContent = sources;
+
+}
+
+
+/* =========================================================
+   SOURCE FILTER
+========================================================= */
+
+function populateSourceFilter(){
+
+    const select =
+        document.getElementById(
+            "sourceFilter"
+        );
+
+
+    const current =
+        select.value;
+
+
+    const sources =
+        [...new Set(
+            customers
+                .map(c => c.source)
+                .filter(Boolean)
+        )]
+        .sort();
+
+
+    select.innerHTML = `
+
+        <option value="">
+            ${escapeHtml(t("allSources"))}
+        </option>
+
+    `;
+
+
+    sources.forEach(source => {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value = source;
+
+        option.textContent =
+            formatSource(source);
+
+        select.appendChild(option);
+
+    });
+
+
+    select.value = current;
+
+}
+
+
+/* =========================================================
+   FILTERING
+========================================================= */
+
+function getFilteredCustomers(){
+
+    const query =
+        document.getElementById(
+            "searchInput"
+        ).value
+        .toLowerCase()
+        .trim();
+
+
+    const status =
+        document.getElementById(
+            "statusFilter"
+        ).value;
+
+
+    const source =
+        document.getElementById(
+            "sourceFilter"
+        ).value;
+
+
+    return customers.filter(customer => {
+
+        const searchable = [
+
+            customer.name,
+
+            customer.phone,
+
+            customer.email,
+
+            customer.company,
+
+            customer.location,
+
+            customer.source,
+
+            customer.category,
+
+            customer.service,
+
+            customer.description,
+
+            customer.last_message
+
+        ]
+        .join(" ")
+        .toLowerCase();
+
+
+        const matchesSearch =
+            !query
+            || searchable.includes(query);
+
+
+        const matchesStatus =
+            !status
+            || String(customer.status || "")
+                .toLowerCase()
+            === status;
+
+
+        const matchesSource =
+            !source
+            || customer.source
+            === source;
+
+
+        return (
+            matchesSearch
+            &&
+            matchesStatus
+            &&
+            matchesSource
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function renderCustomers(){
+
+    const rows =
+        getFilteredCustomers();
+
+
+    document.getElementById(
+        "filterCount"
+    ).textContent =
+        `${rows.length} ${
+            rows.length === 1
+                ? t("client")
+                : t("clients")
+        }`;
+
+
+    const container =
+        document.getElementById(
+            "customerContainer"
+        );
+
+
+    if(!rows.length){
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                <div class="empty-icon">
+                    👥
+                </div>
+
+                <h3>
+                    ${escapeHtml(t("noCustomers"))}
+                </h3>
+
+                <p>
+                    ${escapeHtml(
+                        t("noCustomersDescription")
+                    )}
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        ${escapeHtml(t("name"))}
+                    </th>
+
+                    <th>
+                        ${escapeHtml(t("phone"))}
+                    </th>
+
+                    <th>
+                        ${escapeHtml(t("company"))}
+                    </th>
+
+                    <th>
+                        ${escapeHtml(t("location"))}
+                    </th>
+
+                    <th>
+                        ${escapeHtml(t("status"))}
+                    </th>
+
+                    <th>
+                        ${escapeHtml(t("source"))}
+                    </th>
+
+                    <th>
+                        ${escapeHtml(t("lastMessage"))}
+                    </th>
+
+                    <th>
+                        ${escapeHtml(t("actions"))}
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                ${rows.map(
+                    customerRow
+                ).join("")}
+
+            </tbody>
+
+        </table>
+
+    `;
+
+}
+
+
+/* =========================================================
+   CUSTOMER ROW
+========================================================= */
+
+function customerRow(customer){
+
+    const id =
+        String(customer.id || "");
+
+
+    const name =
+        customer.name
+        || customer.phone
+        || customer.email
+        || "—";
+
+
+    const initials =
+        getInitials(name);
+
+
+    const status =
+        String(
+            customer.status
+            || "active"
+        ).toLowerCase();
+
+
+    const priority =
+        String(
+            customer.priority
+            || "normal"
+        ).toLowerCase();
+
+
+    return `
+
+        <tr>
+
+            <td>
+
+                <div class="customer-cell">
+
+                    <div class="avatar">
+                        ${escapeHtml(initials)}
+                    </div>
+
+                    <div>
+
+                        <div class="customer-name">
+                            ${escapeHtml(name)}
+                        </div>
+
+                        <div class="customer-sub">
+                            ${escapeHtml(
+                                customer.email || ""
+                            )}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </td>
+
+
+            <td>
+
+                ${
+                    customer.phone
+                        ? escapeHtml(
+                            customer.phone
+                        )
+                        : "—"
+                }
+
+            </td>
+
+
+            <td>
+
+                ${
+                    customer.company
+                        ? escapeHtml(
+                            customer.company
+                        )
+                        : "—"
+                }
+
+            </td>
+
+
+            <td>
+
+                ${
+                    customer.location
+                        ? escapeHtml(
+                            customer.location
+                        )
+                        : "—"
+                }
+
+            </td>
+
+
+            <td>
+
+                <span class="
+                    badge
+                    ${statusBadge(status)}
+                ">
+
+                    ${escapeHtml(
+                        statusLabel(status)
+                    )}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                <span class="source">
+
+                    ${escapeHtml(
+                        formatSource(
+                            customer.source
+                        )
+                    )}
+
+                </span>
+
+            </td>
+
+
+            <td>
+
+                ${
+                    customer.last_message
+                        ? escapeHtml(
+                            String(
+                                customer.last_message
+                            ).slice(0,60)
+                        )
+                        : "—"
+                }
+
+            </td>
+
+
+            <td>
+
+                <div class="actions-cell">
+
+                    <button
+                        class="icon-btn"
+                        title="${escapeHtml(t("view"))}"
+                        onclick="viewCustomer('${escapeJs(id)}')"
+                    >
+                        👁️
+                    </button>
+
+
+                    <button
+                        class="icon-btn"
+                        title="${escapeHtml(t("edit"))}"
+                        onclick="editCustomer('${escapeJs(id)}')"
+                    >
+                        ✏️
+                    </button>
+
+
+                    <button
+                        class="icon-btn"
+                        title="${escapeHtml(t("delete"))}"
+                        onclick="deleteCustomer('${escapeJs(id)}')"
+                    >
+                        🗑️
+                    </button>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+    `;
+
+}
+
+
+/* =========================================================
+   CUSTOMER FORM
+========================================================= */
+
+function openCustomerForm(customer = null){
+
+    editingCustomerId =
+        customer?.id || null;
+
+
+    document.getElementById(
+        "formTitle"
+    ).textContent =
+        customer
+            ? t("editCustomer")
+            : t("newCustomer");
+
+
+    document.getElementById(
+        "c_name"
+    ).value =
+        customer?.name || "";
+
+
+    document.getElementById(
+        "c_phone"
+    ).value =
+        customer?.phone || "";
+
+
+    document.getElementById(
+        "c_email"
+    ).value =
+        customer?.email || "";
+
+
+    document.getElementById(
+        "c_company"
+    ).value =
+        customer?.company || "";
+
+
+    document.getElementById(
+        "c_location"
+    ).value =
+        customer?.location || "";
+
+
+    document.getElementById(
+        "c_status"
+    ).value =
+        customer?.status || "active";
+
+
+    document.getElementById(
+        "c_category"
+    ).value =
+        customer?.category || "";
+
+
+    document.getElementById(
+        "c_source"
+    ).value =
+        customer?.source || "";
+
+
+    document.getElementById(
+        "c_budget"
+    ).value =
+        customer?.budget || "";
+
+
+    document.getElementById(
+        "c_priority"
+    ).value =
+        customer?.priority || "normal";
+
+
+    document.getElementById(
+        "c_service"
+    ).value =
+        customer?.service || "";
+
+
+    document.getElementById(
+        "c_description"
+    ).value =
+        customer?.description || "";
+
+
+    document.getElementById(
+        "customerModal"
+    ).classList.add("show");
+
+
+    setTimeout(
+        () =>
+            document.getElementById(
+                "c_name"
+            ).focus(),
+        100
+    );
+
+}
+
+
+/* =========================================================
+   SAVE CUSTOMER
+========================================================= */
+
+async function saveCustomer(){
+
+    const data = {
+
+        name:
+            document.getElementById(
+                "c_name"
+            ).value.trim(),
+
+        phone:
+            document.getElementById(
+                "c_phone"
+            ).value.trim(),
+
+        email:
+            document.getElementById(
+                "c_email"
+            ).value.trim(),
+
+        company:
+            document.getElementById(
+                "c_company"
+            ).value.trim(),
+
+        location:
+            document.getElementById(
+                "c_location"
+            ).value.trim(),
+
+        status:
+            document.getElementById(
+                "c_status"
+            ).value,
+
+        category:
+            document.getElementById(
+                "c_category"
+            ).value,
+
+        source:
+            document.getElementById(
+                "c_source"
+            ).value,
+
+        budget:
+            document.getElementById(
+                "c_budget"
+            ).value,
+
+        priority:
+            document.getElementById(
+                "c_priority"
+            ).value,
+
+        service:
+            document.getElementById(
+                "c_service"
+            ).value.trim(),
+
+        description:
+            document.getElementById(
+                "c_description"
+            ).value.trim()
+
+    };
+
+
+    if(
+        !data.name
+        &&
+        !data.phone
+        &&
+        !data.email
+    ){
+
+        showToast(
+            t("required")
+        );
+
+        return;
+
+    }
+
+
+    const saveButton =
+        document.getElementById(
+            "saveBtn"
+        );
+
+
+    saveButton.disabled = true;
+
+    saveButton.textContent =
+        language === "fr"
+            ? "Enregistrement..."
+            : "Saving...";
+
+
+    try{
+
+        let response;
+
+
+        if(editingCustomerId){
+
+            response =
+                await api(
+                    "/api/customers?id="
+                    +
+                    encodeURIComponent(
+                        editingCustomerId
+                    ),
+                    {
+
+                        method:"PUT",
+
+                        body:
+                            JSON.stringify({
+
+                                ...data,
+
+                                id:
+                                    editingCustomerId
+
+                            })
+
+                    }
+                );
+
+        }else{
+
+            response =
+                await api(
+                    "/api/customers",
+                    {
+
+                        method:"POST",
+
+                        body:
+                            JSON.stringify(data)
+
+                    }
+                );
+
+        }
+
+
+        if(response){
+
+            closeModal(
+                "customerModal"
+            );
+
+
+            showToast(
+                t("saved")
+            );
+
+
+            await loadCustomers();
+
+        }
+
+    }catch(error){
+
+        showToast(
+            error.message
+            || t("error")
+        );
+
+    }finally{
+
+        saveButton.disabled =
+            false;
+
+        saveButton.textContent =
+            t("save");
+
+    }
+
+}
+
+
+/* =========================================================
+   EDIT
+========================================================= */
+
+function editCustomer(id){
+
+    const customer =
+        customers.find(
+            c =>
+                String(c.id)
+                === String(id)
+        );
+
+
+    if(customer){
+
+        openCustomerForm(
+            customer
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+async function deleteCustomer(id){
+
+    if(!id){
+
+        return;
+
+    }
+
+
+    if(
+        !confirm(
+            t("confirmDelete")
+        )
+    ){
+
+        return;
+
+    }
+
+
+    try{
+
+        await api(
+            "/api/customers?id="
+            +
+            encodeURIComponent(id),
+            {
+
+                method:"DELETE",
+
+                body:
+                    JSON.stringify({
+                        id:id
+                    })
+
+            }
+        );
+
+
+        showToast(
+            t("deleted")
+        );
+
+
+        await loadCustomers();
+
+    }catch(error){
+
+        showToast(
+            error.message
+            || t("error")
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   VIEW CUSTOMER
+========================================================= */
+
+function viewCustomer(id){
+
+    const customer =
+        customers.find(
+            c =>
+                String(c.id)
+                === String(id)
+        );
+
+
+    if(!customer){
+
+        return;
+
+    }
+
+
+    const name =
+        customer.name
+        || customer.phone
+        || customer.email
+        || "—";
+
+
+    const initials =
+        getInitials(name);
+
+
+    const phone =
+        customer.phone || "";
+
+
+    const email =
+        customer.email || "";
+
+
+    document.getElementById(
+        "detailsBody"
+    ).innerHTML = `
+
+        <div class="profile-header">
+
+            <div class="profile-avatar">
+                ${escapeHtml(initials)}
+            </div>
+
+            <div>
+
+                <div class="profile-name">
+                    ${escapeHtml(name)}
+                </div>
+
+                <div class="profile-meta">
+
+                    ${
+                        customer.company
+                            ? escapeHtml(
+                                customer.company
+                            )
+                            : escapeHtml(
+                                t("profile")
+                            )
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="detail-grid">
+
+            ${detail(
+                t("phone"),
+                customer.phone
+            )}
+
+            ${detail(
+                t("email"),
+                customer.email
+            )}
+
+            ${detail(
+                t("company"),
+                customer.company
+            )}
+
+            ${detail(
+                t("location"),
+                customer.location
+            )}
+
+            ${detail(
+                t("status"),
+                statusLabel(
+                    customer.status
+                    || "active"
+                )
+            )}
+
+            ${detail(
+                t("source"),
+                formatSource(
+                    customer.source
+                )
+            )}
+
+            ${detail(
+                t("category"),
+                customer.category
+            )}
+
+            ${detail(
+                t("budget"),
+                customer.budget
+                    ? formatBudget(
+                        customer.budget
+                    )
+                    : ""
+            )}
+
+            ${detail(
+                t("priority"),
+                customer.priority
+                    || "normal"
+            )}
+
+            ${detail(
+                t("customerSince"),
+                formatDate(
+                    customer.created_at
+                )
+            )}
+
+            ${detail(
+                t("lastContact"),
+                formatDate(
+                    customer.last_contact_at
+                )
+            )}
+
+            ${detail(
+                t("service"),
+                customer.service
+            )}
+
+        </div>
+
+
+        ${
+            customer.description
+            ? `
+
+                <div
+                    class="detail"
+                    style="margin-top:12px"
+                >
+
+                    <div class="detail-label">
+                        ${escapeHtml(
+                            t("notes")
+                        )}
+                    </div>
+
+                    <div class="detail-value">
+                        ${escapeHtml(
+                            customer.description
+                        )}
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+
+        ${
+            customer.last_message
+            ? `
+
+                <div
+                    class="detail"
+                    style="margin-top:12px"
+                >
+
+                    <div class="detail-label">
+                        ${escapeHtml(
+                            t("lastMessage")
+                        )}
+                    </div>
+
+                    <div class="detail-value">
+                        ${escapeHtml(
+                            customer.last_message
+                        )}
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+
+        <div>
+
+            <div
+                style="
+                    font-weight:800;
+                    margin-top:20px;
+                    margin-bottom:10px;
+                "
+            >
+                ${escapeHtml(
+                    t("quickActions")
+                )}
+            </div>
+
+
+            <div class="quick-actions">
+
+                ${
+                    phone
+                    ? `
+
+                        <a
+                            class="btn btn-success"
+                            href="tel:${escapeHtml(phone)}"
+                        >
+                            📞 ${escapeHtml(
+                                t("call")
+                            )}
+                        </a>
+
+                        <a
+                            class="btn btn-success"
+                            target="_blank"
+                            rel="noopener"
+                            href="${whatsappUrl(phone)}"
+                        >
+                            💬 ${escapeHtml(
+                                t("whatsapp")
+                            )}
+                        </a>
+
+                    `
+                    : ""
+                }
+
+
+                ${
+                    email
+                    ? `
+
+                        <a
+                            class="btn btn-secondary"
+                            href="mailto:${escapeHtml(email)}"
+                        >
+                            📧 ${escapeHtml(
+                                t("emailAction")
+                            )}
+                        </a>
+
+                    `
+                    : ""
+                }
+
+
+                <button
+                    class="btn btn-secondary"
+                    onclick="openCustomerMessages('${escapeJs(String(customer.id || ""))}')"
+                >
+                    💬 ${escapeHtml(
+                        t("messages")
+                    )}
+                </button>
+
+
+                <button
+                    class="btn btn-secondary"
+                    onclick="openCustomerProjects('${escapeJs(String(customer.id || ""))}')"
+                >
+                    🏗️ ${escapeHtml(
+                        t("projects")
+                    )}
+                </button>
+
+
+                <button
+                    class="btn btn-primary"
+                    onclick="closeModal('detailsModal');editCustomer('${escapeJs(String(customer.id || ""))}')"
+                >
+                    ✏️ ${escapeHtml(
+                        t("edit")
+                    )}
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    document.getElementById(
+        "detailsModal"
+    ).classList.add("show");
+
+}
+
+
+/* =========================================================
+   DETAIL HELPER
+========================================================= */
+
+function detail(label,value){
+
+    if(
+        value === null
+        ||
+        value === undefined
+        ||
+        value === ""
+    ){
+
+        return "";
+
+    }
+
+
+    return `
+
+        <div class="detail">
+
+            <div class="detail-label">
+                ${escapeHtml(label)}
+            </div>
+
+            <div class="detail-value">
+                ${escapeHtml(value)}
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   FUTURE MESSAGE CONNECTION
+========================================================= */
+
+function openCustomerMessages(id){
+
+    /*
+       Future integration:
+
+       Open unified Messages with:
+
+       /messages?customer_id=ID
+
+       This page is intentionally prepared
+       for the future Messages module.
+    */
+
+    window.location.href =
+        "/?page=messages&customer_id="
+        +
+        encodeURIComponent(id);
+
+}
+
+
+/* =========================================================
+   FUTURE PROJECT CONNECTION
+========================================================= */
+
+function openCustomerProjects(id){
+
+    /*
+       Future integration:
+
+       Open Projects filtered by
+       customer_id.
+    */
+
+    window.location.href =
+        "/?page=projects&customer_id="
+        +
+        encodeURIComponent(id);
+
+}
+
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+function changeLanguage(lang){
+
+    language = lang;
+
+    localStorage.setItem(
+        "lang",
+        lang
+    );
+
+
+    updateInterface();
+
+    renderCustomers();
+
+}
+
+
+/* =========================================================
+   UPDATE INTERFACE
+========================================================= */
+
+function updateInterface(){
+
+    document.documentElement.lang =
+        language;
+
+
+    document.getElementById(
+        "businessSubtitle"
+    ).textContent =
+        t("subtitle");
+
+
+    document.getElementById(
+        "pageTitle"
+    ).textContent =
+        t("title");
+
+
+    document.getElementById(
+        "pageDescription"
+    ).textContent =
+        t("description");
+
+
+    document.getElementById(
+        "refreshBtn"
+    ).textContent =
+        t("refresh");
+
+
+    document.getElementById(
+        "addBtn"
+    ).textContent =
+        t("add");
+
+
+    document.getElementById(
+        "totalLabel"
+    ).textContent =
+        t("total");
+
+
+    document.getElementById(
+        "totalDescription"
+    ).textContent =
+        t("totalDescription");
+
+
+    document.getElementById(
+        "activeLabel"
+    ).textContent =
+        t("active");
+
+
+    document.getElementById(
+        "activeDescription"
+    ).textContent =
+        t("activeDescription");
+
+
+    document.getElementById(
+        "leadLabel"
+    ).textContent =
+        t("leads");
+
+
+    document.getElementById(
+        "leadDescription"
+    ).textContent =
+        t("leadsDescription");
+
+
+    document.getElementById(
+        "sourceLabel"
+    ).textContent =
+        t("sources");
+
+
+    document.getElementById(
+        "sourceDescription"
+    ).textContent =
+        t("sourcesDescription");
+
+
+    document.getElementById(
+        "searchInput"
+    ).placeholder =
+        t("search");
+
+
+    document.getElementById(
+        "clearFilterBtn"
+    ).textContent =
+        t("clear");
+
+
+    document.getElementById(
+        "tableTitle"
+    ).textContent =
+        t("list");
+
+
+    document.getElementById(
+        "tableHint"
+    ).textContent =
+        t("tableHint");
+
+
+    document.getElementById(
+        "nameLabel"
+    ).textContent =
+        t("fullName");
+
+
+    document.getElementById(
+        "phoneLabel"
+    ).textContent =
+        t("phoneWhatsApp");
+
+
+    document.getElementById(
+        "emailLabel"
+    ).textContent =
+        t("email");
+
+
+    document.getElementById(
+        "companyLabel"
+    ).textContent =
+        t("company");
+
+
+    document.getElementById(
+        "locationLabel"
+    ).textContent =
+        t("location");
+
+
+    document.getElementById(
+        "statusLabel"
+    ).textContent =
+        t("status");
+
+
+    document.getElementById(
+        "categoryLabel"
+    ).textContent =
+        t("customerCategory");
+
+
+    document.getElementById(
+        "sourceFormLabel"
+    ).textContent =
+        t("sourceForm");
+
+
+    document.getElementById(
+        "budgetLabel"
+    ).textContent =
+        t("estimatedBudget");
+
+
+    document.getElementById(
+        "priorityLabel"
+    ).textContent =
+        t("priority");
+
+
+    document.getElementById(
+        "serviceLabel"
+    ).textContent =
+        t("service");
+
+
+    document.getElementById(
+        "descriptionLabel"
+    ).textContent =
+        t("notes");
+
+
+    document.getElementById(
+        "cancelBtn"
+    ).textContent =
+        t("cancel");
+
+
+    document.getElementById(
+        "saveBtn"
+    ).textContent =
+        t("save");
+
+
+    document.getElementById(
+        "frBtn"
+    ).classList.toggle(
+        "active",
+        language === "fr"
+    );
+
+
+    document.getElementById(
+        "enBtn"
+    ).classList.toggle(
+        "active",
+        language === "en"
+    );
+
+
+    updateStatusFilter();
+
+}
+
+
+/* =========================================================
+   FILTER TRANSLATION
+========================================================= */
+
+function updateStatusFilter(){
+
+    const filter =
+        document.getElementById(
+            "statusFilter"
+        );
+
+
+    const current =
+        filter.value;
+
+
+    filter.innerHTML = `
+
+        <option value="">
+            ${escapeHtml(
+                t("allStatuses")
+            )}
+        </option>
+
+        <option value="active">
+            ${escapeHtml(
+                t("activeStatus")
+            )}
+        </option>
+
+        <option value="lead">
+            ${escapeHtml(
+                t("leadStatus")
+            )}
+        </option>
+
+        <option value="inactive">
+            ${escapeHtml(
+                t("inactiveStatus")
+            )}
+        </option>
+
+    `;
+
+
+    filter.value = current;
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function statusLabel(status){
+
+    status =
+        String(status || "")
+            .toLowerCase();
+
+
+    if(status === "lead"){
+
+        return t("leadStatus");
+
+    }
+
+
+    if(status === "inactive"){
+
+        return t("inactiveStatus");
+
+    }
+
+
+    return t("activeStatus");
+
+}
+
+
+function statusBadge(status){
+
+    status =
+        String(status || "")
+            .toLowerCase();
+
+
+    if(status === "lead"){
+
+        return "badge-lead";
+
+    }
+
+
+    if(status === "inactive"){
+
+        return "badge-inactive";
+
+    }
+
+
+    return "badge-active";
+
+}
+
+
+/* =========================================================
+   SOURCE FORMAT
+========================================================= */
+
+function formatSource(source){
+
+    if(!source){
+
+        return "—";
+
+    }
+
+
+    const map = {
+
+        whatsapp:"WhatsApp",
+
+        facebook:"Facebook",
+
+        instagram:"Instagram",
+
+        tiktok:"TikTok",
+
+        linkedin:"LinkedIn",
+
+        youtube:"YouTube",
+
+        website:
+            language === "fr"
+                ? "Site web"
+                : "Website",
+
+        referral:
+            language === "fr"
+                ? "Recommandation"
+                : "Referral",
+
+        "walk-in":
+            language === "fr"
+                ? "Visite directe"
+                : "Walk-in",
+
+        other:
+            language === "fr"
+                ? "Autre"
+                : "Other"
+
+    };
+
+
+    return map[source]
+        || source;
+
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+function formatDate(value){
+
+    if(!value){
+
+        return "—";
+
+    }
+
+
+    try{
+
+        return new Intl.DateTimeFormat(
+            language === "fr"
+                ? "fr-FR"
+                : "en-GB",
+            {
+                year:"numeric",
+                month:"short",
+                day:"numeric"
+            }
+        ).format(
+            new Date(value)
+        );
+
+    }catch(error){
+
+        return String(value);
+
+    }
+
+}
+
+
+/* =========================================================
+   BUDGET
+========================================================= */
+
+function formatBudget(value){
+
+    const number =
+        Number(value);
+
+
+    if(!Number.isFinite(number)){
+
+        return String(value);
+
+    }
+
+
+    return new Intl.NumberFormat(
+        language === "fr"
+            ? "fr-FR"
+            : "en-US"
+    ).format(number)
+    + " FCFA";
+
+}
+
+
+/* =========================================================
+   INITIALS
+========================================================= */
+
+function getInitials(name){
+
+    const parts =
+        String(name)
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+
+    if(!parts.length){
+
+        return "C";
+
+    }
+
+
+    if(parts.length === 1){
+
+        return parts[0]
+            .substring(0,2)
+            .toUpperCase();
+
+    }
+
+
+    return (
+        parts[0][0]
+        +
+        parts[parts.length - 1][0]
+    ).toUpperCase();
+
+}
+
+
+/* =========================================================
+   WHATSAPP
+========================================================= */
+
+function whatsappUrl(phone){
+
+    const clean =
+        String(phone)
+            .replace(/[^\d]/g,"");
+
+
+    return "https://wa.me/"
+        +
+        clean;
+
+}
+
+
+/* =========================================================
+   JAVASCRIPT ESCAPE
+========================================================= */
+
+function escapeJs(value){
+
+    return String(value || "")
+        .replace(/\\/g,"\\\\")
+        .replace(/'/g,"\\'")
+        .replace(/"/g,'\\"');
+
+}
+
+
+/* =========================================================
+   CLEAR FILTERS
+========================================================= */
+
+function clearFilters(){
+
+    document.getElementById(
+        "searchInput"
+    ).value = "";
+
+
+    document.getElementById(
+        "statusFilter"
+    ).value = "";
+
+
+    document.getElementById(
+        "sourceFilter"
+    ).value = "";
+
+
+    renderCustomers();
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+function closeModal(id){
+
+    document.getElementById(
+        id
+    ).classList.remove("show");
+
+}
+
+
+/* =========================================================
+   CLOSE MODAL WHEN CLICKING OUTSIDE
+========================================================= */
+
+document.querySelectorAll(
+    ".modal"
+).forEach(modal => {
+
+    modal.addEventListener(
+        "click",
+        event => {
+
+            if(
+                event.target === modal
+            ){
+
+                modal.classList.remove(
+                    "show"
+                );
+
+            }
+
+        }
+    );
+
+});
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(message){
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+
+    toast.textContent =
+        message;
+
+
+    toast.classList.add(
+        "show"
+    );
+
+
+    setTimeout(
+        () =>
+            toast.classList.remove(
+                "show"
+            ),
+        2800
+    );
+
+}
+
+
+/* =========================================================
+   KEYBOARD SUPPORT
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            event.key === "Escape"
+        ){
+
+            document
+                .querySelectorAll(
+                    ".modal.show"
+                )
+                .forEach(modal =>
+                    modal.classList.remove(
+                        "show"
+                    )
+                );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+updateInterface();
+
+loadCustomers();
+
+</script>
+
+</body>
+
+</html>
