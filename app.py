@@ -991,14 +991,6 @@ def dashboard_api():
     expenses = sb_select("expenses", {"select": "*"})
     payments = sb_select("payments", {"select": "*"})
     quotations = sb_select("quotations", {"select": "*"})
-    recent_messages = sb_select(
-        "messages",
-        {
-            "select": "id,channel,direction,message,sender,customer_id,created_at",
-            "order": "created_at.desc",
-            "limit": "10",
-        },
-    )
 
     return jsonify({
         "business": profile_payload(),
@@ -1014,7 +1006,6 @@ def dashboard_api():
             "payments": safe_sum(payments, "amount"),
             "quotation_value": safe_sum(quotations, "total"),
         },
-        "recent_messages": recent_messages,
         "modules": list(RESOURCE_MAP.keys()),
         "language": language(),
     })
@@ -1397,7 +1388,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 <section class="main"><header><button class="menu" onclick="side.classList.toggle('open')">☰</button>
 <div><b id="pageTitle">Dashboard</b><div class="muted" id="welcome"></div></div>
 <div class="actions"><button class="btn alt" onclick="setLang('en')">EN</button><button class="btn alt" onclick="setLang('fr')">FR</button>
-<button class="btn" onclick="logout()">${lang==='fr'?'Déconnexion':'Logout'}</button></div></header><main class="content" id="content"></main></section></div>
+<button class="btn" onclick="logout()">Logout</button></div></header><main class="content" id="content"></main></section></div>
 <div id="toast"></div>
 <script>
 const modules=[
@@ -1432,28 +1423,15 @@ async function logout(){location.href='/logout'}
 function openPage(p){document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('n-'+p)?.classList.add('active');
 document.getElementById('pageTitle').textContent=modules.find(x=>x[0]===p)?.[lang==='fr'?3:2]||p;
 side.classList.remove('open');window['page_'+p]?window['page_'+p]():pageGeneric(p)}
-async function page_dashboard(){
-const fr=lang==='fr';
-content.innerHTML=`<div class="title"><h1>${fr?'Bonjour':'Welcome'}, TAGNE Simo Innocant</h1>
-<p class="muted">${fr?'Construisons l’excellence ensemble.':'Together, let us build excellence.'}</p></div>
-<div class="cards" id="cards"></div>
-<div class="grid">
-<div class="panel"><h3>${fr?'Activité':'Business Activity'}</h3><canvas id="chart"></canvas></div>
-<div class="panel"><h3>${fr?'Actions rapides':'Quick Actions'}</h3><div class="actions">
-<button class="btn" onclick="openPage('customers')">+ ${fr?'Client':'Customer'}</button>
-<button class="btn" onclick="openPage('projects')">+ ${fr?'Projet':'Project'}</button>
-<button class="btn" onclick="openPage('finance')">+ ${fr?'Dépense':'Expense'}</button>
-<button class="btn" onclick="openPage('ai')">${fr?'Demander à l’IA':'Ask AI'}</button>
-</div></div></div>
-<div class="panel" style="margin-top:18px"><div class="actions" style="align-items:center"><h3 style="margin-right:auto">💬 ${fr?'Messages des clients':'Customer Messages'}</h3><button class="btn alt" onclick="openPage('messages')">${fr?'Voir les messages':'View Messages'}</button></div><div id="dashboardMessages" class="muted" style="margin-top:12px">${fr?'Chargement des messages...':'Loading customer messages...'}</div></div>`;
+async function page_dashboard(){content.innerHTML=`<div class="title"><h1>${lang==='fr'?'Bonjour':'Welcome'}, TAGNE Simo Innocant</h1>
+<p class="muted">${lang==='fr'?'Construisons l’excellence ensemble.':'Together, let us build excellence.'}</p></div>
+<div class="cards" id="cards"></div><div class="grid"><div class="panel"><h3>${lang==='fr'?'Activité':'Business Activity'}</h3><canvas id="chart"></canvas></div>
+<div class="panel"><h3>${lang==='fr'?'Actions rapides':'Quick Actions'}</h3><div class="actions">
+<button class="btn" onclick="openPage('customers')">+ Customer</button><button class="btn" onclick="openPage('projects')">+ Project</button>
+<button class="btn" onclick="openPage('finance')">+ Expense</button><button class="btn" onclick="openPage('ai')">Ask AI</button></div></div></div>`;
 const d=await api('/api/dashboard');if(!d)return;
-const labels=fr?{customers:'Clients',projects:'Projets',inventory_items:'Articles en stock',students:'Étudiants',leads:'Prospects',pending_approvals:'Approbations en attente',expenses:'Dépenses',payments:'Paiements',quotation_value:'Valeur des devis'}:{customers:'Customers',projects:'Projects',inventory_items:'Inventory items',students:'Students',leads:'Leads',pending_approvals:'Pending approvals',expenses:'Expenses',payments:'Payments',quotation_value:'Quotation value'};
-cards.innerHTML=Object.entries(d.stats).slice(0,8).map(([k,v])=>`<div class="card"><div class="muted">${labels[k]||k.replaceAll('_',' ')}</div><div class="stat">${typeof v==='number'?Math.round(v*100)/100:v}</div></div>`).join('');
-new Chart(document.getElementById('chart'),{type:'bar',data:{labels:fr?['Clients','Projets','Prospects','Étudiants']:['Customers','Projects','Leads','Students'],datasets:[{label:fr?'Enregistrements':'Records',data:[d.stats.customers,d.stats.projects,d.stats.leads,d.stats.students]}]}});
-const msgs=(d.recent_messages||[]).filter(m=>['incoming','inbound'].includes(String(m.direction||'').toLowerCase())).slice(0,5);
-const box=document.getElementById('dashboardMessages');
-if(!msgs.length){box.innerHTML=`<p>${fr?'Aucun message client pour le moment.':'No customer messages yet.'}</p>`;return}
-box.innerHTML=msgs.map(m=>`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><div><b>${escapeHtml(m.sender||m.channel||'Customer')}</b> <span class="badge">${escapeHtml(m.channel||'')}</span></div><div style="margin-top:4px">${escapeHtml(String(m.message||'').slice(0,220))}</div><small class="muted">${escapeHtml(m.created_at||'')}</small></div>`).join('');
+cards.innerHTML=Object.entries(d.stats).slice(0,8).map(([k,v])=>`<div class="card"><div class="muted">${k.replaceAll('_',' ')}</div><div class="stat">${typeof v==='number'?Math.round(v*100)/100:v}</div></div>`).join('');
+new Chart(document.getElementById('chart'),{type:'bar',data:{labels:['Customers','Projects','Leads','Students'],datasets:[{label:'Records',data:[d.stats.customers,d.stats.projects,d.stats.leads,d.stats.students]}]}});
 }
 let customerRows=[];
 
@@ -1512,14 +1490,12 @@ function editCustomer(id){const c=customerRows.find(r=>String(r.id)===String(id)
 async function deleteCustomer(id){if(!id)return;if(!confirm(lang==='fr'?'Supprimer ce client ?':'Delete this customer?'))return;try{await api('/api/customers?id='+encodeURIComponent(id),{method:'DELETE',body:JSON.stringify({id})});toast(lang==='fr'?'Client supprimé.':'Customer deleted.');await loadCustomers()}catch(e){toast(e.message)}}
 
 async function page_messages(){
-const fr=lang==='fr';
-const channels=[['all',fr?'🌐 Tous':'🌐 All'],['whatsapp','WhatsApp'],['facebook','Facebook Messenger'],['instagram','Instagram'],['tiktok','TikTok'],['linkedin','LinkedIn'],['youtube','YouTube'],['ai','🤖 TASSIMO AI']];
-content.innerHTML=`<div class="panel"><div class="actions"><h2 style="margin-right:auto">💬 ${fr?'Centre de messagerie':'Unified Messages'}</h2><button class="btn" onclick="loadMessages()">↻ ${fr?'Actualiser':'Refresh'}</button></div>
-<div class="actions" style="margin:15px 0">${channels.map(c=>`<button class="btn alt" onclick="loadMessages('${c[0]}')">${c[1]}</button>`).join('')}</div>
-<div class="grid"><div class="panel"><h3>🤖 ${fr?'Publication par IA':'AI Publishing'}</h3><p class="muted">${fr?'L’IA crée le contenu, l’adapte aux canaux connectés et prépare la publication.':'AI creates the content, adapts it to connected channels and prepares publication.'}</p><input id="postTopic" placeholder="${fr?'Sujet de publication':'Post topic'}"><input id="postAudience" placeholder="${fr?'Clients ciblés':'Target customers'}"><button class="btn" onclick="generateAIPost()">${fr?'Générer les publications IA':'Generate AI Posts'}</button><pre id="postResult" style="white-space:pre-wrap"></pre></div>
-<div class="panel"><h3>📈 ${fr?'Apprentissage publicitaire et contenu':'Ad & Content Learning'}</h3><p class="muted">${fr?'L’IA analyse les impressions, portée, clics, interactions, vues, commentaires, partages, enregistrements et conversions pour améliorer la prochaine publication.':'AI studies impressions, reach, clicks, engagement, views, comments, shares, saves and conversions to improve the next post.'}</p><button class="btn" onclick="loadLearning()">${fr?'Analyser les performances':'Analyze Performance'}</button><pre id="learningResult" style="white-space:pre-wrap"></pre></div></div>
-<div id="messageList" class="muted">${fr?'Chargement des messages...':'Loading messages...'}</div></div>`;await loadMessages()}
-async function loadMessages(channel=''){const fr=lang==='fr';const d=await api('/api/messages'+(channel&&channel!=='all'?'?channel='+encodeURIComponent(channel):''));const rows=d?.messages||[];messageList.innerHTML=rows.length?`<div style="overflow:auto"><table><thead><tr><th>${fr?'Canal':'Channel'}</th><th>${fr?'Direction':'Direction'}</th><th>${fr?'Message du client / contenu':'Customer message / content'}</th><th>${fr?'Langue':'Language'}</th><th>${fr?'Heure':'Time'}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escapeHtml(r.channel||'')}</td><td>${escapeHtml(r.direction||'')}</td><td>${escapeHtml(String(r.message||'').slice(0,180))}</td><td>${escapeHtml(r.language||'')}</td><td>${escapeHtml(r.created_at||'')}</td></tr>`).join('')}</tbody></table></div>`:`<p>${fr?'Aucun message pour le moment.':'No messages yet.'}</p>`}
+content.innerHTML=`<div class="panel"><div class="actions"><h2 style="margin-right:auto">💬 ${lang==='fr'?'Centre de messagerie':'Unified Messages'}</h2><button class="btn" onclick="loadMessages()">↻ Refresh</button></div>
+<div class="actions" style="margin:15px 0">${['all','whatsapp','facebook','instagram','tiktok','linkedin','youtube','ai'].map(c=>`<button class="btn alt" onclick="loadMessages('${c}')">${c==='ai'?'🤖 TASSIMO AI':c==='all'?'🌐 All':c}</button>`).join('')}</div>
+<div class="grid"><div class="panel"><h3>🤖 AI Publishing</h3><p class="muted">AI creates the content strategy and posts across connected channels.</p><input id="postTopic" placeholder="Topic / Sujet"><input id="postAudience" placeholder="Target customers / Clients ciblés"><button class="btn" onclick="generateAIPost()">Generate AI Posts</button><pre id="postResult" style="white-space:pre-wrap"></pre></div>
+<div class="panel"><h3>📈 Ad & Content Learning</h3><p class="muted">The AI studies impressions, reach, clicks, engagement, views, comments, shares, saves and conversions to improve the next post.</p><button class="btn" onclick="loadLearning()">Analyze Performance</button><pre id="learningResult" style="white-space:pre-wrap"></pre></div></div>
+<div id="messageList" class="muted">Loading...</div></div>`;await loadMessages()}
+async function loadMessages(channel=''){const d=await api('/api/messages'+(channel&&channel!=='all'?'?channel='+encodeURIComponent(channel):''));const rows=d?.messages||[];messageList.innerHTML=rows.length?`<div style="overflow:auto"><table><thead><tr><th>Channel</th><th>Direction</th><th>Message</th><th>Language</th><th>Time</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.channel||''}</td><td>${r.direction||''}</td><td>${String(r.message||'').slice(0,180)}</td><td>${r.language||''}</td><td>${r.created_at||''}</td></tr>`).join('')}</tbody></table></div>`:'<p>No messages yet.</p>'}
 async function generateAIPost(){postResult.textContent='Generating...';try{const d=await api('/api/social/ai-post',{method:'POST',body:JSON.stringify({channels:['whatsapp','facebook','instagram','tiktok','linkedin','youtube'],topic:postTopic.value,audience:postAudience.value})});postResult.textContent=JSON.stringify(d,null,2)}catch(e){postResult.textContent=e.message}}
 async function loadLearning(){learningResult.textContent='Analyzing...';try{const d=await api('/api/social/learning');learningResult.textContent=JSON.stringify(d,null,2)}catch(e){learningResult.textContent=e.message}}
 async function page_leads(){await pageTable('leads','/api/leads','leads')}
@@ -1542,14 +1518,14 @@ async function page_construction(){content.innerHTML=`<div class="panel"><h2>�
 <button class="btn" onclick="estimate()">Generate Estimate Assistance</button><pre id="est" style="white-space:pre-wrap"></pre></div>`}
 async function estimate(){est.textContent='...';try{const d=await api('/api/ai/estimate',{method:'POST',body:JSON.stringify({description:desc.value})});est.textContent=d.estimate+'\\n\\n'+d.message}catch(e){est.textContent=e.message}}
 async function page_analytics(){content.innerHTML='<div class="grid"><div class="panel"><h3>Customer Analytics</h3><canvas id="ac"></canvas></div><div class="panel"><h3>Finance</h3><canvas id="af"></canvas></div></div>';const d=await api('/api/analytics');new Chart(ac,{type:'doughnut',data:{labels:Object.keys(d.customers.by_source),datasets:[{data:Object.values(d.customers.by_source)}]}});new Chart(af,{type:'bar',data:{labels:Object.keys(d.finance.expenses_by_category),datasets:[{label:'Expenses',data:Object.values(d.finance.expenses_by_category)}]}})}
-async function page_reports(){content.innerHTML='<div class="panel"><h2>${lang==='fr'?'Rapports':'Reports'}</h2><div class="actions">'+['customers','projects','finance','payments','training','inventory','sales','messages'].map(x=>`<button class="btn alt" onclick="loadReport('${x}')">${x}</button>`).join('')+'</div><pre id="report" style="white-space:pre-wrap"></pre></div>'}
+async function page_reports(){content.innerHTML='<div class="panel"><h2>Reports / Rapports</h2><div class="actions">'+['customers','projects','finance','payments','training','inventory','sales','messages'].map(x=>`<button class="btn alt" onclick="loadReport('${x}')">${x}</button>`).join('')+'</div><pre id="report" style="white-space:pre-wrap"></pre></div>'}
 async function loadReport(x){try{const d=await api('/api/reports/'+x);report.textContent=JSON.stringify(d,null,2)}catch(e){report.textContent=e.message}}
-async function page_automation(){content.innerHTML='<div class="panel"><h2>${lang==='fr'?'Automatisation':'Automation'}</h2><p>${lang==='fr'?'Réponses IA, détection de langue, intention client, suivis et contrôles d’approbation du CEO.':'AI replies, language detection, customer intent, follow-ups and CEO approval controls.'}</p><button class="btn" onclick="loadSettings()">${lang==='fr'?'Charger les paramètres d’automatisation':'Load Automation Settings'}</button><pre id="set" style="white-space:pre-wrap"></pre></div>'}
+async function page_automation(){content.innerHTML='<div class="panel"><h2>Automation / Automatisation</h2><p>AI replies, language detection, customer intent, follow-ups and CEO approval controls.</p><button class="btn" onclick="loadSettings()">Load Automation Settings</button><pre id="set" style="white-space:pre-wrap"></pre></div>'}
 async function loadSettings(){const d=await api('/api/settings');set.textContent=JSON.stringify(d,null,2)}
 async function page_integrations(){const d=await api('/api/integrations/status');content.innerHTML='<div class="cards">'+Object.entries(d).map(([k,v])=>`<div class="card"><b>${k}</b><div class="stat">${v?'✓':'—'}</div></div>`).join('')+'</div>'}
-async function page_settings(){const d=await api('/api/profile');content.innerHTML=`<div class="panel"><h2>${lang==='fr'?'Profil de l’entreprise':'Business Profile'}</h2><div class="form">${['business_name','ceo_name','slogan','country','city'].map(k=>`<label>${k}<input id="p_${k}" value="${d[k]||''}"></label>`).join('')}<button class="btn" onclick="saveProfile()">Save / Enregistrer</button></div></div>`}
+async function page_settings(){const d=await api('/api/profile');content.innerHTML=`<div class="panel"><h2>Business Profile / Profil de l'entreprise</h2><div class="form">${['business_name','ceo_name','slogan','country','city'].map(k=>`<label>${k}<input id="p_${k}" value="${d[k]||''}"></label>`).join('')}<button class="btn" onclick="saveProfile()">Save / Enregistrer</button></div></div>`}
 async function saveProfile(){const data={};['business_name','ceo_name','slogan','country','city'].forEach(k=>data[k]=document.getElementById('p_'+k).value);await api('/api/profile',{method:'POST',body:JSON.stringify(data)});toast('Saved successfully / Enregistré');}
-async function page_admin(){content.innerHTML='<div class="panel"><h2>${lang==='fr'?'Administration':'Administration'}</h2><p>${lang==='fr'?'L’authentification du CEO, les permissions, la sécurité, les intégrations, la base de données et les contrôles opérationnels sont centralisés ici.':'CEO authentication, permissions, security, integrations, database and operational controls are centralized here.'}</p><pre id="status"></pre></div>';const d=await api('/api/status');status.textContent=JSON.stringify(d,null,2)}
+async function page_admin(){content.innerHTML='<div class="panel"><h2>Administration / Administration</h2><p>CEO authentication, permissions, security, integrations, database and operational controls are centralized here.</p><pre id="status"></pre></div>';const d=await api('/api/status');status.textContent=JSON.stringify(d,null,2)}
 openPage('dashboard');
 </script></body></html>"""
 
