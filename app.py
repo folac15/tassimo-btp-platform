@@ -552,16 +552,29 @@ RESOURCE_MAP = {
 
 def normalize_record(data):
     record = dict(data)
+
+    # The Customers page sends "name",
+    # while the Supabase customers table requires "full_name".
+    if "name" in record:
+        record["full_name"] = str(record.get("name") or "").strip()
+        record.pop("name", None)
+
     now = utc_now()
     record.setdefault("created_at", now)
     record["updated_at"] = now
+
     return record
 
 
 def customer_identity(data):
     phone = str(data.get("phone", "")).strip()
     email = str(data.get("email", "")).strip().lower()
-    name = str(data.get("name", "")).strip()
+    name = str(
+        data.get("name")
+        or data.get("full_name")
+        or ""
+    ).strip()
+
     return phone, email, name
 
 
