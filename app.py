@@ -196,23 +196,41 @@ def sb_select(table, params=None):
 
 def sb_insert(table, payload, select=True):
     if not supabase_configured():
-        return None
+        return {
+            "_error": "Supabase is not configured. Check SUPABASE_URL and SUPABASE_KEY."
+        }
+
     try:
         prefer = "return=representation" if select else "return=minimal"
+
         response = requests.post(
             sb_url(table),
             headers=supabase_headers(prefer),
             json=payload,
             timeout=20,
         )
+
         if response.status_code >= 400:
-            return None
+            try:
+                error_data = response.json()
+            except Exception:
+                error_data = response.text
+
+            return {
+                "_error": f"Supabase error ({response.status_code}): {error_data}"
+            }
+
         data = response.json() if response.content else None
+
         if isinstance(data, list):
             return data[0] if data else None
+
         return data
-    except Exception:
-        return None
+
+    except Exception as error:
+        return {
+            "_error": f"Supabase connection error: {str(error)}"
+        }
 
 
 def sb_update(table, filters, payload):
