@@ -3311,6 +3311,10 @@ def home():
 def index_page():
     if not session_authenticated():
         return redirect("/login")
+@app.route("/marketing.html")
+@protected
+def marketing_page():
+    return send_from_directory(".", "marketing.html")        
 
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
