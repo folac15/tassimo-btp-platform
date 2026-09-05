@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TASSIMO BTP — Marketing</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f7fb;
+    color:#172b4d;
+}
+
+button,
+input,
+select,
+textarea{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.header{
+    background:#102a43;
+    color:white;
+    padding:18px 20px;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.header-inner{
+    max-width:1400px;
+    margin:auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.brand h1{
+    font-size:21px;
+}
+
+.brand p{
+    font-size:12px;
+    opacity:.75;
+    margin-top:4px;
+}
+
+.header-actions{
+    display:flex;
+    gap:8px;
+}
+
+.btn{
+    border:0;
+    border-radius:10px;
+    padding:11px 16px;
+    background:#e0a72e;
+    color:#102a43;
+    font-weight:700;
+}
+
+.btn.secondary{
+    background:#eef2f6;
+    color:#102a43;
+}
+
+.btn.danger{
+    background:#fee4e2;
+    color:#b42318;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:22px;
+}
+
+.hero{
+    background:white;
+    border-radius:18px;
+    padding:22px;
+    margin-bottom:20px;
+    box-shadow:0 4px 18px #0000000a;
+}
+
+.hero h2{
+    margin-bottom:8px;
+}
+
+.muted{
+    color:#667085;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.stat{
+    background:white;
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 4px 18px #0000000a;
+}
+
+.stat small{
+    color:#667085;
+    display:block;
+    margin-bottom:8px;
+}
+
+.stat strong{
+    font-size:25px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+}
+
+.panel{
+    background:white;
+    border-radius:18px;
+    padding:20px;
+    box-shadow:0 4px 18px #0000000a;
+    margin-bottom:18px;
+}
+
+.panel h3{
+    margin-bottom:14px;
+}
+
+.form{
+    display:grid;
+    gap:12px;
+}
+
+.form label{
+    font-weight:700;
+    font-size:13px;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:12px;
+    border:1px solid #d0d5dd;
+    border-radius:10px;
+    background:white;
+    color:#172b4d;
+}
+
+textarea{
+    min-height:120px;
+    resize:vertical;
+}
+
+.channels{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+}
+
+.channel{
+    border:1px solid #d0d5dd;
+    border-radius:10px;
+    padding:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#fafafa;
+}
+
+.channel input{
+    width:auto;
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+}
+
+.table-wrap{
+    overflow:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:750px;
+}
+
+th,
+td{
+    padding:12px;
+    border-bottom:1px solid #eaecf0;
+    text-align:left;
+    vertical-align:top;
+}
+
+th{
+    background:#f8fafc;
+    font-size:13px;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.draft{
+    background:#f2f4f7;
+}
+
+.active{
+    background:#d1fadf;
+    color:#027a48;
+}
+
+.completed{
+    background:#d1e9ff;
+    color:#175cd3;
+}
+
+.paused{
+    background:#fef0c7;
+    color:#b54708;
+}
+
+.cancelled{
+    background:#fee4e2;
+    color:#b42318;
+}
+
+.content-card{
+    border:1px solid #eaecf0;
+    border-radius:14px;
+    padding:15px;
+    margin-bottom:12px;
+}
+
+.content-head{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
+}
+
+.ai-box{
+    background:#f8fafc;
+    border:1px solid #eaecf0;
+    border-radius:12px;
+    padding:15px;
+    white-space:pre-wrap;
+    line-height:1.5;
+    max-height:450px;
+    overflow:auto;
+}
+
+.loading{
+    padding:20px;
+    text-align:center;
+    color:#667085;
+}
+
+.empty{
+    padding:20px;
+    text-align:center;
+    color:#667085;
+}
+
+.error{
+    background:#fee4e2;
+    color:#b42318;
+    padding:12px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+.success{
+    background:#d1fadf;
+    color:#027a48;
+    padding:12px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+.language{
+    display:flex;
+    gap:6px;
+}
+
+.language button{
+    border:1px solid #ffffff44;
+    background:#ffffff18;
+    color:white;
+    padding:7px 10px;
+    border-radius:8px;
+}
+
+@media(max-width:1000px){
+
+    .stats{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+}
+
+@media(max-width:760px){
+
+    .container{
+        padding:14px;
+    }
+
+    .header-inner{
+        align-items:flex-start;
+    }
+
+    .header-actions{
+        flex-direction:column;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .channels{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:480px){
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .channels{
+        grid-template-columns:1fr;
+    }
+
+    .btn{
+        width:100%;
+    }
+
+    .actions{
+        flex-direction:column;
+    }
+
+    .hero,
+    .panel{
+        padding:15px;
+        border-radius:14px;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header class="header">
+
+<div class="header-inner">
+
+<div class="brand">
+
+<h1>📣 TASSIMO BTP — Marketing</h1>
+
+<p id="subtitle">
+Marketing, campagnes, contenu et intelligence commerciale
+</p>
+
+</div>
+
+<div class="header-actions">
+
+<div class="language">
+
+<button onclick="setLanguage('fr')">FR</button>
+<button onclick="setLanguage('en')">EN</button>
+
+</div>
+
+<button class="btn secondary" onclick="goDashboard()">
+← Dashboard
+</button>
+
+</div>
+
+</div>
+
+</header>
+
+
+<main class="container">
+
+
+<section class="hero">
+
+<h2 id="pageTitle">
+Centre Marketing
+</h2>
+
+<p class="muted" id="pageDescription">
+Créez, gérez, publiez et optimisez vos campagnes marketing avec l'IA.
+</p>
+
+</section>
+
+
+<section class="stats">
+
+<div class="stat">
+
+<small id="statCampaigns">Campagnes</small>
+
+<strong id="campaignCount">0</strong>
+
+</div>
+
+<div class="stat">
+
+<small id="statActive">Actives</small>
+
+<strong id="activeCount">0</strong>
+
+</div>
+
+<div class="stat">
+
+<small id="statBudget">Budget total</small>
+
+<strong id="budgetTotal">0 FCFA</strong>
+
+</div>
+
+<div class="stat">
+
+<small id="statLeads">Prospects générés</small>
+
+<strong id="leadTotal">0</strong>
+
+</div>
+
+<div class="stat">
+
+<small id="statConversions">Conversions</small>
+
+<strong id="conversionTotal">0</strong>
+
+</div>
+
+</section>
+
+
+<div class="grid">
+
+
+<section class="panel">
+
+<h3 id="campaignTitle">
+Créer une campagne
+</h3>
+
+<div class="form">
+
+<label id="nameLabel">
+Nom de la campagne
+</label>
+
+<input
+id="campaignName"
+placeholder="Ex: Campagne rénovation Douala"
+>
+
+
+<label id="objectiveLabel">
+Objectif
+</label>
+
+<select id="objective">
+
+<option value="lead_generation">
+Génération de prospects
+</option>
+
+<option value="brand_awareness">
+Notoriété
+</option>
+
+<option value="engagement">
+Engagement
+</option>
+
+<option value="traffic">
+Trafic
+</option>
+
+<option value="conversions">
+Conversions
+</option>
+
+<option value="training">
+Formation
+</option>
+
+</select>
+
+
+<label id="audienceLabel">
+Audience cible
+</label>
+
+<input
+id="audience"
+placeholder="Ex: propriétaires, entreprises, promoteurs..."
+>
+
+
+<label id="locationLabel">
+Zone cible
+</label>
+
+<input
+id="location"
+value="Cameroon"
+>
+
+
+<label id="budgetLabel">
+Budget prévu (FCFA)
+</label>
+
+<input
+id="budget"
+type="number"
+min="0"
+value="0"
+>
+
+
+<label id="startLabel">
+Date de début
+</label>
+
+<input
+id="startDate"
+type="date"
+>
+
+
+<label id="endLabel">
+Date de fin
+</label>
+
+<input
+id="endDate"
+type="date"
+>
+
+
+<label id="descriptionLabel">
+Description
+</label>
+
+<textarea
+id="description"
+placeholder="Décrivez la campagne..."
+></textarea>
+
+
+<label id="channelsLabel">
+Canaux
+</label>
+
+<div class="channels">
+
+<label class="channel">
+<input type="checkbox" value="whatsapp" checked>
+WhatsApp
+</label>
+
+<label class="channel">
+<input type="checkbox" value="facebook" checked>
+Facebook
+</label>
+
+<label class="channel">
+<input type="checkbox" value="instagram" checked>
+Instagram
+</label>
+
+<label class="channel">
+<input type="checkbox" value="tiktok" checked>
+TikTok
+</label>
+
+<label class="channel">
+<input type="checkbox" value="linkedin" checked>
+LinkedIn
+</label>
+
+<label class="channel">
+<input type="checkbox" value="youtube" checked>
+YouTube
+</label>
+
+</div>
+
+
+<div class="actions">
+
+<button class="btn" onclick="saveCampaign()">
+💾 <span id="saveText">Enregistrer</span>
+</button>
+
+<button class="btn secondary" onclick="resetForm()">
+<span id="cancelText">Effacer</span>
+</button>
+
+</div>
+
+<div id="campaignMessage"></div>
+
+</div>
+
+</section>
+
+
+<section class="panel">
+
+<h3 id="aiTitle">
+🤖 Stratégie Marketing IA
+</h3>
+
+<p class="muted" id="aiDescription">
+L'IA analyse votre objectif et votre audience et prépare une stratégie exploitable.
+</p>
+
+<div class="form">
+
+<label id="aiObjectiveLabel">
+Objectif marketing
+</label>
+
+<input
+id="aiObjective"
+placeholder="Ex: obtenir plus de clients pour la rénovation"
+>
+
+
+<label id="aiAudienceLabel">
+Audience
+</label>
+
+<input
+id="aiAudience"
+placeholder="Ex: propriétaires à Douala"
+>
+
+
+<label id="aiChannelLabel">
+Canal principal
+</label>
+
+<select id="aiChannel">
+
+<option value="whatsapp">WhatsApp</option>
+<option value="facebook">Facebook</option>
+<option value="instagram">Instagram</option>
+<option value="tiktok">TikTok</option>
+<option value="linkedin">LinkedIn</option>
+<option value="youtube">YouTube</option>
+
+</select>
+
+<button class="btn" onclick="generateStrategy()">
+🧠 <span id="strategyText">Créer la stratégie</span>
+</button>
+
+</div>
+
+<div id="strategyResult" class="ai-box" style="display:none;margin-top:15px"></div>
+
+</section>
+
+</div>
+
+
+<section class="panel">
+
+<div class="actions">
+
+<h3 style="margin-right:auto" id="campaignListTitle">
+📋 Campagnes marketing
+</h3>
+
+<button class="btn secondary" onclick="loadCampaigns()">
+↻ <span id="refreshText">Actualiser</span>
+</button>
+
+</div>
+
+<div id="campaignTable" class="loading">
+Chargement...
+</div>
+
+</section>
+
+
+<section class="panel">
+
+<h3 id="contentTitle">
+✨ Création de contenu IA
+</h3>
+
+<p class="muted" id="contentDescription">
+L'IA crée des contenus adaptés à plusieurs plateformes et les enregistre dans votre système marketing.
+</p>
+
+<div class="form">
+
+<label id="topicLabel">
+Sujet
+</label>
+
+<input
+id="postTopic"
+placeholder="Ex: Pourquoi rénover sa maison avant la saison des pluies ?"
+>
+
+
+<label id="postAudienceLabel">
+Audience
+</label>
+
+<input
+id="postAudience"
+placeholder="Ex: propriétaires de maisons à Douala"
+>
+
+
+<div class="actions">
+
+<button class="btn" onclick="generateContent()">
+✨ <span id="generateText">Générer le contenu</span>
+</button>
+
+</div>
+
+</div>
+
+<div id="contentResult" style="margin-top:15px"></div>
+
+</section>
+
+
+<section class="panel">
+
+<div class="actions">
+
+<h3 style="margin-right:auto" id="learningTitle">
+📈 Intelligence & apprentissage marketing
+</h3>
+
+<button class="btn" onclick="loadLearning()">
+🧠 <span id="analyzeText">Analyser</span>
+</button>
+
+</div>
+
+<p class="muted" id="learningDescription">
+L'IA étudie les performances disponibles pour améliorer les prochains contenus et campagnes.
+</p>
+
+<div id="learningResult" class="ai-box" style="margin-top:15px;display:none"></div>
+
+</section>
+
+
+<section class="panel">
+
+<h3 id="metricsTitle">
+📊 Enregistrer une performance
+</h3>
+
+<p class="muted" id="metricsDescription">
+Cette fonction permet d'enregistrer les statistiques reçues des plateformes connectées. Les vraies intégrations pourront alimenter automatiquement ces données plus tard.
+</p>
+
+<div class="grid">
+
+<div class="form">
+
+<label>Channel</label>
+
+<select id="metricChannel">
+
+<option value="whatsapp">WhatsApp</option>
+<option value="facebook">Facebook</option>
+<option value="instagram">Instagram</option>
+<option value="tiktok">TikTok</option>
+<option value="linkedin">LinkedIn</option>
+<option value="youtube">YouTube</option>
+
+</select>
+
+<label>Post ID</label>
+
+<input id="metricPostId">
+
+<label>Impressions</label>
+<input id="impressions" type="number" value="0">
+
+<label>Reach</label>
+<input id="reach" type="number" value="0">
+
+<label>Likes</label>
+<input id="likes" type="number" value="0">
+
+<label>Comments</label>
+<input id="comments" type="number" value="0">
+
+</div>
+
+
+<div class="form">
+
+<label>Shares</label>
+<input id="shares" type="number" value="0">
+
+<label>Saves</label>
+<input id="saves" type="number" value="0">
+
+<label>Clicks</label>
+<input id="clicks" type="number" value="0">
+
+<label>Video views</label>
+<input id="videoViews" type="number" value="0">
+
+<label>Conversions</label>
+<input id="conversions" type="number" value="0">
+
+<label>Ad spend</label>
+<input id="adSpend" type="number" value="0">
+
+<button class="btn" onclick="saveMetrics()">
+💾 Enregistrer les performances
+</button>
+
+</div>
+
+</div>
+
+<div id="metricsMessage"></div>
+
+</section>
+
+
+</main>
+
+
+<script>
+
+let language = localStorage.getItem("lang") || "fr";
+
+const TEXT = {
+
+fr:{
+
+subtitle:
+"Marketing, campagnes, contenu et intelligence commerciale",
+
+pageTitle:
+"Centre Marketing",
+
+pageDescription:
+"Créez, gérez, publiez et optimisez vos campagnes marketing avec l'IA.",
+
+campaigns:"Campagnes",
+active:"Actives",
+budget:"Budget total",
+leads:"Prospects générés",
+conversions:"Conversions",
+
+campaignTitle:
+"Créer une campagne",
+
+name:
+"Nom de la campagne",
+
+objective:
+"Objectif",
+
+audience:
+"Audience cible",
+
+location:
+"Zone cible",
+
+budgetLabel:
+"Budget prévu (FCFA)",
+
+start:
+"Date de début",
+
+end:
+"Date de fin",
+
+description:
+"Description",
+
+channels:
+"Canaux",
+
+save:
+"Enregistrer",
+
+cancel:
+"Effacer",
+
+aiTitle:
+"🤖 Stratégie Marketing IA",
+
+aiDescription:
+"L'IA analyse votre objectif et votre audience et prépare une stratégie exploitable.",
+
+aiObjective:
+"Objectif marketing",
+
+aiAudience:
+"Audience",
+
+aiChannel:
+"Canal principal",
+
+strategy:
+"Créer la stratégie",
+
+campaignList:
+"📋 Campagnes marketing",
+
+refresh:
+"Actualiser",
+
+contentTitle:
+"✨ Création de contenu IA",
+
+contentDescription:
+"L'IA crée des contenus adaptés à plusieurs plateformes et les enregistre dans votre système marketing.",
+
+topic:
+"Sujet",
+
+postAudience:
+"Audience",
+
+generate:
+"Générer le contenu",
+
+learningTitle:
+"📈 Intelligence & apprentissage marketing",
+
+analyze:
+"Analyser",
+
+learningDescription:
+"L'IA étudie les performances disponibles pour améliorer les prochains contenus et campagnes.",
+
+metricsTitle:
+"📊 Enregistrer une performance",
+
+metricsDescription:
+"Cette fonction permet d'enregistrer les statistiques reçues des plateformes connectées. Les vraies intégrations pourront alimenter automatiquement ces données plus tard.",
+
+loading:
+"Chargement...",
+
+empty:
+"Aucune campagne pour le moment.",
+
+saved:
+"Campagne enregistrée avec succès.",
+
+error:
+"Une erreur est survenue.",
+
+delete:
+"Supprimer",
+
+edit:
+"Modifier",
+
+draft:
+"Brouillon",
+
+activeStatus:
+"Active",
+
+completed:
+"Terminée",
+
+paused:
+"En pause",
+
+cancelled:
+"Annulée",
+
+status:
+"Statut",
+
+actions:
+"Actions",
+
+objectiveColumn:
+"Objectif",
+
+channelsColumn:
+"Canaux",
+
+budgetColumn:
+"Budget",
+
+audienceColumn:
+"Audience"
+
+},
+
+en:{
+
+subtitle:
+"Marketing, campaigns, content and business intelligence",
+
+pageTitle:
+"Marketing Center",
+
+pageDescription:
+"Create, manage, publish and optimize marketing campaigns with AI.",
+
+campaigns:"Campaigns",
+active:"Active",
+budget:"Total budget",
+leads:"Leads generated",
+conversions:"Conversions",
+
+campaignTitle:
+"Create campaign",
+
+name:
+"Campaign name",
+
+objective:
+"Objective",
+
+audience:
+"Target audience",
+
+location:
+"Target location",
+
+budgetLabel:
+"Planned budget (XAF)",
+
+start:
+"Start date",
+
+end:
+"End date",
+
+description:
+"Description",
+
+channels:
+"Channels",
+
+save:
+"Save",
+
+cancel:
+"Clear",
+
+aiTitle:
+"🤖 AI Marketing Strategy",
+
+aiDescription:
+"AI analyzes your objective and audience and prepares an actionable strategy.",
+
+aiObjective:
+"Marketing objective",
+
+aiAudience:
+"Audience",
+
+aiChannel:
+"Main channel",
+
+strategy:
+"Create strategy",
+
+campaignList:
+"📋 Marketing campaigns",
+
+refresh:
+"Refresh",
+
+contentTitle:
+"✨ AI Content Creation",
+
+contentDescription:
+"AI creates platform-appropriate content and stores it in your marketing system.",
+
+topic:
+"Topic",
+
+postAudience:
+"Audience",
+
+generate:
+"Generate content",
+
+learningTitle:
+"📈 Marketing Intelligence & Learning",
+
+analyze:
+"Analyze",
+
+learningDescription:
+"AI studies available performance data to improve future content and campaigns.",
+
+metricsTitle:
+"📊 Record performance",
+
+metricsDescription:
+"This allows performance statistics from connected platforms to be recorded. Real integrations can automatically feed this data later.",
+
+loading:
+"Loading...",
+
+empty:
+"No campaigns yet.",
+
+saved:
+"Campaign saved successfully.",
+
+error:
+"An error occurred.",
+
+delete:
+"Delete",
+
+edit:
+"Edit",
+
+draft:
+"Draft",
+
+activeStatus:
+"Active",
+
+completed:
+"Completed",
+
+paused:
+"Paused",
+
+cancelled:
+"Cancelled",
+
+status:
+"Status",
+
+actions:
+"Actions",
+
+objectiveColumn:
+"Objective",
+
+channelsColumn:
+"Channels",
+
+budgetColumn:
+"Budget",
+
+audienceColumn:
+"Audience"
+
+}
+
+};
+
+
+function t(key){
+
+    return TEXT[language][key] || key;
+
+}
+
+
+function setLanguage(value){
+
+    language=value;
+
+    localStorage.setItem("lang",value);
+
+    renderLanguage();
+
+    loadCampaigns();
+
+}
+
+
+function renderLanguage(){
+
+    document.getElementById("subtitle").textContent=t("subtitle");
+
+    document.getElementById("pageTitle").textContent=t("pageTitle");
+
+    document.getElementById("pageDescription").textContent=t("pageDescription");
+
+    document.getElementById("statCampaigns").textContent=t("campaigns");
+
+    document.getElementById("statActive").textContent=t("active");
+
+    document.getElementById("statBudget").textContent=t("budget");
+
+    document.getElementById("statLeads").textContent=t("leads");
+
+    document.getElementById("statConversions").textContent=t("conversions");
+
+    document.getElementById("campaignTitle").textContent=t("campaignTitle");
+
+    document.getElementById("nameLabel").textContent=t("name");
+
+    document.getElementById("objectiveLabel").textContent=t("objective");
+
+    document.getElementById("audienceLabel").textContent=t("audience");
+
+    document.getElementById("locationLabel").textContent=t("location");
+
+    document.getElementById("budgetLabel").textContent=t("budgetLabel");
+
+    document.getElementById("startLabel").textContent=t("start");
+
+    document.getElementById("endLabel").textContent=t("end");
+
+    document.getElementById("descriptionLabel").textContent=t("description");
+
+    document.getElementById("channelsLabel").textContent=t("channels");
+
+    document.getElementById("saveText").textContent=t("save");
+
+    document.getElementById("cancelText").textContent=t("cancel");
+
+    document.getElementById("aiTitle").textContent=t("aiTitle");
+
+    document.getElementById("aiDescription").textContent=t("aiDescription");
+
+    document.getElementById("aiObjectiveLabel").textContent=t("aiObjective");
+
+    document.getElementById("aiAudienceLabel").textContent=t("aiAudience");
+
+    document.getElementById("aiChannelLabel").textContent=t("aiChannel");
+
+    document.getElementById("strategyText").textContent=t("strategy");
+
+    document.getElementById("campaignListTitle").textContent=t("campaignList");
+
+    document.getElementById("refreshText").textContent=t("refresh");
+
+    document.getElementById("contentTitle").textContent=t("contentTitle");
+
+    document.getElementById("contentDescription").textContent=t("contentDescription");
+
+    document.getElementById("topicLabel").textContent=t("topic");
+
+    document.getElementById("postAudienceLabel").textContent=t("postAudience");
+
+    document.getElementById("generateText").textContent=t("generate");
+
+    document.getElementById("learningTitle").textContent=t("learningTitle");
+
+    document.getElementById("analyzeText").textContent=t("analyze");
+
+    document.getElementById("learningDescription").textContent=t("learningDescription");
+
+    document.getElementById("metricsTitle").textContent=t("metricsTitle");
+
+    document.getElementById("metricsDescription").textContent=t("metricsDescription");
+
+}
+
+
+async function api(url,options={}){
+
+    options.headers={
+        ...(options.headers||{}),
+        "Content-Type":"application/json",
+        "X-Language":language
+    };
+
+    const response=await fetch(url,options);
+
+    if(response.status===401){
+
+        window.location.href="/login";
+
+        return null;
+
+    }
+
+    let data={};
+
+    try{
+
+        data=await response.json();
+
+    }catch(error){
+
+        data={};
+
+    }
+
+    if(!response.ok){
+
+        throw new Error(data.error || t("error"));
+
+    }
+
+    return data;
+
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+
+}
+
+
+function formatMoney(value){
+
+    return new Intl.NumberFormat(
+        "fr-FR",
+        {
+            maximumFractionDigits:0
+        }
+    ).format(Number(value||0))+" FCFA";
+
+}
+
+
+function selectedChannels(){
+
+    return [...document.querySelectorAll(".channel input:checked")]
+        .map(x=>x.value);
+
+}
+
+
+async function saveCampaign(){
+
+    const name=document.getElementById("campaignName").value.trim();
+
+    if(!name){
+
+        showMessage(
+            "campaignMessage",
+            language==="fr"
+            ?"Le nom de la campagne est obligatoire."
+            :"Campaign name is required.",
+            "error"
+        );
+
+        return;
+
+    }
+
+    const data={
+
+        name:name,
+
+        objective:document.getElementById("objective").value,
+
+        target_audience:
+            document.getElementById("audience").value.trim(),
+
+        target_location:
+            document.getElementById("location").value.trim(),
+
+        budget:
+            Number(document.getElementById("budget").value||0),
+
+        start_date:
+            document.getElementById("startDate").value || null,
+
+        end_date:
+            document.getElementById("endDate").value || null,
+
+        description:
+            document.getElementById("description").value.trim(),
+
+        channels:selectedChannels(),
+
+        status:"draft",
+
+        leads_generated:0,
+
+        conversions:0,
+
+        spent:0
+
+    };
+
+    try{
+
+        await api("/api/campaigns",{
+
+            method:"POST",
+
+            body:JSON.stringify(data)
+
+        });
+
+        showMessage(
+            "campaignMessage",
+            t("saved"),
+            "success"
+        );
+
+        resetForm();
+
+        await loadCampaigns();
+
+    }catch(error){
+
+        showMessage(
+            "campaignMessage",
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+function showMessage(id,text,type){
+
+    const box=document.getElementById(id);
+
+    box.className=type;
+
+    box.textContent=text;
+
+}
+
+
+function resetForm(){
+
+    document.getElementById("campaignName").value="";
+
+    document.getElementById("audience").value="";
+
+    document.getElementById("location").value="Cameroon";
+
+    document.getElementById("budget").value="0";
+
+    document.getElementById("startDate").value="";
+
+    document.getElementById("endDate").value="";
+
+    document.getElementById("description").value="";
+
+}
+
+
+function statusBadge(status){
+
+    const s=String(status||"draft").toLowerCase();
+
+    let label=t("draft");
+
+    let cls="draft";
+
+    if(s==="active"){
+
+        label=t("activeStatus");
+        cls="active";
+
+    }else if(s==="completed"){
+
+        label=t("completed");
+        cls="completed";
+
+    }else if(s==="paused"){
+
+        label=t("paused");
+        cls="paused";
+
+    }else if(s==="cancelled"){
+
+        label=t("cancelled");
+        cls="cancelled";
+
+    }
+
+    return `<span class="badge ${cls}">
+        ${escapeHtml(label)}
+    </span>`;
+
+}
+
+
+function objectiveLabel(value){
+
+    const map={
+
+        lead_generation:
+            language==="fr"?"Génération de prospects":"Lead generation",
+
+        brand_awareness:
+            language==="fr"?"Notoriété":"Brand awareness",
+
+        engagement:
+            "Engagement",
+
+        traffic:
+            language==="fr"?"Trafic":"Traffic",
+
+        conversions:
+            language==="fr"?"Conversions":"Conversions",
+
+        training:
+            language==="fr"?"Formation":"Training"
+
+    };
+
+    return map[value] || value || "";
+
+}
+
+
+async function loadCampaigns(){
+
+    const box=document.getElementById("campaignTable");
+
+    box.innerHTML=`<div class="loading">${t("loading")}</div>`;
+
+    try{
+
+        const data=await api("/api/campaigns");
+
+        const rows=data?.data || [];
+
+        let budget=0;
+        let active=0;
+        let leads=0;
+        let conversions=0;
+
+        rows.forEach(c=>{
+
+            budget+=Number(c.budget||0);
+
+            if(String(c.status).toLowerCase()==="active"){
+                active++;
+            }
+
+            leads+=Number(c.leads_generated||0);
+
+            conversions+=Number(c.conversions||0);
+
+        });
+
+        document.getElementById("campaignCount").textContent=rows.length;
+
+        document.getElementById("activeCount").textContent=active;
+
+        document.getElementById("budgetTotal").textContent=formatMoney(budget);
+
+        document.getElementById("leadTotal").textContent=leads;
+
+        document.getElementById("conversionTotal").textContent=conversions;
+
+        if(!rows.length){
+
+            box.innerHTML=
+                `<div class="empty">${t("empty")}</div>`;
+
+            return;
+
+        }
+
+        box.innerHTML=`
+
+        <div class="table-wrap">
+
+        <table>
+
+        <thead>
+
+        <tr>
+
+        <th>${escapeHtml(t("name"))}</th>
+
+        <th>${escapeHtml(t("objectiveColumn"))}</th>
+
+        <th>${escapeHtml(t("audienceColumn"))}</th>
+
+        <th>${escapeHtml(t("channelsColumn"))}</th>
+
+        <th>${escapeHtml(t("budgetColumn"))}</th>
+
+        <th>${escapeHtml(t("status"))}</th>
+
+        <th>${escapeHtml(t("actions"))}</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        ${rows.map(c=>`
+
+        <tr>
+
+        <td>
+        <strong>${escapeHtml(c.name)}</strong>
+        <br>
+        <small class="muted">
+        ${escapeHtml(c.description||"")}
+        </small>
+        </td>
+
+        <td>
+        ${escapeHtml(objectiveLabel(c.objective))}
+        </td>
+
+        <td>
+        ${escapeHtml(c.target_audience||"")}
+        <br>
+        <small class="muted">
+        ${escapeHtml(c.target_location||"")}
+        </small>
+        </td>
+
+        <td>
+        ${Array.isArray(c.channels)
+        ?c.channels.map(x=>escapeHtml(x)).join(", ")
+        :escapeHtml(c.channels||"")}
+        </td>
+
+        <td>
+        ${formatMoney(c.budget)}
+        </td>
+
+        <td>
+        ${statusBadge(c.status)}
+        </td>
+
+        <td>
+
+        <button
+        class="btn danger"
+        onclick="deleteCampaign('${escapeHtml(c.id)}')">
+
+        ${escapeHtml(t("delete"))}
+
+        </button>
+
+        </td>
+
+        </tr>
+
+        `).join("")}
+
+        </tbody>
+
+        </table>
+
+        </div>
+
+        `;
+
+    }catch(error){
+
+        box.innerHTML=
+            `<div class="error">${escapeHtml(error.message)}</div>`;
+
+    }
+
+}
+
+
+async function deleteCampaign(id){
+
+    if(!confirm(
+        language==="fr"
+        ?"Supprimer cette campagne ?"
+        :"Delete this campaign?"
+    )) return;
+
+    try{
+
+        await api("/api/campaigns?id="+encodeURIComponent(id),{
+
+            method:"DELETE",
+
+            body:JSON.stringify({id:id})
+
+        });
+
+        await loadCampaigns();
+
+    }catch(error){
+
+        alert(error.message);
+
+    }
+
+}
+
+
+async function generateStrategy(){
+
+    const objective=
+        document.getElementById("aiObjective").value.trim()
+        ||
+        "generate qualified leads";
+
+    const audience=
+        document.getElementById("aiAudience").value.trim()
+        ||
+        "construction and renovation customers in Cameroon";
+
+    const channel=
+        document.getElementById("aiChannel").value;
+
+    const result=
+        document.getElementById("strategyResult");
+
+    result.style.display="block";
+
+    result.textContent=
+        language==="fr"
+        ?"Création de la stratégie..."
+        :"Creating strategy...";
+
+    try{
+
+        const question=`
+
+Create a complete marketing strategy for TASSIMO BTP CONSTRUCTION SARL.
+
+Objective:
+${objective}
+
+Target audience:
+${audience}
+
+Main channel:
+${channel}
+
+Provide:
+
+1. Campaign concept
+2. Customer pain point
+3. Main marketing hook
+4. Content themes
+5. Recommended content formats
+6. Call to action
+7. Audience segmentation
+8. Recommended posting approach
+9. Lead-generation strategy
+10. Conversion strategy
+11. KPIs to monitor
+12. Risks
+13. How to improve using performance data
+
+Use Cameroon context.
+Use realistic recommendations.
+Do not invent company results, projects or prices.
+
+Answer in ${language==="fr"?"French":"English"}.
+`;
+
+        const data=await api("/api/ai",{
+
+            method:"POST",
+
+            body:JSON.stringify({
+
+                question:question,
+
+                context:{
+
+                    module:"Marketing",
+
+                    objective:objective,
+
+                    audience:audience,
+
+                    channel:channel
+
+                }
+
+            })
+
+        });
+
+        result.textContent=data?.answer || t("error");
+
+    }catch(error){
+
+        result.textContent=error.message;
+
+    }
+
+}
+
+
+async function generateContent(){
+
+    const topic=
+        document.getElementById("postTopic").value.trim();
+
+    const audience=
+        document.getElementById("postAudience").value.trim();
+
+    const result=
+        document.getElementById("contentResult");
+
+    if(!topic){
+
+        result.innerHTML=
+            `<div class="error">
+            ${language==="fr"
+            ?"Veuillez entrer un sujet."
+            :"Please enter a topic."}
+            </div>`;
+
+        return;
+
+    }
+
+    result.innerHTML=
+        `<div class="loading">
+        ${language==="fr"
+        ?"Génération du contenu..."
+        :"Generating content..."}
+        </div>`;
+
+    try{
+
+        const data=await api("/api/social/ai-post",{
+
+            method:"POST",
+
+            body:JSON.stringify({
+
+                channels:[
+                    "whatsapp",
+                    "facebook",
+                    "instagram",
+                    "tiktok",
+                    "linkedin",
+                    "youtube"
+                ],
+
+                topic:topic,
+
+                audience:
+                    audience ||
+                    "customers interested in construction, renovation, design and training in Cameroon",
+
+                objective:
+                    "engagement and qualified leads",
+
+                language:language
+
+            })
+
+        });
+
+        const results=data?.results || [];
+
+        result.innerHTML=results.map(r=>`
+
+        <div class="content-card">
+
+        <div class="content-head">
+
+        <strong>
+        ${escapeHtml(r.channel)}
+        </strong>
+
+        <span class="badge active">
+        AI
+        </span>
+
+        </div>
+
+        <div class="ai-box">
+
+        ${escapeHtml(r.copy || "")}
+
+        </div>
+
+        </div>
+
+        `).join("");
+
+    }catch(error){
+
+        result.innerHTML=
+            `<div class="error">
+            ${escapeHtml(error.message)}
+            </div>`;
+
+    }
+
+}
+
+
+async function loadLearning(){
+
+    const result=
+        document.getElementById("learningResult");
+
+    result.style.display="block";
+
+    result.textContent=
+        language==="fr"
+        ?"Analyse des performances..."
+        :"Analyzing performance...";
+
+    try{
+
+        const data=await api("/api/social/learning");
+
+        result.textContent=
+            JSON.stringify(data,null,2);
+
+    }catch(error){
+
+        result.textContent=error.message;
+
+    }
+
+}
+
+
+async function saveMetrics(){
+
+    const data={
+
+        channel:
+            document.getElementById("metricChannel").value,
+
+        post_id:
+            document.getElementById("metricPostId").value.trim(),
+
+        impressions:
+            Number(document.getElementById("impressions").value||0),
+
+        reach:
+            Number(document.getElementById("reach").value||0),
+
+        likes:
+            Number(document.getElementById("likes").value||0),
+
+        comments:
+            Number(document.getElementById("comments").value||0),
+
+        shares:
+            Number(document.getElementById("shares").value||0),
+
+        saves:
+            Number(document.getElementById("saves").value||0),
+
+        clicks:
+            Number(document.getElementById("clicks").value||0),
+
+        video_views:
+            Number(document.getElementById("videoViews").value||0),
+
+        conversions:
+            Number(document.getElementById("conversions").value||0),
+
+        ad_spend:
+            Number(document.getElementById("adSpend").value||0)
+
+    };
+
+    try{
+
+        const result=await api("/api/social/metrics",{
+
+            method:"POST",
+
+            body:JSON.stringify(data)
+
+        });
+
+        showMessage(
+            "metricsMessage",
+            language==="fr"
+            ?"Performance enregistrée."
+            :"Performance saved.",
+            "success"
+        );
+
+    }catch(error){
+
+        showMessage(
+            "metricsMessage",
+            error.message,
+            "error"
+        );
+
+    }
+
+}
+
+
+function goDashboard(){
+
+    window.location.href="/";
+
+}
+
+
+renderLanguage();
+
+loadCampaigns();
+
+</script>
+
+</body>
+
+</html>
