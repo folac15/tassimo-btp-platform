@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TASSIMO BTP - Projets</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#1f2937;
+    min-height:100vh;
+}
+
+header{
+    background:#ffffff;
+    padding:16px 20px;
+    border-bottom:1px solid #e5e7eb;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.logo{
+    width:42px;
+    height:42px;
+    border-radius:10px;
+    background:#111827;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+}
+
+.header-info{
+    flex:1;
+}
+
+.header-info h1{
+    font-size:18px;
+}
+
+.header-info p{
+    font-size:12px;
+    color:#6b7280;
+    margin-top:3px;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+}
+
+.btn{
+    background:#111827;
+    color:white;
+    padding:11px 15px;
+    border-radius:9px;
+    font-weight:bold;
+}
+
+.btn:hover{
+    opacity:.9;
+}
+
+.btn.alt{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.btn.danger{
+    background:#dc2626;
+}
+
+.container{
+    max-width:1250px;
+    margin:auto;
+    padding:20px;
+}
+
+.topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.topbar h2{
+    font-size:24px;
+}
+
+.topbar p{
+    color:#6b7280;
+    margin-top:5px;
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.stat-card{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:18px;
+}
+
+.stat-label{
+    color:#6b7280;
+    font-size:13px;
+}
+
+.stat-value{
+    font-size:27px;
+    font-weight:bold;
+    margin-top:7px;
+}
+
+.panel{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:18px;
+    margin-bottom:20px;
+}
+
+.panel h3{
+    margin-bottom:14px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+}
+
+.field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.field.full{
+    grid-column:1/-1;
+}
+
+.field label{
+    font-size:13px;
+    font-weight:bold;
+}
+
+.field input,
+.field select,
+.field textarea{
+    width:100%;
+    border:1px solid #d1d5db;
+    border-radius:8px;
+    padding:11px;
+    background:white;
+    outline:none;
+}
+
+.field textarea{
+    min-height:100px;
+    resize:vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus{
+    border-color:#111827;
+}
+
+.form-actions{
+    margin-top:16px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.search-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.search-row input{
+    flex:1;
+    padding:12px;
+    border:1px solid #d1d5db;
+    border-radius:9px;
+}
+
+.projects{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.project-card{
+    border:1px solid #e5e7eb;
+    border-radius:13px;
+    padding:16px;
+    background:#fff;
+}
+
+.project-head{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.project-title{
+    font-size:17px;
+    font-weight:bold;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 8px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:bold;
+    background:#eef2ff;
+}
+
+.project-meta{
+    margin-top:12px;
+    display:grid;
+    gap:7px;
+    color:#4b5563;
+    font-size:13px;
+}
+
+.progress{
+    margin-top:13px;
+}
+
+.progress-bar{
+    height:9px;
+    background:#e5e7eb;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    background:#111827;
+}
+
+.progress-text{
+    font-size:12px;
+    margin-top:5px;
+    color:#6b7280;
+}
+
+.card-actions{
+    display:flex;
+    gap:7px;
+    margin-top:15px;
+    flex-wrap:wrap;
+}
+
+.card-actions button{
+    padding:8px 10px;
+    border-radius:7px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.ai-box{
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    padding:15px;
+}
+
+.ai-result{
+    margin-top:12px;
+    white-space:pre-wrap;
+    line-height:1.6;
+    color:#374151;
+}
+
+.hidden{
+    display:none;
+}
+
+.empty{
+    text-align:center;
+    padding:35px;
+    color:#6b7280;
+}
+
+.toast{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#111827;
+    color:white;
+    padding:13px 17px;
+    border-radius:9px;
+    display:none;
+    z-index:100;
+    max-width:90%;
+}
+
+@media(max-width:900px){
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .projects{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:650px){
+
+    header{
+        padding:13px;
+    }
+
+    .container{
+        padding:13px;
+    }
+
+    .topbar{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .topbar h2{
+        font-size:21px;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+        gap:9px;
+    }
+
+    .stat-card{
+        padding:14px;
+    }
+
+    .stat-value{
+        font-size:22px;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .field.full{
+        grid-column:auto;
+    }
+
+    .projects{
+        grid-template-columns:1fr;
+    }
+
+    .search-row{
+        flex-direction:column;
+    }
+
+    .btn{
+        width:100%;
+    }
+
+    .actions .btn{
+        width:auto;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">TB</div>
+
+<div class="header-info">
+<h1>TASSIMO BTP CONSTRUCTION SARL</h1>
+<p id="subtitle">Gestion des projets de construction</p>
+</div>
+
+<button class="btn alt" onclick="toggleLanguage()" id="langBtn">
+EN
+</button>
+
+</header>
+
+<div class="container">
+
+<div class="topbar">
+
+<div>
+<h2 id="pageTitle">🏗️ Projets</h2>
+<p id="pageSubtitle">
+Planifiez, suivez et gérez vos projets de construction.
+</p>
+</div>
+
+<div class="actions">
+<button class="btn" onclick="showForm()" id="newBtn">
++ Nouveau projet
+</button>
+
+<button class="btn alt" onclick="window.location.href='/'" id="dashboardBtn">
+Tableau de bord
+</button>
+</div>
+
+</div>
+
+
+<!-- STATS -->
+
+<div class="stats">
+
+<div class="stat-card">
+<div class="stat-label" id="totalLabel">Total des projets</div>
+<div class="stat-value" id="totalProjects">0</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-label" id="activeLabel">Projets actifs</div>
+<div class="stat-value" id="activeProjects">0</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-label" id="completedLabel">Terminés</div>
+<div class="stat-value" id="completedProjects">0</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-label" id="budgetLabel">Budget total</div>
+<div class="stat-value" id="totalBudget">0 XAF</div>
+</div>
+
+</div>
+
+
+<!-- FORM -->
+
+<div class="panel hidden" id="projectForm">
+
+<h3 id="formTitle">Créer un nouveau projet</h3>
+
+<div class="form-grid">
+
+<div class="field">
+<label id="nameLabel">Nom du projet</label>
+<input id="p_name" placeholder="Ex. Construction immeuble résidentiel">
+</div>
+
+<div class="field">
+<label id="clientLabel">Client</label>
+<input id="p_client" placeholder="Nom du client">
+</div>
+
+<div class="field">
+<label id="locationLabel">Localisation</label>
+<input id="p_location" placeholder="Douala, Bonamoussadi...">
+</div>
+
+<div class="field">
+<label id="managerLabel">Responsable du projet</label>
+<input id="p_manager" placeholder="Nom du responsable">
+</div>
+
+<div class="field">
+<label id="budgetFieldLabel">Budget prévu (XAF)</label>
+<input id="p_budget" type="number" min="0" placeholder="0">
+</div>
+
+<div class="field">
+<label id="spentLabel">Montant dépensé (XAF)</label>
+<input id="p_spent" type="number" min="0" placeholder="0">
+</div>
+
+<div class="field">
+<label id="statusLabel">Statut</label>
+
+<select id="p_status">
+<option value="planned">Planifié</option>
+<option value="active">En cours</option>
+<option value="on_hold">En pause</option>
+<option value="completed">Terminé</option>
+<option value="cancelled">Annulé</option>
+</select>
+
+</div>
+
+<div class="field">
+<label id="progressLabel">Progression (%)</label>
+<input id="p_progress" type="number" min="0" max="100" value="0">
+</div>
+
+<div class="field">
+<label id="startLabel">Date de début</label>
+<input id="p_start" type="date">
+</div>
+
+<div class="field">
+<label id="endLabel">Date de fin prévue</label>
+<input id="p_end" type="date">
+</div>
+
+<div class="field full">
+<label id="descriptionLabel">Description</label>
+<textarea id="p_description"
+placeholder="Description du projet, travaux prévus, besoins du client..."></textarea>
+</div>
+
+</div>
+
+<div class="form-actions">
+
+<button class="btn" onclick="saveProject()" id="saveBtn">
+Enregistrer le projet
+</button>
+
+<button class="btn alt" onclick="hideForm()" id="cancelBtn">
+Annuler
+</button>
+
+</div>
+
+</div>
+
+
+<!-- SEARCH -->
+
+<div class="panel">
+
+<div class="search-row">
+
+<input
+id="search"
+placeholder="Rechercher un projet, client ou localisation..."
+oninput="renderProjects()"
+>
+
+<button class="btn alt" onclick="loadProjects()" id="refreshBtn">
+Actualiser
+</button>
+
+</div>
+
+<div id="projects" class="projects"></div>
+
+</div>
+
+
+<!-- AI -->
+
+<div class="panel">
+
+<h3 id="aiTitle">🤖 Assistant IA des projets</h3>
+
+<div class="ai-box">
+
+<p id="aiDescription">
+Demandez à l'IA d'analyser vos projets, identifier les risques
+ou proposer des actions de suivi.
+</p>
+
+<div class="field" style="margin-top:12px">
+
+<label id="questionLabel">Votre question</label>
+
+<textarea
+id="aiQuestion"
+placeholder="Ex. Quels sont les risques à surveiller sur mes projets actuels ?"
+></textarea>
+
+</div>
+
+<div class="form-actions">
+
+<button class="btn" onclick="askAI()" id="aiBtn">
+Analyser avec l'IA
+</button>
+
+</div>
+
+<div id="aiResult" class="ai-result"></div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+
+let language = localStorage.getItem("lang") || "fr";
+let projects = [];
+let editingId = null;
+
+
+const translations = {
+
+fr:{
+
+subtitle:"Gestion des projets de construction",
+title:"🏗️ Projets",
+pageSubtitle:"Planifiez, suivez et gérez vos projets de construction.",
+newProject:"+ Nouveau projet",
+dashboard:"Tableau de bord",
+
+total:"Total des projets",
+active:"Projets actifs",
+completed:"Terminés",
+budget:"Budget total",
+
+create:"Créer un nouveau projet",
+edit:"Modifier le projet",
+
+name:"Nom du projet",
+client:"Client",
+location:"Localisation",
+manager:"Responsable du projet",
+budgetField:"Budget prévu (XAF)",
+spent:"Montant dépensé (XAF)",
+status:"Statut",
+progress:"Progression (%)",
+start:"Date de début",
+end:"Date de fin prévue",
+description:"Description",
+
+save:"Enregistrer le projet",
+update:"Mettre à jour le projet",
+cancel:"Annuler",
+
+search:"Rechercher un projet, client ou localisation...",
+refresh:"Actualiser",
+
+aiTitle:"🤖 Assistant IA des projets",
+aiDescription:"Demandez à l'IA d'analyser vos projets, identifier les risques ou proposer des actions de suivi.",
+question:"Votre question",
+askAI:"Analyser avec l'IA",
+loading:"Chargement...",
+noProjects:"Aucun projet trouvé.",
+
+planned:"Planifié",
+activeStatus:"En cours",
+onHold:"En pause",
+completedStatus:"Terminé",
+cancelled:"Annulé",
+
+editBtn:"Modifier",
+deleteBtn:"Supprimer",
+
+saved:"Projet enregistré avec succès.",
+updated:"Projet mis à jour avec succès.",
+deleted:"Projet supprimé.",
+error:"Une erreur est survenue.",
+confirmDelete:"Voulez-vous vraiment supprimer ce projet ?",
+aiError:"Impossible d'obtenir une réponse de l'IA.",
+
+clientText:"Client",
+locationText:"Lieu",
+managerText:"Responsable",
+budgetText:"Budget",
+spentText:"Dépensé",
+datesText:"Dates"
+
+},
+
+en:{
+
+subtitle:"Construction project management",
+title:"🏗️ Projects",
+pageSubtitle:"Plan, monitor and manage your construction projects.",
+newProject:"+ New Project",
+dashboard:"Dashboard",
+
+total:"Total Projects",
+active:"Active Projects",
+completed:"Completed",
+budget:"Total Budget",
+
+create:"Create New Project",
+edit:"Edit Project",
+
+name:"Project Name",
+client:"Client",
+location:"Location",
+manager:"Project Manager",
+budgetField:"Planned Budget (XAF)",
+spent:"Amount Spent (XAF)",
+status:"Status",
+progress:"Progress (%)",
+start:"Start Date",
+end:"Expected End Date",
+description:"Description",
+
+save:"Save Project",
+update:"Update Project",
+cancel:"Cancel",
+
+search:"Search project, client or location...",
+refresh:"Refresh",
+
+aiTitle:"🤖 Project AI Assistant",
+aiDescription:"Ask AI to analyze projects, identify risks or recommend follow-up actions.",
+question:"Your Question",
+askAI:"Analyze with AI",
+loading:"Loading...",
+noProjects:"No projects found.",
+
+planned:"Planned",
+activeStatus:"Active",
+onHold:"On Hold",
+completedStatus:"Completed",
+cancelled:"Cancelled",
+
+editBtn:"Edit",
+deleteBtn:"Delete",
+
+saved:"Project saved successfully.",
+updated:"Project updated successfully.",
+deleted:"Project deleted.",
+error:"An error occurred.",
+confirmDelete:"Do you really want to delete this project?",
+aiError:"Unable to get an AI response.",
+
+clientText:"Client",
+locationText:"Location",
+managerText:"Manager",
+budgetText:"Budget",
+spentText:"Spent",
+datesText:"Dates"
+
+}
+
+};
+
+
+function t(key){
+    return translations[language][key] || key;
+}
+
+
+function applyLanguage(){
+
+    document.documentElement.lang = language;
+
+    document.getElementById("subtitle").textContent=t("subtitle");
+    document.getElementById("pageTitle").textContent=t("title");
+    document.getElementById("pageSubtitle").textContent=t("pageSubtitle");
+
+    document.getElementById("newBtn").textContent=t("newProject");
+    document.getElementById("dashboardBtn").textContent=t("dashboard");
+
+    document.getElementById("totalLabel").textContent=t("total");
+    document.getElementById("activeLabel").textContent=t("active");
+    document.getElementById("completedLabel").textContent=t("completed");
+    document.getElementById("budgetLabel").textContent=t("budget");
+
+    document.getElementById("nameLabel").textContent=t("name");
+    document.getElementById("clientLabel").textContent=t("client");
+    document.getElementById("locationLabel").textContent=t("location");
+    document.getElementById("managerLabel").textContent=t("manager");
+    document.getElementById("budgetFieldLabel").textContent=t("budgetField");
+    document.getElementById("spentLabel").textContent=t("spent");
+    document.getElementById("statusLabel").textContent=t("status");
+    document.getElementById("progressLabel").textContent=t("progress");
+    document.getElementById("startLabel").textContent=t("start");
+    document.getElementById("endLabel").textContent=t("end");
+    document.getElementById("descriptionLabel").textContent=t("description");
+
+    document.getElementById("saveBtn").textContent =
+        editingId ? t("update") : t("save");
+
+    document.getElementById("cancelBtn").textContent=t("cancel");
+
+    document.getElementById("search").placeholder=t("search");
+    document.getElementById("refreshBtn").textContent=t("refresh");
+
+    document.getElementById("aiTitle").textContent=t("aiTitle");
+    document.getElementById("aiDescription").textContent=t("aiDescription");
+    document.getElementById("questionLabel").textContent=t("question");
+    document.getElementById("aiBtn").textContent=t("askAI");
+
+    const status=document.getElementById("p_status");
+
+    status.innerHTML=`
+
+        <option value="planned">${t("planned")}</option>
+        <option value="active">${t("activeStatus")}</option>
+        <option value="on_hold">${t("onHold")}</option>
+        <option value="completed">${t("completedStatus")}</option>
+        <option value="cancelled">${t("cancelled")}</option>
+
+    `;
+
+    document.getElementById("langBtn").textContent =
+        language==="fr" ? "EN" : "FR";
+
+    renderProjects();
+}
+
+
+function toggleLanguage(){
+
+    language = language==="fr" ? "en" : "fr";
+
+    localStorage.setItem("lang",language);
+
+    applyLanguage();
+
+}
+
+
+async function api(url,options={}){
+
+    options.headers={
+        ...(options.headers || {}),
+        "Content-Type":"application/json",
+        "X-Language":language
+    };
+
+    const response=await fetch(url,options);
+
+    if(response.status===401){
+
+        window.location.href="/login";
+        return null;
+
+    }
+
+    let data={};
+
+    try{
+        data=await response.json();
+    }catch(error){
+        data={};
+    }
+
+    if(!response.ok){
+
+        throw new Error(data.error || t("error"));
+
+    }
+
+    return data;
+
+}
+
+
+function toast(message){
+
+    const element=document.getElementById("toast");
+
+    element.textContent=message;
+    element.style.display="block";
+
+    setTimeout(()=>{
+        element.style.display="none";
+    },2800);
+
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+function money(value){
+
+    const number=Number(value || 0);
+
+    return new Intl.NumberFormat(
+        language==="fr" ? "fr-FR" : "en-US"
+    ).format(number)+" XAF";
+
+}
+
+
+function statusText(status){
+
+    const map={
+
+        planned:t("planned"),
+        active:t("activeStatus"),
+        on_hold:t("onHold"),
+        completed:t("completedStatus"),
+        cancelled:t("cancelled")
+
+    };
+
+    return map[status] || status || "";
+
+}
+
+
+async function loadProjects(){
+
+    try{
+
+        const data=await api("/api/projects");
+
+        if(!data)return;
+
+        projects=data.data || [];
+
+        updateStats();
+        renderProjects();
+
+    }catch(error){
+
+        toast(error.message || t("error"));
+
+    }
+
+}
+
+
+function updateStats(){
+
+    document.getElementById("totalProjects").textContent=projects.length;
+
+    document.getElementById("activeProjects").textContent=
+        projects.filter(p=>p.status==="active").length;
+
+    document.getElementById("completedProjects").textContent=
+        projects.filter(p=>p.status==="completed").length;
+
+    const total=projects.reduce(
+        (sum,p)=>sum+Number(p.budget || 0),0
+    );
+
+    document.getElementById("totalBudget").textContent=money(total);
+
+}
+
+
+function renderProjects(){
+
+    const container=document.getElementById("projects");
+
+    const query=
+        document.getElementById("search").value
+        .trim()
+        .toLowerCase();
+
+    const filtered=projects.filter(project=>{
+
+        const text=[
+            project.name,
+            project.client,
+            project.location,
+            project.manager,
+            project.description
+        ].join(" ").toLowerCase();
+
+        return text.includes(query);
+
+    });
+
+
+    if(!filtered.length){
+
+        container.innerHTML=`
+            <div class="empty">
+                ${t("noProjects")}
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML=filtered.map(project=>{
+
+        const progress=Math.max(
+            0,
+            Math.min(100,Number(project.progress || 0))
+        );
+
+        return`
+
+        <div class="project-card">
+
+            <div class="project-head">
+
+                <div class="project-title">
+                    ${escapeHtml(project.name || "—")}
+                </div>
+
+                <span class="badge">
+                    ${escapeHtml(statusText(project.status))}
+                </span>
+
+            </div>
+
+
+            <div class="project-meta">
+
+                <div>
+                    👤 <strong>${t("clientText")}:</strong>
+                    ${escapeHtml(project.client || "—")}
+                </div>
+
+                <div>
+                    📍 <strong>${t("locationText")}:</strong>
+                    ${escapeHtml(project.location || "—")}
+                </div>
+
+                <div>
+                    👷 <strong>${t("managerText")}:</strong>
+                    ${escapeHtml(project.manager || "—")}
+                </div>
+
+                <div>
+                    💰 <strong>${t("budgetText")}:</strong>
+                    ${money(project.budget)}
+                </div>
+
+                <div>
+                    💵 <strong>${t("spentText")}:</strong>
+                    ${money(project.spent)}
+                </div>
+
+                <div>
+                    📅 <strong>${t("datesText")}:</strong>
+                    ${escapeHtml(project.start_date || "—")}
+                    →
+                    ${escapeHtml(project.end_date || "—")}
+                </div>
+
+            </div>
+
+
+            <div class="progress">
+
+                <div class="progress-bar">
+
+                    <div
+                        class="progress-fill"
+                        style="width:${progress}%">
+                    </div>
+
+                </div>
+
+                <div class="progress-text">
+                    ${progress}%
+                </div>
+
+            </div>
+
+
+            <div class="card-actions">
+
+                <button
+                    onclick="editProject('${project.id}')">
+                    ${t("editBtn")}
+                </button>
+
+                <button
+                    class="btn danger"
+                    onclick="deleteProject('${project.id}')">
+                    ${t("deleteBtn")}
+                </button>
+
+            </div>
+
+        </div>
+
+        `;
+
+    }).join("");
+
+}
+
+
+function showForm(){
+
+    document.getElementById("projectForm")
+        .classList.remove("hidden");
+
+    document.getElementById("formTitle").textContent=t("create");
+
+    editingId=null;
+
+    clearForm();
+
+    document.getElementById("saveBtn").textContent=t("save");
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+function hideForm(){
+
+    document.getElementById("projectForm")
+        .classList.add("hidden");
+
+    editingId=null;
+
+    clearForm();
+
+}
+
+
+function clearForm(){
+
+    document.getElementById("p_name").value="";
+    document.getElementById("p_client").value="";
+    document.getElementById("p_location").value="";
+    document.getElementById("p_manager").value="";
+    document.getElementById("p_budget").value="";
+    document.getElementById("p_spent").value="";
+    document.getElementById("p_status").value="planned";
+    document.getElementById("p_progress").value="0";
+    document.getElementById("p_start").value="";
+    document.getElementById("p_end").value="";
+    document.getElementById("p_description").value="";
+
+}
+
+
+async function saveProject(){
+
+    const data={
+
+        name:document.getElementById("p_name").value.trim(),
+        client:document.getElementById("p_client").value.trim(),
+        location:document.getElementById("p_location").value.trim(),
+        manager:document.getElementById("p_manager").value.trim(),
+
+        budget:Number(
+            document.getElementById("p_budget").value || 0
+        ),
+
+        spent:Number(
+            document.getElementById("p_spent").value || 0
+        ),
+
+        status:document.getElementById("p_status").value,
+
+        progress:Number(
+            document.getElementById("p_progress").value || 0
+        ),
+
+        start_date:document.getElementById("p_start").value,
+        end_date:document.getElementById("p_end").value,
+
+        description:
+            document.getElementById("p_description").value.trim()
+
+    };
+
+
+    if(!data.name){
+
+        toast(
+            language==="fr"
+            ? "Le nom du projet est obligatoire."
+            : "Project name is required."
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        if(editingId){
+
+            await api(
+                "/api/projects?id="+encodeURIComponent(editingId),
+                {
+                    method:"PUT",
+                    body:JSON.stringify({
+                        id:editingId,
+                        ...data
+                    })
+                }
+            );
+
+            toast(t("updated"));
+
+        }else{
+
+            await api(
+                "/api/projects",
+                {
+                    method:"POST",
+                    body:JSON.stringify(data)
+                }
+            );
+
+            toast(t("saved"));
+
+        }
+
+
+        hideForm();
+
+        await loadProjects();
+
+
+    }catch(error){
+
+        toast(error.message || t("error"));
+
+    }
+
+}
+
+
+function editProject(id){
+
+    const project=projects.find(
+        item=>String(item.id)===String(id)
+    );
+
+    if(!project)return;
+
+    editingId=project.id;
+
+    document.getElementById("projectForm")
+        .classList.remove("hidden");
+
+    document.getElementById("formTitle").textContent=t("edit");
+
+    document.getElementById("p_name").value=project.name || "";
+    document.getElementById("p_client").value=project.client || "";
+    document.getElementById("p_location").value=project.location || "";
+    document.getElementById("p_manager").value=project.manager || "";
+    document.getElementById("p_budget").value=project.budget || "";
+    document.getElementById("p_spent").value=project.spent || "";
+    document.getElementById("p_status").value=project.status || "planned";
+    document.getElementById("p_progress").value=project.progress || 0;
+    document.getElementById("p_start").value=project.start_date || "";
+    document.getElementById("p_end").value=project.end_date || "";
+    document.getElementById("p_description").value=project.description || "";
+
+    document.getElementById("saveBtn").textContent=t("update");
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+async function deleteProject(id){
+
+    if(!confirm(t("confirmDelete"))){
+
+        return;
+
+    }
+
+
+    try{
+
+        await api(
+            "/api/projects?id="+encodeURIComponent(id),
+            {
+                method:"DELETE",
+                body:JSON.stringify({id:id})
+            }
+        );
+
+        toast(t("deleted"));
+
+        await loadProjects();
+
+    }catch(error){
+
+        toast(error.message || t("error"));
+
+    }
+
+}
+
+
+async function askAI(){
+
+    const question=
+        document.getElementById("aiQuestion")
+        .value.trim();
+
+    if(!question){
+
+        toast(
+            language==="fr"
+            ? "Veuillez saisir une question."
+            : "Please enter a question."
+        );
+
+        return;
+
+    }
+
+
+    const result=document.getElementById("aiResult");
+
+    result.textContent=t("loading");
+
+
+    try{
+
+        const data=await api(
+            "/api/ai",
+            {
+                method:"POST",
+
+                body:JSON.stringify({
+
+                    question:question,
+
+                    context:{
+                        module:"projects",
+                        business:"TASSIMO BTP CONSTRUCTION SARL",
+                        projects:projects
+                    }
+
+                })
+
+            }
+        );
+
+
+        if(!data){
+
+            return;
+
+        }
+
+
+        result.textContent=data.answer || t("aiError");
+
+
+    }catch(error){
+
+        result.textContent=
+            error.message || t("aiError");
+
+    }
+
+}
+
+
+applyLanguage();
+
+loadProjects();
+
+</script>
+
+</body>
+</html>
