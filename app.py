@@ -695,7 +695,375 @@ def customers_api():
         )
     })
 
+# ------------------------------------------------------------
+# LEADS & SALES MODULE
+# ------------------------------------------------------------
 
+LEAD_STAGES = {
+    "new": 0,
+    "contacted": 20,
+    "qualified": 40,
+    "proposal": 60,
+    "negotiation": 80,
+    "won": 100,
+    "lost": 0,
+}
+
+
+def normalize_lead(data):
+    data = dict(data)
+
+    numeric_fields = [
+        "budget",
+        "deal_value",
+        "probability",
+    ]
+
+    for field in numeric_fields:
+        value = data.get(field)
+
+        if value in (None, ""):
+            data[field] = 0
+        else:
+            try:
+                data[field] = float(value)
+            except (ValueError, TypeError):
+                data[field] = 0
+
+    stage = str(data.get("stage", "new")).strip().lower()
+
+    if stage not in LEAD_STAGES:
+        stage = "new"
+
+    data["stage"] = stage
+
+    status = str(data.get("status", "open")).strip().lower()
+
+    if stage == "won":
+        status = "won"
+    elif stage == "lost":
+        status = "lost"
+    else:
+        status = "open"
+
+    data["status"] = status
+
+    priority = str(
+        data.get("priority", "normal")
+    ).strip().lower()
+
+    if priority not in ("low", "normal", "high"):
+        priority = "normal"
+
+    data["priority"] = priority
+
+    probability = data.get("probability", 0)
+
+    try:
+        probability = max(
+            0,
+            min(100, float(probability))
+        )
+    except (ValueError, TypeError):
+        probability = 0
+
+    data["probability"] = probability
+
+    now = utc_now()
+
+    if not data.get("created_at"):
+        data["created_at"] = now
+
+    data["updated_at"] = now
+
+    return data
+
+
+@app.route("/api/leads-sales", methods=["GET", "POST", "PUT", "DELETE"])
+@protected
+def leads_sales_api():
+
+    if request.method == "GET":
+
+        params = {
+            "select": "*",
+            "order": "created_at.desc",
+        }
+
+        stage = request.args.get("stage")
+        status = request.args.get("status")
+
+        if stage:
+            params["stage"] = f"eq.{stage}"
+
+        if status:
+            params["status"] = f"eq.{status}"
+
+        rows = sb_select("leads", params)
+
+        return jsonify({
+            "leads": rows,
+            "count": len(rows),
+        })
+
+
+    data = request.get_json(silent=True) or {}
+
+    if request.method == "POST":
+
+        full_name = str(
+            data.get("full_name")
+            or data.get("name")
+            or ""
+        ).strip()
+
+        if not full_name:
+            return jsonify({
+                "error": (
+                    "Lead name is required."
+                    if language() == "en"
+                    else "Le nom du prospect est obligatoire."
+                )
+            }), 400
+
+        data["full_name"] = full_name
+
+        data = normalize_lead(data)
+
+        saved = sb_insert(
+            "leads",
+            data
+        )
+
+        if isinstance(saved, dict) and saved.get("_error"):
+            return jsonify({
+                "error": saved["_error"]
+            }), 400
+
+        if not saved:
+            return jsonify({
+                "error": (
+                    "Lead could not be saved."
+                    if language() == "en"
+                    else "Le prospect n'a pas pu être enregistré."
+                )
+            }), 400
+
+        return jsonify({
+            "message": t("saved"),
+            "lead": saved,
+        }), 201
+
+
+    record_id = (
+        data.get("id")
+        or request.args.get("id")
+    )
+
+    if not record_id:
+        return jsonify({
+            "error": t("invalid_data")
+        }), 400
+
+
+    if request.method == "PUT":
+
+        data.pop("id", None)
+
+        if "name" in data and "full_name" not in data:
+            data["full_name"] = data.pop("name")
+
+        data = normalize_lead(data)
+
+        saved = sb_update(
+            "leads",
+            {
+                "id": f"eq.{record_id}"
+            },
+            data
+        )
+
+        if isinstance(saved, dict) and saved.get("_error"):
+            return jsonify({
+                "error": saved["_error"]
+            }), 400
+
+        return jsonify({
+            "message": t("saved"),
+            "lead": saved,
+        })
+
+
+    deleted = sb_delete(
+        "leads",
+        {
+            "id": f"eq.{record_id}"
+        }
+    )
+
+    return jsonify({
+        "deleted": deleted
+    })
+
+
+@app.route("/api/leads-sales/stats")
+@protected
+def leads_sales_stats():
+
+    rows = sb_select(
+        "leads",
+        {
+            "select": "*"
+        }
+    )
+
+    total = len(rows)
+
+    new_count = 0
+    contacted = 0
+    qualified = 0
+    proposals = 0
+    negotiations = 0
+    won = 0
+    lost = 0
+
+    pipeline_value = 0.0
+    weighted_value = 0.0
+
+    for lead in rows:
+
+        stage = str(
+            lead.get("stage") or "new"
+        ).lower()
+
+        if stage == "new":
+            new_count += 1
+
+        elif stage == "contacted":
+            contacted += 1
+
+        elif stage == "qualified":
+            qualified += 1
+
+        elif stage == "proposal":
+            proposals += 1
+
+        elif stage == "negotiation":
+            negotiations += 1
+
+        elif stage == "won":
+            won += 1
+
+        elif stage == "lost":
+            lost += 1
+
+        try:
+            value = float(
+                lead.get("deal_value") or 0
+            )
+        except (ValueError, TypeError):
+            value = 0
+
+        try:
+            probability = float(
+                lead.get("probability") or 0
+            )
+        except (ValueError, TypeError):
+            probability = 0
+
+        if stage not in ("won", "lost"):
+            pipeline_value += value
+            weighted_value += (
+                value * probability / 100
+            )
+
+    conversion_rate = (
+        (won / total) * 100
+        if total
+        else 0
+    )
+
+    return jsonify({
+        "total": total,
+        "new": new_count,
+        "contacted": contacted,
+        "qualified": qualified,
+        "proposal": proposals,
+        "negotiation": negotiations,
+        "won": won,
+        "lost": lost,
+        "pipeline_value": round(
+            pipeline_value,
+            2
+        ),
+        "weighted_value": round(
+            weighted_value,
+            2
+        ),
+        "conversion_rate": round(
+            conversion_rate,
+            2
+        ),
+    })
+
+
+@app.route("/api/leads-sales/ai-qualify", methods=["POST"])
+@protected
+def leads_sales_ai_qualify():
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    lead = data.get("lead") or data
+
+    if not lead:
+        return jsonify({
+            "error": t("invalid_data")
+        }), 400
+
+    context = {
+        "module": "Leads & Sales",
+        "business": APP_NAME,
+        "company": "TASSIMO BTP CONSTRUCTION SARL",
+        "lead": lead,
+    }
+
+    prompt = f"""
+Analyze this sales lead for TASSIMO BTP CONSTRUCTION SARL.
+
+Lead:
+{json.dumps(lead, ensure_ascii=False)}
+
+Provide:
+
+1. Lead qualification: Hot, Warm or Cold
+2. Recommended probability from 0 to 100
+3. Recommended sales stage
+4. Recommended priority
+5. Main buying intent
+6. Recommended next action
+7. Suggested follow-up message
+8. Potential risks
+9. Suggested service
+10. Short explanation
+
+Return a practical business recommendation.
+"""
+
+    answer = ai_answer(
+        prompt,
+        context=context
+    )
+
+    if not answer:
+        return jsonify({
+            "error": t("ai_unavailable")
+        }), 503
+
+    return jsonify({
+        "analysis": answer
+    })
 @app.route("/api/<resource>", methods=["GET", "POST", "PUT", "DELETE"])
 @protected
 def generic_resource(resource):
