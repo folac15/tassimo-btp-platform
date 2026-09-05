@@ -626,29 +626,47 @@ def customers_api():
         return jsonify({"customers": rows})
 
     data = request.get_json(silent=True) or {}
+
     if request.method == "POST":
-    saved = upsert_customer(data)
+        saved = upsert_customer(data)
 
-    if isinstance(saved, dict) and saved.get("_error"):
+        if isinstance(saved, dict) and saved.get("_error"):
+            return jsonify({
+                "error": saved["_error"]
+            }), 400
+
         return jsonify({
-            "error": saved["_error"]
-        }), 400
-
-    return jsonify({
-        "message": t("saved"),
-        "customer": saved
-    }), 201
+            "message": t("saved"),
+            "customer": saved
+        }), 201
 
     record_id = data.get("id") or request.args.get("id")
+
     if not record_id:
-        return jsonify({"error": t("invalid_data")}), 400
+        return jsonify({
+            "error": t("invalid_data")
+        }), 400
 
     if request.method == "PUT":
         data.pop("id", None)
-        saved = sb_update("customers", {"id": f"eq.{record_id}"}, normalize_record(data))
-        return jsonify({"message": t("saved"), "customer": saved})
 
-    return jsonify({"deleted": sb_delete("customers", {"id": f"eq.{record_id}"})})
+        saved = sb_update(
+            "customers",
+            {"id": f"eq.{record_id}"},
+            normalize_record(data)
+        )
+
+        return jsonify({
+            "message": t("saved"),
+            "customer": saved
+        })
+
+    return jsonify({
+        "deleted": sb_delete(
+            "customers",
+            {"id": f"eq.{record_id}"}
+        )
+    })
 
 
 @app.route("/api/<resource>", methods=["GET", "POST", "PUT", "DELETE"])
