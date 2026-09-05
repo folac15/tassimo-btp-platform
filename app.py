@@ -627,7 +627,7 @@ def customers_api():
 
     data = request.get_json(silent=True) or {}
 
- if request.method == "POST":
+    if request.method == "POST":
     saved = upsert_customer(data)
 
     if isinstance(saved, dict) and saved.get("_error"):
