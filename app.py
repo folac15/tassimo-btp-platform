@@ -2007,6 +2007,10 @@ function startBilingualObserver(){
   applyBilingualText();
 }
 function openPage(p){
+  if(name==="marketing"){
+    window.location.href="/marketing.html";
+    return;
+}
   if(p==='customers'){
     window.location.href='/customers';
     return;
