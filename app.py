@@ -555,7 +555,6 @@ def upsert_customer(data):
     data = normalize_record(data)
     phone, email, _ = customer_identity(data)
 
-    # WhatsApp phone is the strongest practical identifier.
     if phone:
         existing = sb_select(
             "customers",
@@ -574,9 +573,9 @@ def upsert_customer(data):
             )
 
             if not saved:
-                raise RuntimeError(
-                    "Customer update failed in Supabase."
-                )
+                return {
+                    "_error": "Customer update failed in Supabase."
+                }
 
             return saved
 
@@ -598,18 +597,18 @@ def upsert_customer(data):
             )
 
             if not saved:
-                raise RuntimeError(
-                    "Customer update failed in Supabase."
-                )
+                return {
+                    "_error": "Customer update failed in Supabase."
+                }
 
             return saved
 
     saved = sb_insert("customers", data)
 
     if not saved:
-        raise RuntimeError(
-            "Customer could not be saved to Supabase."
-        )
+        return {
+            "_error": "Customer could not be saved to Supabase."
+        }
 
     return saved
 
@@ -628,9 +627,18 @@ def customers_api():
 
     data = request.get_json(silent=True) or {}
 
-    if request.method == "POST":
-        saved = upsert_customer(data)
-        return jsonify({"message": t("saved"), "customer": saved}), 201
+ if request.method == "POST":
+    saved = upsert_customer(data)
+
+    if isinstance(saved, dict) and saved.get("_error"):
+        return jsonify({
+            "error": saved["_error"]
+        }), 400
+
+    return jsonify({
+        "message": t("saved"),
+        "customer": saved
+    }), 201
 
     record_id = data.get("id") or request.args.get("id")
     if not record_id:
