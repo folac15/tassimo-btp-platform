@@ -2007,21 +2007,27 @@ function startBilingualObserver(){
   applyBilingualText();
 }
 function openPage(p){
-  if(name==="marketing"){
+  if(p==="marketing"){
     window.location.href="/marketing.html";
     return;
-}
-  if(p==='customers'){
-    window.location.href='/customers';
+  }
+
+  if(p==="customers"){
+    window.location.href="/customers";
     return;
   }
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
-  document.getElementById('pageTitle').textContent=modules.find(x=>x[0]===p)?.[lang==='fr'?3:2]||p;
+
+  document.getElementById('pageTitle').textContent =
+    modules.find(x=>x[0]===p)?.[lang==='fr'?3:2] || p;
+
   document.getElementById('welcome').textContent='';
   side.classList.remove('open');
-  window['page_'+p]?window['page_'+p]():pageGeneric(p);
+
+  window['page_'+p] ? window['page_'+p]() : pageGeneric(p);
+
   setTimeout(enforceBilingualUI,80);
 }
 
