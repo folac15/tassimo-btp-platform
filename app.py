@@ -2070,7 +2070,1182 @@ async function page_messages(){content.innerHTML=`<div class="panel"><div class=
 async function loadMessages(channel=''){const d=await api('/api/messages'+(channel&&channel!=='all'?'?channel='+encodeURIComponent(channel):''));const rows=d?.messages||[];messageList.innerHTML=rows.length?`<div style="overflow:auto"><table><thead><tr><th>${tr('channel')}</th><th>${tr('direction')}</th><th>${tr('message')}</th><th>${tr('language')}</th><th>${tr('time')}</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${channelLabel(r.channel||'')}</td><td>${directionLabel(r.direction)}</td><td>${escapeHtml(String(r.message||'').slice(0,180))}</td><td>${r.language==='fr'?'Français':r.language==='en'?'English':r.language||''}</td><td>${r.created_at||''}</td></tr>`).join('')}</tbody></table></div>`:`<p>${tr('no_messages')}</p>`}
 async function generateAIPost(){postResult.textContent=tr('generate');try{const d=await api('/api/social/ai-post',{method:'POST',body:JSON.stringify({channels:['whatsapp','facebook','instagram','tiktok','linkedin','youtube'],topic:postTopic.value,audience:postAudience.value,language:lang})});postResult.textContent=JSON.stringify(d,null,2)}catch(e){postResult.textContent=e.message}}
 async function loadLearning(){learningResult.textContent=tr('analyzing');try{const d=await api('/api/social/learning');learningResult.textContent=JSON.stringify(d,null,2)}catch(e){learningResult.textContent=e.message}}
-async function page_leads(){await pageTable('leads','/api/leads','leads')}
+let leadRows = [];
+let editingLeadId = null;
+
+async function page_leads(){
+
+    content.innerHTML = `
+    <div class="title">
+        <h1>🎯 ${lang==='fr'?'Prospects & Ventes':'Leads & Sales'}</h1>
+        <p class="muted">
+            ${lang==='fr'
+                ?'Gérez vos prospects, opportunités et ventes de la première prise de contact jusqu’à la conclusion.'
+                :'Manage prospects, opportunities and sales from first contact to closing.'}
+        </p>
+    </div>
+
+    <div class="actions" style="margin-bottom:15px">
+        <button class="btn" onclick="showLeadForm()">
+            + ${lang==='fr'?'Nouveau prospect':'New Lead'}
+        </button>
+
+        <button class="btn alt" onclick="loadLeadsSales()">
+            ↻ ${lang==='fr'?'Actualiser':'Refresh'}
+        </button>
+    </div>
+
+    <div class="cards" id="leadStats">
+        <div class="card">
+            <div class="muted">${lang==='fr'?'Total prospects':'Total Leads'}</div>
+            <div class="stat">0</div>
+        </div>
+
+        <div class="card">
+            <div class="muted">${lang==='fr'?'Prospects qualifiés':'Qualified Leads'}</div>
+            <div class="stat">0</div>
+        </div>
+
+        <div class="card">
+            <div class="muted">${lang==='fr'?'Valeur du pipeline':'Pipeline Value'}</div>
+            <div class="stat">0 FCFA</div>
+        </div>
+
+        <div class="card">
+            <div class="muted">${lang==='fr'?'Taux de conversion':'Conversion Rate'}</div>
+            <div class="stat">0%</div>
+        </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:18px">
+        <div class="actions">
+
+            <input
+                id="leadSearch"
+                placeholder="${lang==='fr'
+                    ?'Rechercher un prospect...'
+                    :'Search leads...'}"
+                oninput="renderLeadsSales()"
+                style="flex:1;min-width:180px"
+            >
+
+            <select id="leadStageFilter" onchange="loadLeadsSales()">
+                <option value="">${lang==='fr'?'Toutes les étapes':'All stages'}</option>
+                <option value="new">${lang==='fr'?'Nouveau':'New'}</option>
+                <option value="contacted">${lang==='fr'?'Contacté':'Contacted'}</option>
+                <option value="qualified">${lang==='fr'?'Qualifié':'Qualified'}</option>
+                <option value="proposal">${lang==='fr'?'Proposition envoyée':'Proposal Sent'}</option>
+                <option value="negotiation">${lang==='fr'?'Négociation':'Negotiation'}</option>
+                <option value="won">${lang==='fr'?'Gagné':'Won'}</option>
+                <option value="lost">${lang==='fr'?'Perdu':'Lost'}</option>
+            </select>
+
+            <select id="leadPriorityFilter" onchange="renderLeadsSales()">
+                <option value="">${lang==='fr'?'Toutes priorités':'All priorities'}</option>
+                <option value="high">${lang==='fr'?'Haute':'High'}</option>
+                <option value="normal">${lang==='fr'?'Normale':'Normal'}</option>
+                <option value="low">${lang==='fr'?'Basse':'Low'}</option>
+            </select>
+
+        </div>
+    </div>
+
+    <div id="leadForm"></div>
+
+    <div class="panel">
+        <div class="actions">
+            <h2 style="margin-right:auto">
+                ${lang==='fr'?'Pipeline commercial':'Sales Pipeline'}
+            </h2>
+
+            <span class="badge">
+                ${lang==='fr'
+                    ?'Suivi des opportunités'
+                    :'Opportunity tracking'}
+            </span>
+        </div>
+
+        <div id="leadPipeline" style="margin-top:15px"></div>
+
+        <div id="leadTable" style="margin-top:20px"></div>
+    </div>
+    `;
+
+    await loadLeadsSales();
+}
+
+
+async function loadLeadsSales(){
+
+    try{
+
+        const stage =
+            document.getElementById("leadStageFilter")?.value || "";
+
+        let url = "/api/leads-sales";
+
+        if(stage){
+            url += "?stage=" + encodeURIComponent(stage);
+        }
+
+        const data = await api(url);
+
+        if(!data) return;
+
+        leadRows = data.leads || [];
+
+        await loadLeadStats();
+
+        renderLeadsSales();
+
+    }catch(error){
+
+        const wrap =
+            document.getElementById("leadTable");
+
+        if(wrap){
+            wrap.innerHTML =
+                `<p>${escapeHtml(error.message)}</p>`;
+        }
+    }
+}
+
+
+async function loadLeadStats(){
+
+    const data =
+        await api("/api/leads-sales/stats");
+
+    if(!data) return;
+
+    const stats =
+        document.getElementById("leadStats");
+
+    if(!stats) return;
+
+    stats.innerHTML = `
+
+        <div class="card">
+            <div class="muted">
+                ${lang==='fr'?'Total prospects':'Total Leads'}
+            </div>
+            <div class="stat">
+                ${data.total}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="muted">
+                ${lang==='fr'?'Prospects qualifiés':'Qualified Leads'}
+            </div>
+            <div class="stat">
+                ${data.qualified}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="muted">
+                ${lang==='fr'?'Valeur du pipeline':'Pipeline Value'}
+            </div>
+            <div class="stat">
+                ${formatFCFA(data.pipeline_value)}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="muted">
+                ${lang==='fr'?'Taux de conversion':'Conversion Rate'}
+            </div>
+            <div class="stat">
+                ${data.conversion_rate}%
+            </div>
+        </div>
+    `;
+}
+
+
+function formatFCFA(value){
+
+    const number =
+        Number(value || 0);
+
+    return number.toLocaleString(
+        "fr-FR"
+    ) + " FCFA";
+}
+
+
+function leadStageLabel(stage){
+
+    const map = {
+        new: lang==='fr'?'Nouveau':'New',
+        contacted: lang==='fr'?'Contacté':'Contacted',
+        qualified: lang==='fr'?'Qualifié':'Qualified',
+        proposal: lang==='fr'?'Proposition':'Proposal',
+        negotiation: lang==='fr'?'Négociation':'Negotiation',
+        won: lang==='fr'?'Gagné':'Won',
+        lost: lang==='fr'?'Perdu':'Lost'
+    };
+
+    return map[stage] || stage;
+}
+
+
+function leadPriorityLabel(priority){
+
+    const map = {
+        high: lang==='fr'?'Haute':'High',
+        normal: lang==='fr'?'Normale':'Normal',
+        low: lang==='fr'?'Basse':'Low'
+    };
+
+    return map[priority] || priority;
+}
+
+
+function renderLeadsSales(){
+
+    const q =
+        (
+            document.getElementById(
+                "leadSearch"
+            )?.value || ""
+        )
+        .toLowerCase()
+        .trim();
+
+    const priority =
+        document.getElementById(
+            "leadPriorityFilter"
+        )?.value || "";
+
+    const rows =
+        leadRows.filter(lead => {
+
+            const searchable =
+                Object.values(lead)
+                .join(" ")
+                .toLowerCase();
+
+            const matchesSearch =
+                !q ||
+                searchable.includes(q);
+
+            const matchesPriority =
+                !priority ||
+                lead.priority === priority;
+
+            return (
+                matchesSearch &&
+                matchesPriority
+            );
+        });
+
+    renderLeadPipeline(rows);
+
+    const table =
+        document.getElementById(
+            "leadTable"
+        );
+
+    if(!table) return;
+
+    if(!rows.length){
+
+        table.innerHTML = `
+            <div style="text-align:center;padding:35px">
+                <div style="font-size:42px">🎯</div>
+                <h3>
+                    ${lang==='fr'
+                        ?'Aucun prospect trouvé'
+                        :'No leads found'}
+                </h3>
+                <p class="muted">
+                    ${lang==='fr'
+                        ?'Ajoutez votre premier prospect pour commencer le pipeline commercial.'
+                        :'Add your first lead to start the sales pipeline.'}
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+    table.innerHTML = `
+        <div style="overflow:auto">
+
+        <table>
+
+        <thead>
+        <tr>
+            <th>${lang==='fr'?'Prospect':'Lead'}</th>
+            <th>${lang==='fr'?'Contact':'Contact'}</th>
+            <th>${lang==='fr'?'Service':'Service'}</th>
+            <th>${lang==='fr'?'Étape':'Stage'}</th>
+            <th>${lang==='fr'?'Valeur':'Value'}</th>
+            <th>${lang==='fr'?'Probabilité':'Probability'}</th>
+            <th>${lang==='fr'?'Priorité':'Priority'}</th>
+            <th>${lang==='fr'?'Actions':'Actions'}</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        ${rows.map(lead => `
+
+            <tr>
+
+                <td>
+                    <strong>
+                        ${escapeHtml(
+                            lead.full_name || ""
+                        )}
+                    </strong>
+
+                    <br>
+
+                    <span class="muted">
+                        ${escapeHtml(
+                            lead.company || ""
+                        )}
+                    </span>
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        lead.phone || ""
+                    )}
+                    <br>
+                    ${escapeHtml(
+                        lead.email || ""
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHtml(
+                        lead.service || ""
+                    )}
+                </td>
+
+                <td>
+                    <span class="badge">
+                        ${leadStageLabel(
+                            lead.stage
+                        )}
+                    </span>
+                </td>
+
+                <td>
+                    ${formatFCFA(
+                        lead.deal_value
+                    )}
+                </td>
+
+                <td>
+                    ${Number(
+                        lead.probability || 0
+                    )}%
+                </td>
+
+                <td>
+                    <span class="badge">
+                        ${leadPriorityLabel(
+                            lead.priority
+                        )}
+                    </span>
+                </td>
+
+                <td>
+
+                    <div class="actions">
+
+                        <button
+                            class="btn alt"
+                            onclick="editLead('${escapeJs(lead.id)}')"
+                        >
+                            ${lang==='fr'
+                                ?'Modifier'
+                                :'Edit'}
+                        </button>
+
+                        <button
+                            class="btn alt"
+                            onclick="qualifyLeadWithAI('${escapeJs(lead.id)}')"
+                        >
+                            🤖 AI
+                        </button>
+
+                        <button
+                            class="btn alt"
+                            onclick="deleteLead('${escapeJs(lead.id)}')"
+                        >
+                            ${lang==='fr'
+                                ?'Supprimer'
+                                :'Delete'}
+                        </button>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+        `).join("")}
+
+        </tbody>
+
+        </table>
+
+        </div>
+    `;
+}
+
+
+function renderLeadPipeline(rows){
+
+    const pipeline =
+        document.getElementById(
+            "leadPipeline"
+        );
+
+    if(!pipeline) return;
+
+    const stages = [
+        "new",
+        "contacted",
+        "qualified",
+        "proposal",
+        "negotiation",
+        "won",
+        "lost"
+    ];
+
+    pipeline.innerHTML = `
+        <div style="
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+            gap:10px;
+        ">
+
+        ${stages.map(stage => {
+
+            const stageRows =
+                rows.filter(
+                    lead =>
+                        lead.stage === stage
+                );
+
+            const value =
+                stageRows.reduce(
+                    (sum, lead) =>
+                        sum +
+                        Number(
+                            lead.deal_value || 0
+                        ),
+                    0
+                );
+
+            return `
+
+                <div
+                    class="panel"
+                    style="
+                        padding:14px;
+                        min-height:115px;
+                    "
+                >
+
+                    <div class="muted">
+                        ${leadStageLabel(stage)}
+                    </div>
+
+                    <div class="stat">
+                        ${stageRows.length}
+                    </div>
+
+                    <div class="muted">
+                        ${formatFCFA(value)}
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join("")}
+
+        </div>
+    `;
+}
+
+
+function showLeadForm(lead={}){
+
+    editingLeadId =
+        lead.id || null;
+
+    const wrap =
+        document.getElementById(
+            "leadForm"
+        );
+
+    if(!wrap) return;
+
+    wrap.innerHTML = `
+
+        <div
+            class="panel"
+            style="margin-bottom:18px"
+        >
+
+            <div class="actions">
+                <h2 style="margin-right:auto">
+                    ${lead.id
+                        ? (lang==='fr'
+                            ?'Modifier le prospect'
+                            :'Edit Lead')
+                        : (lang==='fr'
+                            ?'Nouveau prospect'
+                            :'New Lead')}
+                </h2>
+
+                <button
+                    class="btn alt"
+                    onclick="closeLeadForm()"
+                >
+                    ×
+                </button>
+            </div>
+
+            <div class="form">
+
+                <input
+                    id="l_full_name"
+                    placeholder="${lang==='fr'
+                        ?'Nom complet *'
+                        :'Full Name *'}"
+                    value="${escapeHtml(
+                        lead.full_name || ""
+                    )}"
+                >
+
+                <div class="grid">
+
+                    <input
+                        id="l_phone"
+                        placeholder="${lang==='fr'
+                            ?'Téléphone / WhatsApp'
+                            :'Phone / WhatsApp'}"
+                        value="${escapeHtml(
+                            lead.phone || ""
+                        )}"
+                    >
+
+                    <input
+                        id="l_email"
+                        type="email"
+                        placeholder="Email"
+                        value="${escapeHtml(
+                            lead.email || ""
+                        )}"
+                    >
+
+                </div>
+
+                <div class="grid">
+
+                    <input
+                        id="l_company"
+                        placeholder="${lang==='fr'
+                            ?'Entreprise'
+                            :'Company'}"
+                        value="${escapeHtml(
+                            lead.company || ""
+                        )}"
+                    >
+
+                    <input
+                        id="l_location"
+                        placeholder="${lang==='fr'
+                            ?'Localisation'
+                            :'Location'}"
+                        value="${escapeHtml(
+                            lead.location || ""
+                        )}"
+                    >
+
+                </div>
+
+                <div class="grid">
+
+                    <select id="l_customer_type">
+
+                        <option value="Particulier">
+                            ${lang==='fr'
+                                ?'Particulier'
+                                :'Individual'}
+                        </option>
+
+                        <option value="Entreprise">
+                            ${lang==='fr'
+                                ?'Entreprise'
+                                :'Company'}
+                        </option>
+
+                        <option value="Promoteur immobilier">
+                            ${lang==='fr'
+                                ?'Promoteur immobilier'
+                                :'Real Estate Developer'}
+                        </option>
+
+                        <option value="Institution">
+                            ${lang==='fr'
+                                ?'Institution'
+                                :'Institution'}
+                        </option>
+
+                        <option value="Administration publique">
+                            ${lang==='fr'
+                                ?'Administration publique'
+                                :'Public Administration'}
+                        </option>
+
+                        <option value="Entrepreneur / Partenaire">
+                            ${lang==='fr'
+                                ?'Entrepreneur / Partenaire'
+                                :'Entrepreneur / Partner'}
+                        </option>
+
+                    </select>
+
+                    <select id="l_source">
+
+                        <option value="direct">
+                            ${lang==='fr'
+                                ?'Visite directe'
+                                :'Direct Visit'}
+                        </option>
+
+                        <option value="whatsapp">WhatsApp</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="linkedin">LinkedIn</option>
+                        <option value="youtube">YouTube</option>
+
+                        <option value="website">
+                            ${lang==='fr'
+                                ?'Site web'
+                                :'Website'}
+                        </option>
+
+                        <option value="referral">
+                            ${lang==='fr'
+                                ?'Recommandation'
+                                :'Referral'}
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <input
+                    id="l_service"
+                    placeholder="${lang==='fr'
+                        ?'Service / besoin du prospect'
+                        :'Service / Customer Requirement'}"
+                    value="${escapeHtml(
+                        lead.service || ""
+                    )}"
+                >
+
+                <textarea
+                    id="l_description"
+                    rows="3"
+                    placeholder="${lang==='fr'
+                        ?'Description du projet'
+                        :'Project Description'}"
+                >${escapeHtml(
+                    lead.description || ""
+                )}</textarea>
+
+                <div class="grid">
+
+                    <input
+                        id="l_budget"
+                        type="number"
+                        min="0"
+                        placeholder="${lang==='fr'
+                            ?'Budget estimé (FCFA)'
+                            :'Estimated Budget (FCFA)'}"
+                        value="${lead.budget || 0}"
+                    >
+
+                    <input
+                        id="l_deal_value"
+                        type="number"
+                        min="0"
+                        placeholder="${lang==='fr'
+                            ?'Valeur potentielle (FCFA)'
+                            :'Potential Deal Value (FCFA)'}"
+                        value="${lead.deal_value || 0}"
+                    >
+
+                </div>
+
+                <div class="grid">
+
+                    <select id="l_stage">
+
+                        <option value="new">${lang==='fr'?'Nouveau':'New'}</option>
+                        <option value="contacted">${lang==='fr'?'Contacté':'Contacted'}</option>
+                        <option value="qualified">${lang==='fr'?'Qualifié':'Qualified'}</option>
+                        <option value="proposal">${lang==='fr'?'Proposition envoyée':'Proposal Sent'}</option>
+                        <option value="negotiation">${lang==='fr'?'Négociation':'Negotiation'}</option>
+                        <option value="won">${lang==='fr'?'Gagné':'Won'}</option>
+                        <option value="lost">${lang==='fr'?'Perdu':'Lost'}</option>
+
+                    </select>
+
+                    <select id="l_priority">
+
+                        <option value="normal">${lang==='fr'?'Normale':'Normal'}</option>
+                        <option value="high">${lang==='fr'?'Haute':'High'}</option>
+                        <option value="low">${lang==='fr'?'Basse':'Low'}</option>
+
+                    </select>
+
+                </div>
+
+                <div class="grid">
+
+                    <input
+                        id="l_probability"
+                        type="number"
+                        min="0"
+                        max="100"
+                        placeholder="${lang==='fr'
+                            ?'Probabilité (%)'
+                            :'Probability (%)'}"
+                        value="${lead.probability || 0}"
+                    >
+
+                    <input
+                        id="l_assigned_to"
+                        placeholder="${lang==='fr'
+                            ?'Responsable commercial'
+                            :'Assigned Salesperson'}"
+                        value="${escapeHtml(
+                            lead.assigned_to || ""
+                        )}"
+                    >
+
+                </div>
+
+                <div class="grid">
+
+                    <input
+                        id="l_expected_close_date"
+                        type="date"
+                        value="${lead.expected_close_date || ""}"
+                    >
+
+                    <input
+                        id="l_next_follow_up"
+                        type="datetime-local"
+                        value="${lead.next_follow_up
+                            ? String(
+                                lead.next_follow_up
+                            ).slice(0,16)
+                            : ""}"
+                    >
+
+                </div>
+
+                <textarea
+                    id="l_notes"
+                    rows="3"
+                    placeholder="${lang==='fr'
+                        ?'Notes commerciales'
+                        :'Sales Notes'}"
+                >${escapeHtml(
+                    lead.notes || ""
+                )}</textarea>
+
+                <div class="actions">
+
+                    <button
+                        class="btn"
+                        onclick="saveLead()"
+                    >
+                        ${lang==='fr'
+                            ?'Enregistrer le prospect'
+                            :'Save Lead'}
+                    </button>
+
+                    <button
+                        class="btn alt"
+                        onclick="closeLeadForm()"
+                    >
+                        ${lang==='fr'
+                            ?'Annuler'
+                            :'Cancel'}
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.getElementById(
+        "l_customer_type"
+    ).value =
+        lead.customer_type ||
+        "Particulier";
+
+    document.getElementById(
+        "l_source"
+    ).value =
+        lead.source ||
+        "direct";
+
+    document.getElementById(
+        "l_stage"
+    ).value =
+        lead.stage ||
+        "new";
+
+    document.getElementById(
+        "l_priority"
+    ).value =
+        lead.priority ||
+        "normal";
+}
+
+
+function closeLeadForm(){
+
+    const wrap =
+        document.getElementById(
+            "leadForm"
+        );
+
+    if(wrap){
+        wrap.innerHTML = "";
+    }
+
+    editingLeadId = null;
+}
+
+
+async function saveLead(){
+
+    const data = {
+
+        full_name:
+            document.getElementById(
+                "l_full_name"
+            ).value.trim(),
+
+        phone:
+            document.getElementById(
+                "l_phone"
+            ).value.trim(),
+
+        email:
+            document.getElementById(
+                "l_email"
+            ).value.trim(),
+
+        company:
+            document.getElementById(
+                "l_company"
+            ).value.trim(),
+
+        location:
+            document.getElementById(
+                "l_location"
+            ).value.trim(),
+
+        customer_type:
+            document.getElementById(
+                "l_customer_type"
+            ).value,
+
+        source:
+            document.getElementById(
+                "l_source"
+            ).value,
+
+        service:
+            document.getElementById(
+                "l_service"
+            ).value.trim(),
+
+        description:
+            document.getElementById(
+                "l_description"
+            ).value.trim(),
+
+        budget:
+            document.getElementById(
+                "l_budget"
+            ).value,
+
+        deal_value:
+            document.getElementById(
+                "l_deal_value"
+            ).value,
+
+        stage:
+            document.getElementById(
+                "l_stage"
+            ).value,
+
+        priority:
+            document.getElementById(
+                "l_priority"
+            ).value,
+
+        probability:
+            document.getElementById(
+                "l_probability"
+            ).value,
+
+        assigned_to:
+            document.getElementById(
+                "l_assigned_to"
+            ).value.trim(),
+
+        expected_close_date:
+            document.getElementById(
+                "l_expected_close_date"
+            ).value || null,
+
+        next_follow_up:
+            document.getElementById(
+                "l_next_follow_up"
+            ).value || null,
+
+        notes:
+            document.getElementById(
+                "l_notes"
+            ).value.trim()
+    };
+
+
+    if(!data.full_name){
+
+        toast(
+            lang==='fr'
+                ?'Veuillez saisir le nom du prospect.'
+                :'Please enter the lead name.'
+        );
+
+        return;
+    }
+
+
+    try{
+
+        const url =
+            "/api/leads-sales" +
+            (
+                editingLeadId
+                    ? "?id=" +
+                        encodeURIComponent(
+                            editingLeadId
+                        )
+                    : ""
+            );
+
+        const method =
+            editingLeadId
+                ? "PUT"
+                : "POST";
+
+        await api(
+            url,
+            {
+                method,
+                body: JSON.stringify(
+                    editingLeadId
+                        ? {
+                            ...data,
+                            id: editingLeadId
+                        }
+                        : data
+                )
+            }
+        );
+
+        toast(
+            lang==='fr'
+                ?'Prospect enregistré avec succès.'
+                :'Lead saved successfully.'
+        );
+
+        closeLeadForm();
+
+        await loadLeadsSales();
+
+    }catch(error){
+
+        toast(error.message);
+    }
+}
+
+
+function editLead(id){
+
+    const lead =
+        leadRows.find(
+            row =>
+                String(row.id) ===
+                String(id)
+        );
+
+    if(lead){
+        showLeadForm(lead);
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
+    }
+}
+
+
+async function deleteLead(id){
+
+    if(!id) return;
+
+    const confirmed =
+        confirm(
+            lang==='fr'
+                ?'Supprimer ce prospect ?'
+                :'Delete this lead?'
+        );
+
+    if(!confirmed) return;
+
+    try{
+
+        await api(
+            "/api/leads-sales?id=" +
+            encodeURIComponent(id),
+            {
+                method:"DELETE",
+                body:JSON.stringify({
+                    id
+                })
+            }
+        );
+
+        toast(
+            lang==='fr'
+                ?'Prospect supprimé.'
+                :'Lead deleted.'
+        );
+
+        await loadLeadsSales();
+
+    }catch(error){
+
+        toast(error.message);
+    }
+}
+
+
+async function qualifyLeadWithAI(id){
+
+    const lead =
+        leadRows.find(
+            row =>
+                String(row.id) ===
+                String(id)
+        );
+
+    if(!lead) return;
+
+    try{
+
+        toast(
+            lang==='fr'
+                ?'Analyse IA en cours...'
+                :'AI analysis in progress...'
+        );
+
+        const data =
+            await api(
+                "/api/leads-sales/ai-qualify",
+                {
+                    method:"POST",
+                    body:JSON.stringify({
+                        lead
+                    })
+                }
+            );
+
+        if(!data) return;
+
+        const analysis =
+            data.analysis || "";
+
+        const panel =
+            document.getElementById(
+                "leadForm"
+            );
+
+        panel.innerHTML = `
+
+            <div
+                class="panel"
+                style="margin-bottom:18px"
+            >
+
+                <div class="actions">
+
+                    <h2 style="margin-right:auto">
+                        🤖 ${lang==='fr'
+                            ?'Analyse IA du prospect'
+                            :'AI Lead Analysis'}
+                    </h2>
+
+                    <button
+                        class="btn alt"
+                        onclick="closeLeadForm()"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+                <div
+                    style="
+                        white-space:pre-wrap;
+                        line-height:1.6;
+                        margin-top:15px;
+                    "
+                >
+                    ${escapeHtml(
+                        analysis
+                    )}
+                </div>
+
+            </div>
+        `;
+
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
+
+    }catch(error){
+
+        toast(error.message);
+    }
+}
 async function page_projects(){await pageTable('projects','/api/projects','projects')}
 async function page_inventory(){await pageTable('inventory','/api/inventory','inventory')}
 async function page_finance(){await pageTable('finance','/api/expenses','expenses')}
