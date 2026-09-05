@@ -553,25 +553,24 @@ def customer_identity(data):
 
 def upsert_customer(data):
     data = normalize_record(data)
-
     phone, email, _ = customer_identity(data)
 
-    # Update existing customer by phone
+    # WhatsApp phone is the strongest practical identifier.
     if phone:
         existing = sb_select(
             "customers",
             {
                 "select": "*",
                 "phone": f"eq.{phone}",
-                "limit": "1"
-            }
+                "limit": "1",
+            },
         )
 
         if existing:
             saved = sb_update(
                 "customers",
-                {"phone": f"eq.{phone}"},
-                data
+                {"id": f"eq.{existing[0]['id']}"},
+                data,
             )
 
             if not saved:
@@ -579,24 +578,23 @@ def upsert_customer(data):
                     "Customer update failed in Supabase."
                 )
 
-            return saved[0] if isinstance(saved, list) else saved
+            return saved
 
-    # Update existing customer by email
     if email:
         existing = sb_select(
             "customers",
             {
                 "select": "*",
                 "email": f"eq.{email}",
-                "limit": "1"
-            }
+                "limit": "1",
+            },
         )
 
         if existing:
             saved = sb_update(
                 "customers",
-                {"email": f"eq.{email}"},
-                data
+                {"id": f"eq.{existing[0]['id']}"},
+                data,
             )
 
             if not saved:
@@ -604,23 +602,16 @@ def upsert_customer(data):
                     "Customer update failed in Supabase."
                 )
 
-            return saved[0] if isinstance(saved, list) else saved
+            return saved
 
-    # Create new customer
-    saved = sb_insert(
-        "customers",
-        data
-    )
+    saved = sb_insert("customers", data)
 
-    # IMPORTANT:
-    # Never report success when Supabase did not actually save it.
     if not saved:
         raise RuntimeError(
-            "Customer could not be saved to Supabase. "
-            "Check the customers table columns and Supabase configuration."
+            "Customer could not be saved to Supabase."
         )
 
-    return saved[0] if isinstance(saved, list) else saved
+    return saved
 
  
 
