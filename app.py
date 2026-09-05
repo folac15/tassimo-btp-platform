@@ -44,11 +44,7 @@ SLOGAN = "Together, let us build excellence."
 SUPPORTED_LANGUAGES = ["en", "fr"]
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
-SUPABASE_KEY = (
-    os.environ.get("SUPABASE_SECRET_KEY")
-    or os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
-    or os.environ.get("SUPABASE_ANON_KEY", "")
-)
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_PRIMARY_MODEL = os.environ.get(
     "OPENROUTER_MODEL", "openai/gpt-oss-20b:free"
