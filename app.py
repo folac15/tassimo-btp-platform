@@ -1854,6 +1854,29 @@ table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px s
 @media(max-width:850px){.side{transform:translateX(-100%);transition:.2s;z-index:10}.side.open{transform:none}.main{margin-left:0;width:100%}
 .menu{display:block;border:0;background:none;font-size:24px}.cards{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}
 .content{padding:15px}header{padding:0 15px}}@media(max-width:480px){.cards{grid-template-columns:1fr 1fr}.stat{font-size:22px}}
+@media(max-width:700px){
+
+    .grid{
+        grid-template-columns:1fr !important;
+    }
+
+    .actions{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .actions .btn{
+        width:100%;
+    }
+
+    table{
+        min-width:900px;
+    }
+
+    #leadPipeline{
+        overflow-x:auto;
+    }
+}
 </style></head>
 <body><div class="app">
 <aside class="side" id="side"><div class="brand"><b>🏗️ TASSIMO BTP</b><small>Système de gestion d’entreprise</small></div>
