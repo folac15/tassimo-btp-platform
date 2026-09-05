@@ -3324,7 +3324,11 @@ def index_page():
 @app.route("/marketing.html")
 @protected
 def marketing_page():
-    return send_from_directory(".", "marketing.html")        
+    return send_from_directory(".", "marketing.html") 
+@app.route("/projects.html")
+@protected
+def projects_page():
+    return send_from_directory(".", "projects.html")
 
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
