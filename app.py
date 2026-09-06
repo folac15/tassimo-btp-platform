@@ -2085,6 +2085,10 @@ function openPage(p){
   window.location.href="/construction-ai.html";
   return;
 }
+  if(p==="inventory"){
+  window.location.href="/inventory.html";
+  return;
+} 
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
