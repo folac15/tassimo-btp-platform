@@ -1,1 +1,2336 @@
+<!DOCTYPE html>
+<html lang="fr">
 
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Construction AI - TASSIMO BTP CONSTRUCTION SARL</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#172033;
+    min-height:100vh;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+    background:linear-gradient(135deg,#172033,#243b64);
+    color:white;
+    padding:16px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    position:sticky;
+    top:0;
+    z-index:100;
+    box-shadow:0 4px 15px rgba(0,0,0,.12);
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo{
+    width:45px;
+    height:45px;
+    border-radius:12px;
+    background:#f5b400;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:23px;
+}
+
+.brand h1{
+    font-size:19px;
+}
+
+.brand p{
+    font-size:12px;
+    opacity:.8;
+    margin-top:3px;
+}
+
+.header-actions{
+    display:flex;
+    gap:8px;
+}
+
+.btn{
+    border:none;
+    border-radius:9px;
+    padding:10px 14px;
+    cursor:pointer;
+    font-weight:bold;
+    transition:.2s;
+}
+
+.btn:hover{
+    transform:translateY(-1px);
+}
+
+.btn-primary{
+    background:#f5b400;
+    color:#172033;
+}
+
+.btn-light{
+    background:white;
+    color:#172033;
+}
+
+.btn-danger{
+    background:#dc3545;
+    color:white;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:22px;
+}
+
+.page-title{
+    margin-bottom:20px;
+}
+
+.page-title h2{
+    font-size:27px;
+    margin-bottom:7px;
+}
+
+.page-title p{
+    color:#68758a;
+}
+
+/* =========================
+   TOOL GRID
+========================= */
+
+.tools{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:22px;
+}
+
+.tool{
+    background:white;
+    border:1px solid #e4e9f1;
+    border-radius:15px;
+    padding:18px;
+    cursor:pointer;
+    transition:.2s;
+    box-shadow:0 4px 12px rgba(20,35,60,.04);
+}
+
+.tool:hover{
+    transform:translateY(-3px);
+    box-shadow:0 8px 22px rgba(20,35,60,.09);
+}
+
+.tool.active{
+    border:2px solid #f5b400;
+}
+
+.tool-icon{
+    font-size:29px;
+    margin-bottom:10px;
+}
+
+.tool h3{
+    font-size:15px;
+    margin-bottom:6px;
+}
+
+.tool p{
+    color:#758196;
+    font-size:12px;
+    line-height:1.5;
+}
+
+/* =========================
+   MAIN GRID
+========================= */
+
+.main-grid{
+    display:grid;
+    grid-template-columns:1.35fr .65fr;
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:16px;
+    border:1px solid #e4e9f1;
+    box-shadow:0 4px 15px rgba(20,35,60,.05);
+    overflow:hidden;
+}
+
+.card-header{
+    padding:17px 20px;
+    border-bottom:1px solid #edf0f5;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.card-header h3{
+    font-size:17px;
+}
+
+.card-body{
+    padding:20px;
+}
+
+/* =========================
+   AI CHAT
+========================= */
+
+.chat-box{
+    height:450px;
+    overflow-y:auto;
+    padding:5px;
+    background:#fafbfd;
+    border-radius:12px;
+    margin-bottom:14px;
+}
+
+.message{
+    max-width:88%;
+    padding:12px 14px;
+    border-radius:13px;
+    margin-bottom:12px;
+    line-height:1.55;
+    font-size:14px;
+    white-space:pre-wrap;
+}
+
+.message.ai{
+    background:#eef3fa;
+    color:#26344b;
+    border-top-left-radius:4px;
+}
+
+.message.user{
+    background:#243b64;
+    color:white;
+    margin-left:auto;
+    border-top-right-radius:4px;
+}
+
+.message small{
+    display:block;
+    font-size:10px;
+    opacity:.65;
+    margin-bottom:5px;
+    font-weight:bold;
+}
+
+.chat-input{
+    display:flex;
+    gap:9px;
+}
+
+.chat-input textarea{
+    flex:1;
+    min-height:52px;
+    max-height:130px;
+    resize:vertical;
+    border:1px solid #dce2eb;
+    border-radius:10px;
+    padding:12px;
+    outline:none;
+}
+
+.chat-input textarea:focus{
+    border-color:#f5b400;
+}
+
+/* =========================
+   FORMS
+========================= */
+
+.form-group{
+    margin-bottom:14px;
+}
+
+.form-group label{
+    display:block;
+    font-size:12px;
+    font-weight:bold;
+    margin-bottom:6px;
+    color:#526078;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+    width:100%;
+    border:1px solid #dce2eb;
+    border-radius:9px;
+    padding:11px;
+    outline:none;
+    background:white;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus{
+    border-color:#f5b400;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+/* =========================
+   CALCULATOR
+========================= */
+
+.calculation-result{
+    background:#f1f6fc;
+    border-left:4px solid #f5b400;
+    border-radius:9px;
+    padding:14px;
+    margin-top:14px;
+    line-height:1.6;
+    display:none;
+}
+
+.result-number{
+    font-size:24px;
+    font-weight:bold;
+    color:#243b64;
+}
+
+/* =========================
+   QUICK ACTIONS
+========================= */
+
+.quick-actions{
+    display:grid;
+    gap:10px;
+}
+
+.quick-action{
+    width:100%;
+    text-align:left;
+    background:#f8fafc;
+    border:1px solid #e3e8f0;
+    border-radius:10px;
+    padding:13px;
+    cursor:pointer;
+}
+
+.quick-action:hover{
+    background:#eef3fa;
+}
+
+.quick-action strong{
+    display:block;
+    margin-bottom:3px;
+}
+
+.quick-action span{
+    font-size:11px;
+    color:#748096;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+.status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:#65738a;
+}
+
+.dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#22a06b;
+}
+
+/* =========================
+   HISTORY
+========================= */
+
+.history{
+    max-height:330px;
+    overflow-y:auto;
+}
+
+.history-item{
+    border-bottom:1px solid #edf0f5;
+    padding:11px 0;
+    cursor:pointer;
+}
+
+.history-item:last-child{
+    border-bottom:none;
+}
+
+.history-item strong{
+    font-size:13px;
+}
+
+.history-item p{
+    font-size:11px;
+    color:#78859a;
+    margin-top:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+/* =========================
+   NOTICE
+========================= */
+
+.notice{
+    background:#fff8df;
+    border:1px solid #f0d77c;
+    color:#66530b;
+    padding:13px;
+    border-radius:10px;
+    font-size:12px;
+    line-height:1.5;
+    margin-bottom:15px;
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading{
+    display:inline-flex;
+    gap:4px;
+    align-items:center;
+}
+
+.loading span{
+    width:6px;
+    height:6px;
+    background:#68758a;
+    border-radius:50%;
+    animation:bounce 1s infinite;
+}
+
+.loading span:nth-child(2){
+    animation-delay:.15s;
+}
+
+.loading span:nth-child(3){
+    animation-delay:.3s;
+}
+
+@keyframes bounce{
+    0%,80%,100%{
+        transform:scale(.7);
+        opacity:.5;
+    }
+    40%{
+        transform:scale(1);
+        opacity:1;
+    }
+}
+
+/* =========================
+   HIDDEN
+========================= */
+
+.hidden{
+    display:none!important;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:1000px){
+
+    .tools{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .main-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:650px){
+
+    .header{
+        padding:12px;
+    }
+
+    .brand h1{
+        font-size:15px;
+    }
+
+    .brand p{
+        font-size:10px;
+    }
+
+    .logo{
+        width:38px;
+        height:38px;
+        font-size:19px;
+    }
+
+    .header-actions .btn{
+        padding:8px 9px;
+        font-size:11px;
+    }
+
+    .container{
+        padding:13px;
+    }
+
+    .page-title h2{
+        font-size:22px;
+    }
+
+    .tools{
+        grid-template-columns:1fr 1fr;
+        gap:9px;
+    }
+
+    .tool{
+        padding:13px;
+    }
+
+    .tool-icon{
+        font-size:23px;
+    }
+
+    .tool h3{
+        font-size:13px;
+    }
+
+    .tool p{
+        font-size:10px;
+    }
+
+    .card-body{
+        padding:13px;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .chat-box{
+        height:390px;
+    }
+
+    .chat-input{
+        flex-direction:column;
+    }
+
+    .chat-input .btn{
+        width:100%;
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<header class="header">
+
+    <div class="brand">
+
+        <div class="logo">🏗️</div>
+
+        <div>
+            <h1>TASSIMO BTP CONSTRUCTION SARL</h1>
+            <p>Construction AI • Assistant intelligent du BTP</p>
+        </div>
+
+    </div>
+
+    <div class="header-actions">
+
+        <button class="btn btn-light" onclick="goDashboard()">
+            🏠 Tableau de bord
+        </button>
+
+        <button class="btn btn-primary" onclick="toggleLanguage()">
+            FR / EN
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<main class="container">
+
+    <div class="page-title">
+
+        <h2 id="pageTitle">
+            📐 Construction AI
+        </h2>
+
+        <p id="pageSubtitle">
+            Votre assistant intelligent pour les travaux de construction, les calculs, les projets et l'analyse technique.
+        </p>
+
+    </div>
+
+
+    <div class="notice">
+
+        ⚠️ <strong>Important :</strong>
+        <span id="noticeText">
+            Les résultats générés par l'IA sont des aides à la décision. Les calculs, plans, structures, normes et décisions techniques importantes doivent être vérifiés par un professionnel qualifié avant exécution.
+        </span>
+
+    </div>
+
+
+    <!-- =========================
+         AI TOOLS
+    ========================= -->
+
+    <section class="tools">
+
+        <div class="tool active" onclick="selectTool('assistant',this)">
+            <div class="tool-icon">🤖</div>
+            <h3>Assistant BTP</h3>
+            <p>Posez vos questions techniques à l'IA.</p>
+        </div>
+
+        <div class="tool" onclick="selectTool('calculation',this)">
+            <div class="tool-icon">🧮</div>
+            <h3>Calculs construction</h3>
+            <p>Volumes, surfaces, béton, matériaux et estimations.</p>
+        </div>
+
+        <div class="tool" onclick="selectTool('boq',this)">
+            <div class="tool-icon">📋</div>
+            <h3>BOQ & Quantités</h3>
+            <p>Préparez une liste de quantités pour un projet.</p>
+        </div>
+
+        <div class="tool" onclick="selectTool('cost',this)">
+            <div class="tool-icon">💰</div>
+            <h3>Estimation des coûts</h3>
+            <p>Analysez les coûts et préparez une estimation.</p>
+        </div>
+
+        <div class="tool" onclick="selectTool('materials',this)">
+            <div class="tool-icon">🧱</div>
+            <h3>Matériaux</h3>
+            <p>Assistance pour le choix et les quantités de matériaux.</p>
+        </div>
+
+        <div class="tool" onclick="selectTool('safety',this)">
+            <div class="tool-icon">🦺</div>
+            <h3>Sécurité chantier</h3>
+            <p>Analysez les risques et mesures de prévention.</p>
+        </div>
+
+        <div class="tool" onclick="selectTool('report',this)">
+            <div class="tool-icon">📝</div>
+            <h3>Rapport technique</h3>
+            <p>Générez une première version d'un rapport technique.</p>
+        </div>
+
+        <div class="tool" onclick="selectTool('problem',this)">
+            <div class="tool-icon">🔍</div>
+            <h3>Diagnostic chantier</h3>
+            <p>Analysez un problème observé sur le chantier.</p>
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================= -->
+
+    <section class="main-grid">
+
+
+        <!-- =========================
+             LEFT
+        ========================= -->
+
+        <div>
+
+
+            <!-- AI ASSISTANT -->
+
+            <div class="card" id="assistantPanel">
+
+                <div class="card-header">
+
+                    <h3>🤖 Assistant Construction AI</h3>
+
+                    <div class="status">
+                        <span class="dot"></span>
+                        <span>IA disponible</span>
+                    </div>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="chat-box" id="chatBox">
+
+                        <div class="message ai">
+
+                            <small>CONSTRUCTION AI</small>
+
+                            Bonjour ! Je suis l'assistant Construction AI de TASSIMO BTP CONSTRUCTION SARL.
+
+                            Je peux vous aider avec les calculs, les matériaux, les projets, les estimations, la sécurité, les problèmes de chantier et les rapports techniques.
+
+                            Comment puis-je vous aider ?
+
+                        </div>
+
+                    </div>
+
+                    <div class="chat-input">
+
+                        <textarea
+                            id="question"
+                            placeholder="Posez votre question de construction..."
+                        ></textarea>
+
+                        <button class="btn btn-primary" onclick="askAI()">
+                            Envoyer
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CALCULATOR -->
+
+            <div class="card hidden" id="calculationPanel">
+
+                <div class="card-header">
+                    <h3>🧮 Calculateur de construction</h3>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="form-group">
+
+                        <label>Type de calcul</label>
+
+                        <select id="calcType" onchange="updateCalculator()">
+
+                            <option value="volume">
+                                Volume d'un élément rectangulaire
+                            </option>
+
+                            <option value="area">
+                                Surface rectangulaire
+                            </option>
+
+                            <option value="concrete">
+                                Volume de béton
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label>Longueur (m)</label>
+
+                            <input
+                                type="number"
+                                id="length"
+                                step="0.01"
+                                min="0"
+                                placeholder="Ex: 10"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>Largeur (m)</label>
+
+                            <input
+                                type="number"
+                                id="width"
+                                step="0.01"
+                                min="0"
+                                placeholder="Ex: 5"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>Hauteur / Épaisseur (m)</label>
+
+                            <input
+                                type="number"
+                                id="height"
+                                step="0.01"
+                                min="0"
+                                placeholder="Ex: 0.15"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <button class="btn btn-primary" onclick="calculate()">
+                        Calculer
+                    </button>
+
+
+                    <div class="calculation-result" id="calcResult">
+
+                        <div id="calcExplanation"></div>
+
+                        <div class="result-number" id="calcValue"></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BOQ -->
+
+            <div class="card hidden" id="boqPanel">
+
+                <div class="card-header">
+
+                    <h3>📋 Assistant BOQ & Quantités</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="form-group">
+
+                        <label>Nom du projet</label>
+
+                        <input
+                            id="boqProject"
+                            placeholder="Ex: Construction d'une villa R+1"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Description des travaux</label>
+
+                        <textarea
+                            id="boqDescription"
+                            rows="5"
+                            placeholder="Décrivez les travaux à réaliser..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button class="btn btn-primary" onclick="generateBOQ()">
+                        Générer une analyse BOQ
+                    </button>
+
+
+                    <div class="calculation-result" id="boqResult"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- COST -->
+
+            <div class="card hidden" id="costPanel">
+
+                <div class="card-header">
+
+                    <h3>💰 Estimation des coûts</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label>Projet</label>
+
+                            <input
+                                id="costProject"
+                                placeholder="Nom du projet"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>Budget disponible (XAF)</label>
+
+                            <input
+                                type="number"
+                                id="costBudget"
+                                placeholder="Ex: 15000000"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Description et travaux prévus</label>
+
+                        <textarea
+                            id="costDescription"
+                            rows="6"
+                            placeholder="Décrivez les travaux, matériaux, main-d'œuvre et autres coûts..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button class="btn btn-primary" onclick="generateCostAnalysis()">
+                        Analyser les coûts
+                    </button>
+
+
+                    <div class="calculation-result" id="costResult"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- MATERIALS -->
+
+            <div class="card hidden" id="materialsPanel">
+
+                <div class="card-header">
+
+                    <h3>🧱 Assistant matériaux</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="form-group">
+
+                        <label>Travaux / élément de construction</label>
+
+                        <input
+                            id="materialWork"
+                            placeholder="Ex: Dalle en béton armé"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Description / dimensions</label>
+
+                        <textarea
+                            id="materialDescription"
+                            rows="5"
+                            placeholder="Indiquez les dimensions et les caractéristiques connues..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button class="btn btn-primary" onclick="analyzeMaterials()">
+                        Analyser les matériaux
+                    </button>
+
+
+                    <div class="calculation-result" id="materialResult"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- SAFETY -->
+
+            <div class="card hidden" id="safetyPanel">
+
+                <div class="card-header">
+
+                    <h3>🦺 Analyse de sécurité chantier</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="form-group">
+
+                        <label>Zone / activité du chantier</label>
+
+                        <input
+                            id="safetyActivity"
+                            placeholder="Ex: Travail en hauteur"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Description de la situation</label>
+
+                        <textarea
+                            id="safetyDescription"
+                            rows="6"
+                            placeholder="Décrivez les conditions observées..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button class="btn btn-primary" onclick="analyzeSafety()">
+                        Analyser les risques
+                    </button>
+
+
+                    <div class="calculation-result" id="safetyResult"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- REPORT -->
+
+            <div class="card hidden" id="reportPanel">
+
+                <div class="card-header">
+
+                    <h3>📝 Générateur de rapport technique</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label>Projet</label>
+
+                            <input
+                                id="reportProject"
+                                placeholder="Nom du projet"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>Type de rapport</label>
+
+                            <select id="reportType">
+
+                                <option>Rapport de visite de chantier</option>
+                                <option>Rapport d'avancement</option>
+                                <option>Rapport d'incident</option>
+                                <option>Rapport d'inspection</option>
+                                <option>Rapport technique général</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Informations à inclure</label>
+
+                        <textarea
+                            id="reportDescription"
+                            rows="7"
+                            placeholder="Décrivez les observations, travaux réalisés, problèmes, recommandations..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        Générer le rapport
+                    </button>
+
+
+                    <div class="calculation-result" id="reportResult"></div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PROBLEM -->
+
+            <div class="card hidden" id="problemPanel">
+
+                <div class="card-header">
+
+                    <h3>🔍 Diagnostic de problème chantier</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="form-group">
+
+                        <label>Problème observé</label>
+
+                        <input
+                            id="problemTitle"
+                            placeholder="Ex: Fissures sur un mur"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Description détaillée</label>
+
+                        <textarea
+                            id="problemDescription"
+                            rows="7"
+                            placeholder="Décrivez où le problème apparaît, depuis quand, son évolution et les conditions observées..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <button class="btn btn-primary" onclick="diagnoseProblem()">
+                        Analyser le problème
+                    </button>
+
+
+                    <div class="calculation-result" id="problemResult"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             RIGHT SIDEBAR
+        ========================= -->
+
+        <aside>
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h3>⚡ Actions rapides</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="quick-actions">
+
+                        <button class="quick-action"
+                                onclick="quickQuestion('Comment calculer le volume de béton nécessaire pour une dalle ?')">
+
+                            <strong>🧱 Calcul de béton</strong>
+                            <span>Calculer les besoins en béton d'une dalle.</span>
+
+                        </button>
+
+
+                        <button class="quick-action"
+                                onclick="quickQuestion('Comment préparer un BOQ pour une maison R+1 au Cameroun ?')">
+
+                            <strong>📋 Préparer un BOQ</strong>
+                            <span>Obtenir une structure de BOQ.</span>
+
+                        </button>
+
+
+                        <button class="quick-action"
+                                onclick="quickQuestion('Quels sont les principaux risques de sécurité sur un chantier de construction ?')">
+
+                            <strong>🦺 Sécurité chantier</strong>
+                            <span>Identifier les principaux risques.</span>
+
+                        </button>
+
+
+                        <button class="quick-action"
+                                onclick="quickQuestion('Comment organiser efficacement un projet de construction au Cameroun ?')">
+
+                            <strong>🏗️ Gestion de projet</strong>
+                            <span>Obtenir des recommandations.</span>
+
+                        </button>
+
+
+                        <button class="quick-action"
+                                onclick="quickQuestion('Quels facteurs dois-je considérer pour estimer le coût d'une construction au Cameroun ?')">
+
+                            <strong>💰 Estimation</strong>
+                            <span>Analyser les principaux postes de coûts.</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card" style="margin-top:20px;">
+
+                <div class="card-header">
+
+                    <h3>🕘 Historique IA</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="history" id="history">
+
+                        <div style="color:#7b8799;font-size:12px;">
+                            Aucun historique pour le moment.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card" style="margin-top:20px;">
+
+                <div class="card-header">
+
+                    <h3>🔗 Connexions</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div style="font-size:12px;line-height:1.8;color:#68758a;">
+
+                        <div>🏗️ <strong>Projets</strong> — connecté</div>
+
+                        <div>👥 <strong>Clients</strong> — connecté</div>
+
+                        <div>💰 <strong>Finance</strong> — préparation</div>
+
+                        <div>📦 <strong>Inventaire</strong> — préparation</div>
+
+                        <div>📄 <strong>Documents</strong> — préparation</div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </section>
+
+</main>
+
+
+<script>
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+let language = localStorage.getItem("lang") || "fr";
+
+
+const translations = {
+
+    fr:{
+        title:"📐 Construction AI",
+        subtitle:"Votre assistant intelligent pour les travaux de construction, les calculs, les projets et l'analyse technique.",
+        send:"Envoyer",
+        dashboard:"🏠 Tableau de bord",
+        available:"IA disponible"
+    },
+
+    en:{
+        title:"📐 Construction AI",
+        subtitle:"Your intelligent assistant for construction work, calculations, projects and technical analysis.",
+        send:"Send",
+        dashboard:"🏠 Dashboard",
+        available:"AI available"
+    }
+
+};
+
+
+function toggleLanguage(){
+
+    language = language === "fr" ? "en" : "fr";
+
+    localStorage.setItem("lang",language);
+
+    applyLanguage();
+
+}
+
+
+function applyLanguage(){
+
+    const t = translations[language];
+
+    document.getElementById("pageTitle").textContent = t.title;
+
+    document.getElementById("pageSubtitle").textContent = t.subtitle;
+
+    document.querySelector(".header-actions .btn-light").textContent = t.dashboard;
+
+    document.querySelector(".chat-input .btn").textContent = t.send;
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function goDashboard(){
+
+    window.location.href="/";
+
+}
+
+
+/* =========================================================
+   TOOL SELECTION
+========================================================= */
+
+const panels = [
+    "assistantPanel",
+    "calculationPanel",
+    "boqPanel",
+    "costPanel",
+    "materialsPanel",
+    "safetyPanel",
+    "reportPanel",
+    "problemPanel"
+];
+
+
+function selectTool(tool,element){
+
+    document.querySelectorAll(".tool").forEach(x=>{
+        x.classList.remove("active");
+    });
+
+    element.classList.add("active");
+
+    panels.forEach(panel=>{
+        document.getElementById(panel).classList.add("hidden");
+    });
+
+
+    const mapping = {
+
+        assistant:"assistantPanel",
+        calculation:"calculationPanel",
+        boq:"boqPanel",
+        cost:"costPanel",
+        materials:"materialsPanel",
+        safety:"safetyPanel",
+        report:"reportPanel",
+        problem:"problemPanel"
+
+    };
+
+
+    document.getElementById(mapping[tool]).classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   API
+========================================================= */
+
+async function api(url,options={}){
+
+    options.headers={
+        ...(options.headers || {}),
+        "Content-Type":"application/json",
+        "X-Language":language
+    };
+
+
+    const response=await fetch(url,options);
+
+
+    if(response.status===401){
+
+        window.location.href="/login";
+
+        return null;
+
+    }
+
+
+    let data={};
+
+    try{
+
+        data=await response.json();
+
+    }catch(error){
+
+        data={};
+
+    }
+
+
+    if(!response.ok){
+
+        throw new Error(
+            data.error ||
+            (language==="fr"
+                ? "Une erreur est survenue."
+                : "An error occurred.")
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+/* =========================================================
+   AI QUESTION
+========================================================= */
+
+async function askAI(){
+
+    const input=document.getElementById("question");
+
+    const question=input.value.trim();
+
+    if(!question){
+
+        return;
+
+    }
+
+
+    addMessage(question,"user");
+
+    input.value="";
+
+
+    const loadingId="loading-"+Date.now();
+
+    addLoadingMessage(loadingId);
+
+
+    try{
+
+        const data=await api("/api/ai",{
+
+            method:"POST",
+
+            body:JSON.stringify({
+
+                question:question,
+
+                conversation:[],
+
+                context:{
+                    module:"Construction AI",
+                    business:"TASSIMO BTP CONSTRUCTION SARL",
+                    language:language,
+                    domain:"Construction, BTP, civil engineering and project management"
+                }
+
+            })
+
+        });
+
+
+        removeLoadingMessage(loadingId);
+
+
+        const answer=data?.answer || data?.message || "Aucune réponse reçue.";
+
+        addMessage(answer,"ai");
+
+        saveHistory(question,answer);
+
+
+    }catch(error){
+
+        removeLoadingMessage(loadingId);
+
+        addMessage(
+            "❌ "+error.message,
+            "ai"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   QUICK QUESTION
+========================================================= */
+
+function quickQuestion(question){
+
+    selectTool(
+        "assistant",
+        document.querySelector(".tool")
+    );
+
+    document.getElementById("question").value=question;
+
+    askAI();
+
+}
+
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+function addMessage(text,type){
+
+    const box=document.getElementById("chatBox");
+
+    const div=document.createElement("div");
+
+    div.className="message "+type;
+
+
+    const label=type==="ai"
+        ? "CONSTRUCTION AI"
+        : "VOUS";
+
+
+    const small=document.createElement("small");
+
+    small.textContent=label;
+
+
+    const content=document.createTextNode(text);
+
+
+    div.appendChild(small);
+
+    div.appendChild(content);
+
+
+    box.appendChild(div);
+
+    box.scrollTop=box.scrollHeight;
+
+}
+
+
+function addLoadingMessage(id){
+
+    const box=document.getElementById("chatBox");
+
+    const div=document.createElement("div");
+
+    div.className="message ai";
+
+    div.id=id;
+
+    div.innerHTML=`
+
+        <small>CONSTRUCTION AI</small>
+
+        <div class="loading">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+    `;
+
+    box.appendChild(div);
+
+    box.scrollTop=box.scrollHeight;
+
+}
+
+
+function removeLoadingMessage(id){
+
+    document.getElementById(id)?.remove();
+
+}
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function saveHistory(question,answer){
+
+    let history=[];
+
+
+    try{
+
+        history=JSON.parse(
+            localStorage.getItem("construction_ai_history") || "[]"
+        );
+
+    }catch(error){
+
+        history=[];
+
+    }
+
+
+    history.unshift({
+
+        question:question,
+
+        answer:answer,
+
+        date:new Date().toLocaleString()
+
+    });
+
+
+    history=history.slice(0,20);
+
+
+    localStorage.setItem(
+        "construction_ai_history",
+        JSON.stringify(history)
+    );
+
+
+    renderHistory();
+
+}
+
+
+function renderHistory(){
+
+    const container=document.getElementById("history");
+
+
+    let history=[];
+
+
+    try{
+
+        history=JSON.parse(
+            localStorage.getItem("construction_ai_history") || "[]"
+        );
+
+    }catch(error){
+
+        history=[];
+
+    }
+
+
+    if(!history.length){
+
+        container.innerHTML=`
+
+            <div style="color:#7b8799;font-size:12px;">
+                Aucun historique pour le moment.
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML="";
+
+
+    history.forEach(item=>{
+
+        const div=document.createElement("div");
+
+        div.className="history-item";
+
+
+        const strong=document.createElement("strong");
+
+        strong.textContent=item.question;
+
+
+        const p=document.createElement("p");
+
+        p.textContent=item.date;
+
+
+        div.appendChild(strong);
+
+        div.appendChild(p);
+
+
+        div.onclick=()=>{
+
+            document.getElementById("question").value=item.question;
+
+            selectTool(
+                "assistant",
+                document.querySelector(".tool")
+            );
+
+        };
+
+
+        container.appendChild(div);
+
+    });
+
+}
+
+
+/* =========================================================
+   CALCULATOR
+========================================================= */
+
+function updateCalculator(){
+
+    document.getElementById("calcResult").style.display="none";
+
+}
+
+
+function calculate(){
+
+    const length=parseFloat(
+        document.getElementById("length").value
+    ) || 0;
+
+
+    const width=parseFloat(
+        document.getElementById("width").value
+    ) || 0;
+
+
+    const height=parseFloat(
+        document.getElementById("height").value
+    ) || 0;
+
+
+    const type=document.getElementById("calcType").value;
+
+
+    let value=0;
+
+    let explanation="";
+
+
+    if(type==="area"){
+
+        value=length*width;
+
+        explanation=
+            "Surface = longueur × largeur";
+
+    }
+
+
+    if(type==="volume"){
+
+        value=length*width*height;
+
+        explanation=
+            "Volume = longueur × largeur × hauteur";
+
+    }
+
+
+    if(type==="concrete"){
+
+        value=length*width*height;
+
+        explanation=
+            "Volume de béton = longueur × largeur × épaisseur";
+
+    }
+
+
+    document.getElementById("calcExplanation").textContent=
+        explanation;
+
+
+    document.getElementById("calcValue").textContent=
+        value.toFixed(3)+" m³";
+
+
+    if(type==="area"){
+
+        document.getElementById("calcValue").textContent=
+            value.toFixed(3)+" m²";
+
+    }
+
+
+    document.getElementById("calcResult").style.display="block";
+
+}
+
+
+/* =========================================================
+   AI GENERIC TASK
+========================================================= */
+
+async function runConstructionTask(prompt,resultId){
+
+    const result=document.getElementById(resultId);
+
+    result.style.display="block";
+
+    result.innerHTML=`
+
+        <div class="loading">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+    `;
+
+
+    try{
+
+        const data=await api("/api/ai",{
+
+            method:"POST",
+
+            body:JSON.stringify({
+
+                question:prompt,
+
+                conversation:[],
+
+                context:{
+                    module:"Construction AI",
+                    business:"TASSIMO BTP CONSTRUCTION SARL",
+                    language:language,
+                    domain:"Construction and civil engineering"
+                }
+
+            })
+
+        });
+
+
+        const answer=data?.answer || "Aucune réponse reçue.";
+
+
+        result.innerHTML="";
+
+        const pre=document.createElement("div");
+
+        pre.style.whiteSpace="pre-wrap";
+
+        pre.style.lineHeight="1.6";
+
+        pre.textContent=answer;
+
+        result.appendChild(pre);
+
+
+    }catch(error){
+
+        result.textContent="❌ "+error.message;
+
+    }
+
+}
+
+
+/* =========================================================
+   BOQ
+========================================================= */
+
+function generateBOQ(){
+
+    const project=document.getElementById("boqProject").value.trim();
+
+    const description=document.getElementById("boqDescription").value.trim();
+
+
+    if(!project || !description){
+
+        alert(
+            language==="fr"
+            ? "Veuillez renseigner le projet et la description."
+            : "Please enter the project and description."
+        );
+
+        return;
+
+    }
+
+
+    const prompt=`
+
+Vous êtes Construction AI de TASSIMO BTP CONSTRUCTION SARL.
+
+Préparez une analyse BOQ préliminaire pour le projet suivant.
+
+Projet:
+${project}
+
+Description:
+${description}
+
+Donnez une structure professionnelle comprenant notamment:
+
+1. Travaux préparatoires
+2. Terrassement
+3. Fondations
+4. Structure
+5. Maçonnerie
+6. Toiture
+7. Plomberie
+8. Électricité
+9. Finitions
+10. Main-d'œuvre
+11. Équipements
+12. Observations
+
+Lorsque les dimensions ou données nécessaires manquent, indiquez clairement les informations nécessaires au lieu d'inventer des quantités.
+
+Réponse en français.
+`;
+
+
+    runConstructionTask(prompt,"boqResult");
+
+}
+
+
+/* =========================================================
+   COST ANALYSIS
+========================================================= */
+
+function generateCostAnalysis(){
+
+    const project=document.getElementById("costProject").value.trim();
+
+    const budget=document.getElementById("costBudget").value.trim();
+
+    const description=document.getElementById("costDescription").value.trim();
+
+
+    if(!project || !description){
+
+        alert(
+            language==="fr"
+            ? "Veuillez renseigner le projet et la description."
+            : "Please enter the project and description."
+        );
+
+        return;
+
+    }
+
+
+    const prompt=`
+
+Vous êtes Construction AI de TASSIMO BTP CONSTRUCTION SARL.
+
+Analysez le budget prévisionnel du projet.
+
+Projet:
+${project}
+
+Budget disponible:
+${budget || "Non fourni"} XAF
+
+Description:
+${description}
+
+Présentez:
+
+- principaux postes de dépenses
+- matériaux
+- main-d'œuvre
+- transport
+- équipements
+- frais indirects
+- risques de dépassement
+- recommandations de contrôle des coûts
+
+Utilisez le franc CFA/XAF lorsque des montants sont disponibles.
+
+Ne créez pas de prix de marché non fournis comme s'ils étaient certains.
+
+Réponse en français.
+`;
+
+
+    runConstructionTask(prompt,"costResult");
+
+}
+
+
+/* =========================================================
+   MATERIAL ANALYSIS
+========================================================= */
+
+function analyzeMaterials(){
+
+    const work=document.getElementById("materialWork").value.trim();
+
+    const description=document.getElementById("materialDescription").value.trim();
+
+
+    if(!work || !description){
+
+        alert(
+            language==="fr"
+            ? "Veuillez renseigner les travaux et les dimensions."
+            : "Please enter the work and dimensions."
+        );
+
+        return;
+
+    }
+
+
+    const prompt=`
+
+Vous êtes un assistant expert en construction pour TASSIMO BTP CONSTRUCTION SARL.
+
+Analysez les matériaux nécessaires pour:
+
+Travaux:
+${work}
+
+Description:
+${description}
+
+Donnez:
+
+1. matériaux principaux
+2. matériaux secondaires
+3. données nécessaires pour calculer les quantités
+4. méthodes de calcul recommandées
+5. pertes à considérer
+6. points de contrôle qualité
+7. précautions
+
+Ne prétendez pas connaître des quantités exactes lorsque les dimensions ou spécifications sont insuffisantes.
+
+Réponse en français.
+`;
+
+
+    runConstructionTask(prompt,"materialResult");
+
+}
+
+
+/* =========================================================
+   SAFETY
+========================================================= */
+
+function analyzeSafety(){
+
+    const activity=document.getElementById("safetyActivity").value.trim();
+
+    const description=document.getElementById("safetyDescription").value.trim();
+
+
+    if(!activity || !description){
+
+        alert(
+            language==="fr"
+            ? "Veuillez renseigner l'activité et la situation."
+            : "Please enter the activity and situation."
+        );
+
+        return;
+
+    }
+
+
+    const prompt=`
+
+Vous êtes Construction AI de TASSIMO BTP CONSTRUCTION SARL.
+
+Analysez la sécurité de cette situation de chantier.
+
+Activité:
+${activity}
+
+Situation:
+${description}
+
+Présentez:
+
+- dangers identifiés
+- personnes exposées
+- niveau de risque indicatif
+- mesures de prévention
+- EPI recommandés
+- contrôles à effectuer
+- mesures immédiates si nécessaire
+
+Signalez clairement qu'une inspection professionnelle est nécessaire pour les situations dangereuses.
+
+Réponse en français.
+`;
+
+
+    runConstructionTask(prompt,"safetyResult");
+
+}
+
+
+/* =========================================================
+   TECHNICAL REPORT
+========================================================= */
+
+function generateReport(){
+
+    const project=document.getElementById("reportProject").value.trim();
+
+    const type=document.getElementById("reportType").value;
+
+    const description=document.getElementById("reportDescription").value.trim();
+
+
+    if(!project || !description){
+
+        alert(
+            language==="fr"
+            ? "Veuillez renseigner le projet et les informations."
+            : "Please enter the project and information."
+        );
+
+        return;
+
+    }
+
+
+    const prompt=`
+
+Vous êtes Construction AI de TASSIMO BTP CONSTRUCTION SARL.
+
+Préparez une première version professionnelle du rapport suivant.
+
+Projet:
+${project}
+
+Type:
+${type}
+
+Informations:
+${description}
+
+Structurez le rapport avec:
+
+- titre
+- projet
+- date
+- objet
+- contexte
+- observations
+- travaux réalisés
+- problèmes constatés
+- analyse
+- recommandations
+- prochaines actions
+- conclusion
+
+N'inventez pas les faits manquants.
+
+Réponse en français.
+`;
+
+
+    runConstructionTask(prompt,"reportResult");
+
+}
+
+
+/* =========================================================
+   PROBLEM DIAGNOSIS
+========================================================= */
+
+function diagnoseProblem(){
+
+    const title=document.getElementById("problemTitle").value.trim();
+
+    const description=document.getElementById("problemDescription").value.trim();
+
+
+    if(!title || !description){
+
+        alert(
+            language==="fr"
+            ? "Veuillez renseigner le problème et sa description."
+            : "Please enter the problem and its description."
+        );
+
+        return;
+
+    }
+
+
+    const prompt=`
+
+Vous êtes Construction AI de TASSIMO BTP CONSTRUCTION SARL.
+
+Analysez le problème de chantier suivant.
+
+Problème:
+${title}
+
+Description:
+${description}
+
+Présentez:
+
+1. causes possibles
+2. informations supplémentaires nécessaires
+3. contrôles à effectuer
+4. niveau de gravité indicatif
+5. actions immédiates possibles
+6. solutions potentielles
+7. précautions
+8. recommandation concernant l'intervention d'un ingénieur ou professionnel qualifié
+
+Ne présentez pas une hypothèse comme un diagnostic certain.
+
+Réponse en français.
+`;
+
+
+    runConstructionTask(prompt,"problemResult");
+
+}
+
+
+/* =========================================================
+   ENTER KEY
+========================================================= */
+
+document.getElementById("question").addEventListener(
+    "keydown",
+    function(event){
+
+        if(event.key==="Enter" && !event.shiftKey){
+
+            event.preventDefault();
+
+            askAI();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   INITIALIZATION
+========================================================= */
+
+applyLanguage();
+
+renderHistory();
+
+</script>
+
+</body>
+
+</html>
