@@ -1081,8 +1081,7 @@ def generic_resource(resource):
         return jsonify({"data": rows, "resource": resource})
 
     data = request.get_json(silent=True) or {}
-
-     if request.method == "POST":
+    if request.method == "POST":
 
     # Projects table uses "project_name" as its required name column.
     # The standalone Projects page sends the field as "name".
