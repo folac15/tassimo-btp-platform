@@ -527,6 +527,7 @@ RESOURCE_MAP = {
     "leads": "leads",
     "projects": "projects",
     "inventory": "inventory",
+    "inventory-movements": "inventory_movements",
     "suppliers": "suppliers",
     "expenses": "expenses",
     "payments": "payments",
