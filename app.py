@@ -1104,14 +1104,29 @@ def generic_resource(resource):
     if not record_id:
         return jsonify({"error": t("invalid_data")}), 400
 
-    if request.method == "PUT":
+        if request.method == "PUT":
         data.pop("id", None)
+
         saved = sb_update(
             table,
             {"id": f"eq.{record_id}"},
             normalize_record(data),
         )
-        return jsonify({"message": t("saved"), "data": saved})
+
+        if isinstance(saved, dict) and saved.get("_error"):
+            return jsonify({
+                "error": saved["_error"]
+            }), 400
+
+        if not saved:
+            return jsonify({
+                "error": t("save_failed")
+            }), 400
+
+        return jsonify({
+            "message": t("saved"),
+            "data": saved
+        })
 
     return jsonify({"deleted": sb_delete(table, {"id": f"eq.{record_id}"})})
 
