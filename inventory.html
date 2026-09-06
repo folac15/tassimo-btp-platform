@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TASSIMO BTP - Gestion du stock</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#172033;
+    min-height:100vh;
+}
+
+.header{
+    background:#ffffff;
+    border-bottom:1px solid #e5e9f0;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.brand h1{
+    font-size:20px;
+}
+
+.brand p{
+    color:#697386;
+    margin-top:4px;
+    font-size:13px;
+}
+
+.header-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+}
+
+.btn{
+    padding:11px 15px;
+    border-radius:9px;
+    background:#172033;
+    color:white;
+    font-weight:bold;
+}
+
+.btn.secondary{
+    background:#e9edf5;
+    color:#172033;
+}
+
+.btn.success{
+    background:#198754;
+}
+
+.btn.warning{
+    background:#f59e0b;
+}
+
+.btn.danger{
+    background:#dc3545;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:22px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.stat-card{
+    background:white;
+    padding:18px;
+    border-radius:14px;
+    border:1px solid #e7ebf1;
+    box-shadow:0 4px 16px rgba(20,30,50,.04);
+}
+
+.stat-card .label{
+    color:#697386;
+    font-size:13px;
+}
+
+.stat-card .value{
+    font-size:27px;
+    font-weight:bold;
+    margin-top:8px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1.5fr 1fr;
+    gap:18px;
+}
+
+.panel{
+    background:white;
+    border:1px solid #e7ebf1;
+    border-radius:14px;
+    padding:20px;
+    margin-bottom:18px;
+}
+
+.panel h2{
+    font-size:18px;
+    margin-bottom:15px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+.field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.field.full{
+    grid-column:1/-1;
+}
+
+label{
+    font-size:13px;
+    font-weight:bold;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    border:1px solid #d9dee8;
+    border-radius:8px;
+    padding:11px;
+    outline:none;
+    background:#fff;
+}
+
+textarea{
+    min-height:90px;
+    resize:vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    border-color:#172033;
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:15px;
+}
+
+.search-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.search-row input{
+    flex:1;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:900px;
+}
+
+th,
+td{
+    padding:12px 10px;
+    border-bottom:1px solid #edf0f4;
+    text-align:left;
+    font-size:13px;
+}
+
+th{
+    background:#f8f9fb;
+    font-weight:bold;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 8px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.badge.ok{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.badge.low{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.badge.out{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.item-actions{
+    display:flex;
+    gap:5px;
+    flex-wrap:wrap;
+}
+
+.item-actions button{
+    padding:6px 9px;
+    border-radius:6px;
+    font-size:11px;
+}
+
+.alert{
+    padding:11px;
+    border-radius:8px;
+    margin-bottom:10px;
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+}
+
+.muted{
+    color:#697386;
+}
+
+.empty{
+    text-align:center;
+    padding:30px;
+    color:#697386;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:100;
+}
+
+.modal-box{
+    background:white;
+    width:min(700px,100%);
+    max-height:90vh;
+    overflow:auto;
+    border-radius:15px;
+    padding:22px;
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.close{
+    font-size:22px;
+    background:none;
+}
+
+.toast{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    background:#172033;
+    color:white;
+    padding:13px 17px;
+    border-radius:9px;
+    display:none;
+    z-index:200;
+}
+
+@media(max-width:1000px){
+
+    .stats{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:650px){
+
+    .header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .container{
+        padding:13px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .field.full{
+        grid-column:auto;
+    }
+
+    .search-row{
+        flex-direction:column;
+    }
+
+    .stat-card .value{
+        font-size:22px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="brand">
+        <h1>📦 TASSIMO BTP CONSTRUCTION SARL</h1>
+        <p>Gestion du stock / Inventory Management</p>
+    </div>
+
+    <div class="header-actions">
+        <button class="btn secondary" onclick="goDashboard()">
+            📊 Tableau de bord
+        </button>
+
+        <button class="btn secondary" onclick="toggleLanguage()">
+            FR / EN
+        </button>
+    </div>
+
+</header>
+
+<main class="container">
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <div class="label" data-fr="Articles" data-en="Items">Articles</div>
+            <div class="value" id="totalItems">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="label" data-fr="Valeur du stock" data-en="Stock Value">
+                Valeur du stock
+            </div>
+            <div class="value" id="stockValue">0 FCFA</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="label" data-fr="Stock faible" data-en="Low Stock">
+                Stock faible
+            </div>
+            <div class="value" id="lowStock">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="label" data-fr="Ruptures" data-en="Out of Stock">
+                Ruptures
+            </div>
+            <div class="value" id="outStock">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="label" data-fr="Catégories" data-en="Categories">
+                Catégories
+            </div>
+            <div class="value" id="categories">0</div>
+        </div>
+
+    </section>
+
+    <div class="grid">
+
+        <section>
+
+            <div class="panel">
+
+                <h2>➕ Ajouter un article / Add Inventory Item</h2>
+
+                <div class="form-grid">
+
+                    <div class="field">
+                        <label data-fr="Nom de l'article" data-en="Item Name">
+                            Nom de l'article
+                        </label>
+                        <input id="itemName">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Code article" data-en="Item Code">
+                            Code article
+                        </label>
+                        <input id="itemCode">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Catégorie" data-en="Category">
+                            Catégorie
+                        </label>
+
+                        <select id="category">
+                            <option value="cement">Ciment / Cement</option>
+                            <option value="steel">Fer & Acier / Steel</option>
+                            <option value="sand">Sable / Sand</option>
+                            <option value="gravel">Gravier / Gravel</option>
+                            <option value="wood">Bois / Wood</option>
+                            <option value="tools">Outils / Tools</option>
+                            <option value="equipment">Équipement / Equipment</option>
+                            <option value="electrical">Électricité / Electrical</option>
+                            <option value="plumbing">Plomberie / Plumbing</option>
+                            <option value="paint">Peinture / Paint</option>
+                            <option value="other">Autre / Other</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Unité" data-en="Unit">Unité</label>
+
+                        <select id="unit">
+                            <option value="piece">Pièce / Piece</option>
+                            <option value="kg">Kilogramme / Kg</option>
+                            <option value="ton">Tonne / Ton</option>
+                            <option value="bag">Sac / Bag</option>
+                            <option value="m3">m³</option>
+                            <option value="liter">Litre / Liter</option>
+                            <option value="meter">Mètre / Meter</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Quantité initiale" data-en="Initial Quantity">
+                            Quantité initiale
+                        </label>
+                        <input id="quantity" type="number" step="0.01" value="0">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Stock minimum" data-en="Minimum Stock">
+                            Stock minimum
+                        </label>
+                        <input id="minimumStock" type="number" step="0.01" value="0">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Coût unitaire" data-en="Unit Cost">
+                            Coût unitaire
+                        </label>
+                        <input id="unitCost" type="number" step="0.01" value="0">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Prix de vente" data-en="Selling Price">
+                            Prix de vente
+                        </label>
+                        <input id="sellingPrice" type="number" step="0.01" value="0">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Fournisseur" data-en="Supplier">
+                            Fournisseur
+                        </label>
+                        <input id="supplier">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Téléphone fournisseur" data-en="Supplier Phone">
+                            Téléphone fournisseur
+                        </label>
+                        <input id="supplierPhone">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Entrepôt" data-en="Warehouse">
+                            Entrepôt
+                        </label>
+                        <input id="warehouse">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Emplacement" data-en="Storage Location">
+                            Emplacement
+                        </label>
+                        <input id="storageLocation">
+                    </div>
+
+                    <div class="field">
+                        <label data-fr="Projet associé" data-en="Associated Project">
+                            Projet associé
+                        </label>
+                        <input id="projectName">
+                    </div>
+
+                    <div class="field full">
+                        <label data-fr="Description" data-en="Description">
+                            Description
+                        </label>
+                        <textarea id="description"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="actions">
+
+                    <button class="btn success" onclick="saveItem()">
+                        💾 Enregistrer / Save
+                    </button>
+
+                    <button class="btn secondary" onclick="clearForm()">
+                        ↺ Réinitialiser / Reset
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="panel">
+
+                <h2>📦 Inventaire / Inventory</h2>
+
+                <div class="search-row">
+
+                    <input
+                        id="search"
+                        placeholder="Rechercher un article, code, catégorie..."
+                        oninput="renderItems()"
+                    >
+
+                    <select id="filterStatus" onchange="renderItems()">
+                        <option value="all">Tous / All</option>
+                        <option value="ok">Stock normal / Normal</option>
+                        <option value="low">Stock faible / Low</option>
+                        <option value="out">Rupture / Out</option>
+                    </select>
+
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Article</th>
+                                <th>Catégorie</th>
+                                <th>Stock</th>
+                                <th>Minimum</th>
+                                <th>Coût</th>
+                                <th>Valeur</th>
+                                <th>Fournisseur</th>
+                                <th>État</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="inventoryBody"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <section>
+
+            <div class="panel">
+
+                <h2>⚠️ Alertes de stock / Stock Alerts</h2>
+
+                <div id="alerts"></div>
+
+            </div>
+
+            <div class="panel">
+
+                <h2>🤖 Assistant IA Stock / AI Inventory Assistant</h2>
+
+                <p class="muted">
+                    Analysez votre stock, identifiez les risques de rupture et obtenez
+                    des recommandations d'achat.
+                </p>
+
+                <div class="actions">
+
+                    <button class="btn" onclick="askInventoryAI()">
+                        🤖 Analyser le stock / Analyze Stock
+                    </button>
+
+                </div>
+
+                <div id="aiResult" style="margin-top:15px"></div>
+
+            </div>
+
+            <div class="panel">
+
+                <h2>📋 Derniers mouvements / Recent Movements</h2>
+
+                <div id="movements">
+                    <div class="empty">
+                        Aucun mouvement enregistré.
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+<div class="modal" id="movementModal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <h2 id="movementTitle">
+                Mouvement de stock
+            </h2>
+
+            <button class="close" onclick="closeMovement()">
+                ×
+            </button>
+
+        </div>
+
+        <div class="form-grid">
+
+            <div class="field">
+                <label>Article</label>
+                <input id="movementItem" disabled>
+            </div>
+
+            <div class="field">
+                <label>Type / Type</label>
+
+                <select id="movementType">
+                    <option value="in">Entrée / Stock In</option>
+                    <option value="out">Sortie / Stock Out</option>
+                </select>
+
+            </div>
+
+            <div class="field">
+                <label>Quantité / Quantity</label>
+                <input id="movementQuantity" type="number" step="0.01">
+            </div>
+
+            <div class="field">
+                <label>Référence / Reference</label>
+                <input id="movementReference">
+            </div>
+
+            <div class="field full">
+                <label>Notes / Notes</label>
+                <textarea id="movementNotes"></textarea>
+            </div>
+
+        </div>
+
+        <div class="actions">
+
+            <button class="btn success" onclick="saveMovement()">
+                💾 Enregistrer le mouvement
+            </button>
+
+            <button class="btn secondary" onclick="closeMovement()">
+                Annuler / Cancel
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+let language = localStorage.getItem("lang") || "fr";
+let inventory = [];
+let movements = [];
+let editingId = null;
+let movementItemId = null;
+
+function t(fr,en){
+    return language === "fr" ? fr : en;
+}
+
+function toggleLanguage(){
+    language = language === "fr" ? "en" : "fr";
+    localStorage.setItem("lang",language);
+    location.reload();
+}
+
+function goDashboard(){
+    window.location.href="/";
+}
+
+function toast(message){
+    const el=document.getElementById("toast");
+    el.textContent=message;
+    el.style.display="block";
+
+    setTimeout(()=>{
+        el.style.display="none";
+    },2500);
+}
+
+async function api(url, options={}){
+
+    options.headers={
+        ...(options.headers || {}),
+        "Content-Type":"application/json",
+        "X-Language":language
+    };
+
+    const response=await fetch(url,options);
+
+    if(response.status===401){
+        window.location.href="/login";
+        return null;
+    }
+
+    let data={};
+
+    try{
+        data=await response.json();
+    }catch(e){
+        data={};
+    }
+
+    if(!response.ok){
+        throw new Error(
+            data.error ||
+            t("Une erreur est survenue.","An error occurred.")
+        );
+    }
+
+    return data;
+}
+
+async function loadInventory(){
+
+    try{
+
+        const result=await api("/api/inventory");
+
+        if(!result) return;
+
+        inventory=result.data || [];
+
+        renderItems();
+        updateStats();
+        renderAlerts();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+}
+
+function statusOf(item){
+
+    const quantity=Number(item.quantity || 0);
+    const minimum=Number(item.minimum_stock || 0);
+
+    if(quantity<=0) return "out";
+
+    if(quantity<=minimum) return "low";
+
+    return "ok";
+}
+
+function statusLabel(status){
+
+    if(status==="out"){
+        return t("Rupture","Out of Stock");
+    }
+
+    if(status==="low"){
+        return t("Stock faible","Low Stock");
+    }
+
+    return t("Normal","Normal");
+}
+
+function formatMoney(value){
+
+    return Number(value || 0).toLocaleString(
+        language==="fr" ? "fr-FR" : "en-US"
+    ) + " FCFA";
+
+}
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+function renderItems(){
+
+    const body=document.getElementById("inventoryBody");
+
+    const search=document.getElementById("search").value
+        .toLowerCase()
+        .trim();
+
+    const filter=document.getElementById("filterStatus").value;
+
+    const rows=inventory.filter(item=>{
+
+        const text=[
+            item.item_name,
+            item.item_code,
+            item.category,
+            item.supplier,
+            item.warehouse,
+            item.project_name
+        ].join(" ").toLowerCase();
+
+        const matchesSearch=text.includes(search);
+
+        const status=statusOf(item);
+
+        const matchesFilter=
+            filter==="all" || filter===status;
+
+        return matchesSearch && matchesFilter;
+
+    });
+
+    if(!rows.length){
+
+        body.innerHTML=`
+            <tr>
+                <td colspan="9">
+                    <div class="empty">
+                        ${t("Aucun article trouvé.","No inventory items found.")}
+                    </div>
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    body.innerHTML=rows.map(item=>{
+
+        const status=statusOf(item);
+
+        const value=
+            Number(item.quantity || 0) *
+            Number(item.unit_cost || 0);
+
+        return `
+            <tr>
+
+                <td>
+                    <strong>${escapeHtml(item.item_name)}</strong>
+                    <br>
+                    <small class="muted">
+                        ${escapeHtml(item.item_code || "")}
+                    </small>
+                </td>
+
+                <td>${escapeHtml(item.category || "-")}</td>
+
+                <td>
+                    <strong>
+                        ${Number(item.quantity || 0)}
+                    </strong>
+                    ${escapeHtml(item.unit || "")}
+                </td>
+
+                <td>
+                    ${Number(item.minimum_stock || 0)}
+                </td>
+
+                <td>
+                    ${formatMoney(item.unit_cost)}
+                </td>
+
+                <td>
+                    ${formatMoney(value)}
+                </td>
+
+                <td>
+                    ${escapeHtml(item.supplier || "-")}
+                </td>
+
+                <td>
+                    <span class="badge ${status}">
+                        ${statusLabel(status)}
+                    </span>
+                </td>
+
+                <td>
+
+                    <div class="item-actions">
+
+                        <button
+                            class="btn success"
+                            onclick="openMovement('${item.id}','in')">
+                            + Stock
+                        </button>
+
+                        <button
+                            class="btn warning"
+                            onclick="openMovement('${item.id}','out')">
+                            − Stock
+                        </button>
+
+                        <button
+                            class="btn secondary"
+                            onclick="editItem('${item.id}')">
+                            ✏️
+                        </button>
+
+                        <button
+                            class="btn danger"
+                            onclick="deleteItem('${item.id}')">
+                            🗑️
+                        </button>
+
+                    </div>
+
+                </td>
+
+            </tr>
+        `;
+
+    }).join("");
+
+}
+
+function updateStats(){
+
+    const total=inventory.length;
+
+    const value=inventory.reduce(
+        (sum,item)=>
+            sum+
+            Number(item.quantity || 0)*
+            Number(item.unit_cost || 0),
+        0
+    );
+
+    const low=inventory.filter(
+        item=>statusOf(item)==="low"
+    ).length;
+
+    const out=inventory.filter(
+        item=>statusOf(item)==="out"
+    ).length;
+
+    const categories=new Set(
+        inventory
+            .map(item=>item.category)
+            .filter(Boolean)
+    );
+
+    document.getElementById("totalItems").textContent=total;
+    document.getElementById("stockValue").textContent=formatMoney(value);
+    document.getElementById("lowStock").textContent=low;
+    document.getElementById("outStock").textContent=out;
+    document.getElementById("categories").textContent=categories.size;
+
+}
+
+function renderAlerts(){
+
+    const box=document.getElementById("alerts");
+
+    const alerts=inventory.filter(
+        item=>statusOf(item)!=="ok"
+    );
+
+    if(!alerts.length){
+
+        box.innerHTML=`
+            <div class="empty">
+                ✅ ${t(
+                    "Aucune alerte de stock.",
+                    "No stock alerts."
+                )}
+            </div>
+        `;
+
+        return;
+    }
+
+    box.innerHTML=alerts.map(item=>{
+
+        const status=statusOf(item);
+
+        return `
+            <div class="alert">
+
+                <strong>
+                    ${escapeHtml(item.item_name)}
+                </strong>
+
+                <br>
+
+                ${status==="out"
+                    ? t(
+                        "Rupture de stock.",
+                        "Out of stock."
+                    )
+                    : t(
+                        "Stock inférieur ou égal au minimum.",
+                        "Stock is at or below minimum."
+                    )
+                }
+
+                <br>
+
+                ${t("Quantité","Quantity")}:
+                ${Number(item.quantity || 0)}
+                ${escapeHtml(item.unit || "")}
+
+                /
+                ${t("Minimum","Minimum")}:
+                ${Number(item.minimum_stock || 0)}
+
+            </div>
+        `;
+
+    }).join("");
+
+}
+
+async function saveItem(){
+
+    const data={
+
+        item_name:document.getElementById("itemName").value.trim(),
+
+        item_code:document.getElementById("itemCode").value.trim(),
+
+        category:document.getElementById("category").value,
+
+        unit:document.getElementById("unit").value,
+
+        quantity:Number(
+            document.getElementById("quantity").value || 0
+        ),
+
+        minimum_stock:Number(
+            document.getElementById("minimumStock").value || 0
+        ),
+
+        unit_cost:Number(
+            document.getElementById("unitCost").value || 0
+        ),
+
+        selling_price:Number(
+            document.getElementById("sellingPrice").value || 0
+        ),
+
+        supplier:document.getElementById("supplier").value.trim(),
+
+        supplier_phone:document
+            .getElementById("supplierPhone")
+            .value
+            .trim(),
+
+        warehouse:document
+            .getElementById("warehouse")
+            .value
+            .trim(),
+
+        storage_location:document
+            .getElementById("storageLocation")
+            .value
+            .trim(),
+
+        project_name:document
+            .getElementById("projectName")
+            .value
+            .trim(),
+
+        description:document
+            .getElementById("description")
+            .value
+            .trim(),
+
+        status:"active"
+
+    };
+
+    if(!data.item_name){
+
+        toast(
+            t(
+                "Le nom de l'article est obligatoire.",
+                "Item name is required."
+            )
+        );
+
+        return;
+    }
+
+    try{
+
+        if(editingId){
+
+            data.id=editingId;
+
+            await api("/api/inventory",{
+                method:"PUT",
+                body:JSON.stringify(data)
+            });
+
+            toast(
+                t(
+                    "Article mis à jour.",
+                    "Item updated."
+                )
+            );
+
+        }else{
+
+            await api("/api/inventory",{
+                method:"POST",
+                body:JSON.stringify(data)
+            });
+
+            toast(
+                t(
+                    "Article enregistré.",
+                    "Item saved."
+                )
+            );
+
+        }
+
+        clearForm();
+        await loadInventory();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+function editItem(id){
+
+    const item=inventory.find(x=>x.id===id);
+
+    if(!item) return;
+
+    editingId=id;
+
+    document.getElementById("itemName").value=item.item_name || "";
+    document.getElementById("itemCode").value=item.item_code || "";
+    document.getElementById("category").value=item.category || "other";
+    document.getElementById("unit").value=item.unit || "piece";
+    document.getElementById("quantity").value=item.quantity || 0;
+    document.getElementById("minimumStock").value=item.minimum_stock || 0;
+    document.getElementById("unitCost").value=item.unit_cost || 0;
+    document.getElementById("sellingPrice").value=item.selling_price || 0;
+    document.getElementById("supplier").value=item.supplier || "";
+    document.getElementById("supplierPhone").value=item.supplier_phone || "";
+    document.getElementById("warehouse").value=item.warehouse || "";
+    document.getElementById("storageLocation").value=item.storage_location || "";
+    document.getElementById("projectName").value=item.project_name || "";
+    document.getElementById("description").value=item.description || "";
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+async function deleteItem(id){
+
+    const item=inventory.find(x=>x.id===id);
+
+    if(!item) return;
+
+    const confirmed=confirm(
+        t(
+            `Supprimer "${item.item_name}" ?`,
+            `Delete "${item.item_name}"?`
+        )
+    );
+
+    if(!confirmed) return;
+
+    try{
+
+        await api("/api/inventory",{
+            method:"DELETE",
+            body:JSON.stringify({id})
+        });
+
+        toast(
+            t(
+                "Article supprimé.",
+                "Item deleted."
+            )
+        );
+
+        await loadInventory();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+function clearForm(){
+
+    editingId=null;
+
+    [
+        "itemName",
+        "itemCode",
+        "supplier",
+        "supplierPhone",
+        "warehouse",
+        "storageLocation",
+        "projectName",
+        "description"
+    ].forEach(id=>{
+        document.getElementById(id).value="";
+    });
+
+    document.getElementById("quantity").value=0;
+    document.getElementById("minimumStock").value=0;
+    document.getElementById("unitCost").value=0;
+    document.getElementById("sellingPrice").value=0;
+
+}
+
+function openMovement(id,type){
+
+    const item=inventory.find(x=>x.id===id);
+
+    if(!item) return;
+
+    movementItemId=id;
+
+    document.getElementById("movementItem").value=
+        item.item_name;
+
+    document.getElementById("movementType").value=type;
+
+    document.getElementById("movementQuantity").value="";
+
+    document.getElementById("movementReference").value="";
+
+    document.getElementById("movementNotes").value="";
+
+    document.getElementById("movementModal").style.display="flex";
+
+}
+
+function closeMovement(){
+
+    movementItemId=null;
+
+    document.getElementById("movementModal").style.display="none";
+
+}
+
+async function saveMovement(){
+
+    const item=inventory.find(
+        x=>x.id===movementItemId
+    );
+
+    if(!item) return;
+
+    const type=
+        document.getElementById("movementType").value;
+
+    const quantity=Number(
+        document.getElementById("movementQuantity").value || 0
+    );
+
+    if(quantity<=0){
+
+        toast(
+            t(
+                "La quantité doit être supérieure à zéro.",
+                "Quantity must be greater than zero."
+            )
+        );
+
+        return;
+    }
+
+    const current=Number(item.quantity || 0);
+
+    let newQuantity=current;
+
+    if(type==="in"){
+
+        newQuantity=current+quantity;
+
+    }else{
+
+        if(quantity>current){
+
+            toast(
+                t(
+                    "Stock insuffisant.",
+                    "Insufficient stock."
+                )
+            );
+
+            return;
+        }
+
+        newQuantity=current-quantity;
+
+    }
+
+    try{
+
+        await api("/api/inventory",{
+            method:"PUT",
+            body:JSON.stringify({
+
+                id:item.id,
+
+                quantity:newQuantity,
+
+                last_movement_type:type,
+
+                last_movement_quantity:quantity
+
+            })
+        });
+
+        await api("/api/inventory-movements",{
+            method:"POST",
+            body:JSON.stringify({
+
+                inventory_id:item.id,
+
+                item_name:item.item_name,
+
+                movement_type:type,
+
+                quantity:quantity,
+
+                unit_cost:Number(item.unit_cost || 0),
+
+                total_value:
+                    quantity*
+                    Number(item.unit_cost || 0),
+
+                reference:
+                    document.getElementById(
+                        "movementReference"
+                    ).value.trim(),
+
+                project_name:item.project_name || "",
+
+                supplier:item.supplier || "",
+
+                notes:
+                    document.getElementById(
+                        "movementNotes"
+                    ).value.trim()
+
+            })
+        });
+
+        toast(
+            t(
+                "Mouvement enregistré.",
+                "Stock movement recorded."
+            )
+        );
+
+        closeMovement();
+
+        await loadInventory();
+
+        await loadMovements();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+async function loadMovements(){
+
+    try{
+
+        const result=
+            await api("/api/inventory-movements?limit=10");
+
+        if(!result) return;
+
+        movements=result.data || [];
+
+        renderMovements();
+
+    }catch(error){
+
+        console.log(error);
+
+    }
+
+}
+
+function renderMovements(){
+
+    const box=document.getElementById("movements");
+
+    if(!movements.length){
+
+        box.innerHTML=`
+            <div class="empty">
+                ${t(
+                    "Aucun mouvement enregistré.",
+                    "No movements recorded."
+                )}
+            </div>
+        `;
+
+        return;
+    }
+
+    box.innerHTML=movements.map(m=>{
+
+        const incoming=m.movement_type==="in";
+
+        return `
+            <div style="
+                padding:10px 0;
+                border-bottom:1px solid #edf0f4;
+            ">
+
+                <strong>
+                    ${escapeHtml(m.item_name || "-")}
+                </strong>
+
+                <br>
+
+                <span class="badge ${incoming?"ok":"out"}">
+                    ${incoming
+                        ? "↑ Entrée / Stock In"
+                        : "↓ Sortie / Stock Out"
+                    }
+                </span>
+
+                <span>
+                    ${Number(m.quantity || 0)}
+                </span>
+
+                <br>
+
+                <small class="muted">
+                    ${m.created_at
+                        ? new Date(m.created_at).toLocaleString()
+                        : ""
+                    }
+                </small>
+
+            </div>
+        `;
+
+    }).join("");
+
+}
+
+async function askInventoryAI(){
+
+    const summary=inventory.map(item=>({
+
+        name:item.item_name,
+
+        category:item.category,
+
+        quantity:Number(item.quantity || 0),
+
+        minimum_stock:Number(item.minimum_stock || 0),
+
+        unit:item.unit,
+
+        unit_cost:Number(item.unit_cost || 0),
+
+        supplier:item.supplier || "",
+
+        project:item.project_name || ""
+
+    }));
+
+    if(!summary.length){
+
+        toast(
+            t(
+                "Ajoutez d'abord des articles au stock.",
+                "Add inventory items first."
+            )
+        );
+
+        return;
+    }
+
+    const box=document.getElementById("aiResult");
+
+    box.innerHTML=`
+        <div class="muted">
+            ${t(
+                "Analyse du stock en cours...",
+                "Analyzing inventory..."
+            )}
+        </div>
+    `;
+
+    try{
+
+        const result=await api("/api/ai",{
+
+            method:"POST",
+
+            body:JSON.stringify({
+
+                question:
+                    language==="fr"
+                    ?
+                    "Analyse cet inventaire de TASSIMO BTP. Identifie les risques de rupture, les articles à réapprovisionner, les priorités d'achat, les articles immobilisés et donne des recommandations pratiques. Utilise le contexte du Cameroun et le FCFA."
+                    :
+                    "Analyze this TASSIMO BTP inventory. Identify stockout risks, items to reorder, purchasing priorities, slow-moving or immobilized items, and practical recommendations. Use Cameroon context and XAF/FCFA.",
+
+                context:{
+
+                    module:"Inventory",
+
+                    business:
+                        "TASSIMO BTP CONSTRUCTION SARL",
+
+                    language:language,
+
+                    inventory:summary
+
+                }
+
+            })
+
+        });
+
+        if(!result) return;
+
+        box.innerHTML=`
+            <div style="
+                padding:15px;
+                background:#f8f9fb;
+                border-radius:10px;
+                white-space:pre-wrap;
+                line-height:1.6;
+            ">
+                ${escapeHtml(result.answer || "")}
+            </div>
+        `;
+
+    }catch(error){
+
+        box.innerHTML=`
+            <div class="alert">
+                ${escapeHtml(error.message)}
+            </div>
+        `;
+
+    }
+
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async()=>{
+
+        await loadInventory();
+
+        await loadMovements();
+
+    }
+);
+
+</script>
+
+</body>
+</html>
