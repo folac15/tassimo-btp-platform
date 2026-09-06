@@ -1083,22 +1083,35 @@ def generic_resource(resource):
     data = request.get_json(silent=True) or {}
 
     if request.method == "POST":
-        saved = sb_insert(table, normalize_record(data))
 
-        if isinstance(saved, dict) and saved.get("_error"):
-            return jsonify({
-                "error": saved["_error"]
-            }), 400
+    # Projects table uses "project_name" as its required name column.
+    # The standalone Projects page sends the field as "name".
+    if resource == "projects":
+        if not data.get("project_name"):
+            data["project_name"] = str(
+                data.get("name")
+                or data.get("full_name")
+                or ""
+            ).strip()
 
-        if not saved:
-            return jsonify({
-                "error": t("save_failed")
-            }), 400
+        data.pop("name", None)
 
+    saved = sb_insert(table, normalize_record(data))
+
+    if isinstance(saved, dict) and saved.get("_error"):
         return jsonify({
-            "message": t("saved"),
-            "data": saved
-        }), 201
+            "error": saved["_error"]
+        }), 400
+
+    if not saved:
+        return jsonify({
+            "error": "Enregistrement impossible / Save failed."
+        }), 400
+
+    return jsonify({
+        "message": t("saved"),
+        "data": saved
+    }), 201
 
     record_id = data.get("id") or request.args.get("id")
     if not record_id:
