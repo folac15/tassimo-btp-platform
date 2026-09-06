@@ -2077,6 +2077,10 @@ function openPage(p){
     window.location.href="/customers";
     return;
   }
+  if(p==="projects"){
+    window.location.href="/projects.html";
+  return;
+}
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
