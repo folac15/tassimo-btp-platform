@@ -3402,6 +3402,10 @@ def projects_page():
 @protected
 def construction_ai_page():
     return send_from_directory(".", "construction-ai.html")
+@app.route("/inventory.html")
+@protected
+def inventory_page():
+    return send_from_directory(".", "inventory.html")
 
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
