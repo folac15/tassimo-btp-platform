@@ -3394,6 +3394,10 @@ def marketing_page():
 @protected
 def projects_page():
     return send_from_directory(".", "projects.html")
+@app.route("/construction-ai.html")
+@protected
+def construction_ai_page():
+    return send_from_directory(".", "construction-ai.html")
 
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
