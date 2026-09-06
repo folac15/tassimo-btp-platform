@@ -2081,6 +2081,10 @@ function openPage(p){
     window.location.href="/projects.html";
   return;
 }
+  if(p==="construction"){
+  window.location.href="/construction-ai.html";
+  return;
+}
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
