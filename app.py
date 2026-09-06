@@ -1084,8 +1084,8 @@ def generic_resource(resource):
     if request.method == "POST":
     # Projects table uses "project_name" as its required name column.
     # The standalone Projects page sends the field as "name".
-    if resource == "projects":
-        if not data.get("project_name"):
+        if resource == "projects":
+            if not data.get("project_name"):
             data["project_name"] = str(
                 data.get("name")
                 or data.get("full_name")
