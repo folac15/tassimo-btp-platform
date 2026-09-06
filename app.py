@@ -1104,7 +1104,7 @@ def generic_resource(resource):
     if not record_id:
         return jsonify({"error": t("invalid_data")}), 400
 
-        if request.method == "PUT":
+    if request.method == "PUT":
         data.pop("id", None)
 
         saved = sb_update(
