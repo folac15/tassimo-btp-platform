@@ -1084,7 +1084,21 @@ def generic_resource(resource):
 
     if request.method == "POST":
         saved = sb_insert(table, normalize_record(data))
-        return jsonify({"message": t("saved"), "data": saved or data}), 201
+
+        if isinstance(saved, dict) and saved.get("_error"):
+            return jsonify({
+                "error": saved["_error"]
+            }), 400
+
+        if not saved:
+            return jsonify({
+                "error": t("save_failed")
+            }), 400
+
+        return jsonify({
+            "message": t("saved"),
+            "data": saved
+        }), 201
 
     record_id = data.get("id") or request.args.get("id")
     if not record_id:
