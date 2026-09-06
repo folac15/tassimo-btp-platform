@@ -1117,40 +1117,27 @@ def generic_resource(resource):
 
     if not record_id:
         return jsonify({"error": t("invalid_data")}), 400
+
     if request.method == "PUT":
-    data.pop("id", None)
+        data.pop("id", None)
 
-    # Projects table uses "project_name" instead of "name".
-    if resource == "projects":
-        if not data.get("project_name"):
-            data["project_name"] = str(
-                data.get("name")
-                or data.get("full_name")
-                or ""
-            ).strip()
+        # Projects table uses "project_name" as its required name column.
+        # The standalone Projects page sends the field as "name".
+        if resource == "projects":
+            if not data.get("project_name"):
+                data["project_name"] = str(
+                    data.get("name")
+                    or data.get("full_name")
+                    or ""
+                ).strip()
 
-        data.pop("name", None)
+            data.pop("name", None)
 
-    saved = sb_update(
-        table,
-        {"id": f"eq.{record_id}"},
-        normalize_record(data),
-    )
-
-    if isinstance(saved, dict) and saved.get("_error"):
-        return jsonify({
-            "error": saved["_error"]
-        }), 400
-
-    if not saved:
-        return jsonify({
-            "error": "Enregistrement impossible / Save failed."
-        }), 400
-
-    return jsonify({
-        "message": t("saved"),
-        "data": saved
-    })
+        saved = sb_update(
+            table,
+            {"id": f"eq.{record_id}"},
+            normalize_record(data),
+        )
 
         if isinstance(saved, dict) and saved.get("_error"):
             return jsonify({
@@ -1159,7 +1146,7 @@ def generic_resource(resource):
 
         if not saved:
             return jsonify({
-                "error": t("save_failed")
+                "error": "Enregistrement impossible / Save failed."
             }), 400
 
         return jsonify({
@@ -1174,6 +1161,7 @@ def generic_resource(resource):
         )
     })
 
+    
 
 # ------------------------------------------------------------
 # AI system
