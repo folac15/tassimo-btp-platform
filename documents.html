@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TASSIMO BTP - Documents</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#172033;
+}
+
+header{
+    background:#0b1f3a;
+    color:white;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo{
+    width:45px;
+    height:45px;
+    border-radius:10px;
+    background:#f4b400;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.brand h1{
+    font-size:18px;
+}
+
+.brand small{
+    display:block;
+    opacity:.8;
+    margin-top:3px;
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+    border-radius:8px;
+    padding:10px 14px;
+    font-weight:bold;
+}
+
+.lang{
+    background:white;
+    color:#0b1f3a;
+}
+
+.dashboard{
+    background:#f4b400;
+    color:#111;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:22px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:22px;
+    flex-wrap:wrap;
+}
+
+.topbar h2{
+    font-size:27px;
+}
+
+.topbar p{
+    color:#667085;
+    margin-top:5px;
+}
+
+.primary{
+    background:#0b1f3a;
+    color:white;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:15px;
+    margin-bottom:22px;
+}
+
+.stat{
+    background:white;
+    padding:18px;
+    border-radius:14px;
+    box-shadow:0 4px 15px rgba(0,0,0,.06);
+}
+
+.stat span{
+    color:#667085;
+    font-size:13px;
+}
+
+.stat strong{
+    display:block;
+    font-size:28px;
+    margin-top:7px;
+}
+
+.toolbar{
+    background:white;
+    padding:15px;
+    border-radius:14px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+input,select,textarea{
+    width:100%;
+    padding:11px;
+    border:1px solid #d8dee9;
+    border-radius:8px;
+    background:white;
+    font-size:14px;
+}
+
+.search{
+    flex:1;
+    min-width:220px;
+}
+
+.content{
+    background:white;
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 4px 15px rgba(0,0,0,.06);
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:850px;
+}
+
+th,td{
+    padding:13px;
+    border-bottom:1px solid #edf0f5;
+    text-align:left;
+}
+
+th{
+    background:#f8fafc;
+    font-size:13px;
+}
+
+.badge{
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+    background:#eef2ff;
+}
+
+.row-actions{
+    display:flex;
+    gap:5px;
+    flex-wrap:wrap;
+}
+
+.row-actions button{
+    padding:7px 9px;
+    font-size:12px;
+}
+
+.view{
+    background:#e8f1ff;
+    color:#1557a6;
+}
+
+.print{
+    background:#e9f8ef;
+    color:#18733d;
+}
+
+.delete{
+    background:#ffe9e9;
+    color:#b42318;
+}
+
+.empty{
+    padding:40px;
+    text-align:center;
+    color:#667085;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    z-index:50;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+}
+
+.modal-box{
+    background:white;
+    width:min(700px,100%);
+    max-height:90vh;
+    overflow:auto;
+    border-radius:15px;
+    padding:22px;
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.close{
+    background:#eee;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:13px;
+}
+
+.full{
+    grid-column:1/-1;
+}
+
+.form-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+    margin-top:18px;
+}
+
+.document-preview{
+    background:#f4f7fb;
+    padding:15px;
+    border-radius:10px;
+    margin-top:15px;
+}
+
+.toast{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#0b1f3a;
+    color:white;
+    padding:13px 18px;
+    border-radius:8px;
+    display:none;
+    z-index:100;
+}
+
+@media(max-width:1000px){
+    .stats{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+
+@media(max-width:650px){
+
+    header{
+        padding:12px;
+    }
+
+    .brand h1{
+        font-size:14px;
+    }
+
+    .brand small{
+        font-size:10px;
+    }
+
+    .actions button{
+        padding:8px;
+        font-size:11px;
+    }
+
+    .container{
+        padding:13px;
+    }
+
+    .topbar h2{
+        font-size:22px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .stat strong{
+        font-size:23px;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .full{
+        grid-column:auto;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<div class="brand">
+
+<div class="logo">TB</div>
+
+<div>
+<h1>TASSIMO BTP CONSTRUCTION SARL</h1>
+<small data-fr="Gestion des documents" data-en="Document Management">
+Gestion des documents
+</small>
+</div>
+
+</div>
+
+<div class="actions">
+
+<button class="lang" onclick="toggleLang()" id="langBtn">
+EN
+</button>
+
+<button class="dashboard" onclick="location.href='/'">
+<span data-fr="🏠 Tableau de bord" data-en="🏠 Dashboard">
+🏠 Tableau de bord
+</span>
+</button>
+
+</div>
+
+</header>
+
+
+<main class="container">
+
+<div class="topbar">
+
+<div>
+
+<h2 data-fr="📄 Documents" data-en="📄 Documents">
+📄 Documents
+</h2>
+
+<p
+data-fr="Créez, gérez, imprimez et conservez les documents de l'entreprise."
+data-en="Create, manage, print and store company documents."
+>
+Créez, gérez, imprimez et conservez les documents de l'entreprise.
+</p>
+
+</div>
+
+<button class="primary" onclick="openModal()">
+<span data-fr="＋ Nouveau document" data-en="＋ New Document">
+＋ Nouveau document
+</span>
+</button>
+
+</div>
+
+
+<div class="stats">
+
+<div class="stat">
+<span data-fr="Tous les documents" data-en="All Documents">
+Tous les documents
+</span>
+<strong id="total">0</strong>
+</div>
+
+<div class="stat">
+<span data-fr="Factures" data-en="Invoices">
+Factures
+</span>
+<strong id="invoices">0</strong>
+</div>
+
+<div class="stat">
+<span data-fr="Reçus" data-en="Receipts">
+Reçus
+</span>
+<strong id="receipts">0</strong>
+</div>
+
+<div class="stat">
+<span data-fr="Devis" data-en="Quotations">
+Devis
+</span>
+<strong id="quotes">0</strong>
+</div>
+
+<div class="stat">
+<span data-fr="Contrats" data-en="Contracts">
+Contrats
+</span>
+<strong id="contracts">0</strong>
+</div>
+
+</div>
+
+
+<div class="toolbar">
+
+<input
+class="search"
+id="search"
+oninput="render()"
+data-fr-placeholder="Rechercher un document..."
+data-en-placeholder="Search for a document..."
+placeholder="Rechercher un document..."
+>
+
+<select id="typeFilter" onchange="render()">
+
+<option value=""
+data-fr="Tous les types"
+data-en="All Types">
+Tous les types
+</option>
+
+<option value="invoice"
+data-fr="Facture"
+data-en="Invoice">
+Facture
+</option>
+
+<option value="receipt"
+data-fr="Reçu"
+data-en="Receipt">
+Reçu
+</option>
+
+<option value="quote"
+data-fr="Devis"
+data-en="Quotation">
+Devis
+</option>
+
+<option value="payment"
+data-fr="Confirmation de paiement"
+data-en="Payment Confirmation">
+Confirmation de paiement
+</option>
+
+<option value="contract"
+data-fr="Contrat"
+data-en="Contract">
+Contrat
+</option>
+
+<option value="project"
+data-fr="Document de projet"
+data-en="Project Document">
+Document de projet
+</option>
+
+<option value="delivery"
+data-fr="Bon de livraison"
+data-en="Delivery Note">
+Bon de livraison
+</option>
+
+<option value="expense"
+data-fr="Justificatif de dépense"
+data-en="Expense Voucher">
+Justificatif de dépense
+</option>
+
+<option value="certificate"
+data-fr="Certificat"
+data-en="Certificate">
+Certificat
+</option>
+
+<option value="other"
+data-fr="Autre"
+data-en="Other">
+Autre
+</option>
+
+</select>
+
+</div>
+
+
+<div class="content">
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th data-fr="Document" data-en="Document">
+Document
+</th>
+
+<th data-fr="Type" data-en="Type">
+Type
+</th>
+
+<th data-fr="Client / Projet" data-en="Client / Project">
+Client / Projet
+</th>
+
+<th data-fr="Date" data-en="Date">
+Date
+</th>
+
+<th data-fr="Statut" data-en="Status">
+Statut
+</th>
+
+<th data-fr="Actions" data-en="Actions">
+Actions
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="rows"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</main>
+
+
+<!-- NEW DOCUMENT MODAL -->
+
+<div class="modal" id="modal">
+
+<div class="modal-box">
+
+<div class="modal-header">
+
+<h3
+data-fr="Créer un document"
+data-en="Create Document">
+Créer un document
+</h3>
+
+<button class="close" onclick="closeModal()">✕</button>
+
+</div>
+
+
+<div class="form-grid">
+
+<div>
+
+<label
+data-fr="Type de document"
+data-en="Document Type">
+Type de document
+</label>
+
+<select id="docType">
+
+<option value="invoice">Facture / Invoice</option>
+<option value="receipt">Reçu / Receipt</option>
+<option value="quote">Devis / Quotation</option>
+<option value="payment">Confirmation de paiement / Payment Confirmation</option>
+<option value="contract">Contrat / Contract</option>
+<option value="project">Document de projet / Project Document</option>
+<option value="delivery">Bon de livraison / Delivery Note</option>
+<option value="expense">Justificatif de dépense / Expense Voucher</option>
+<option value="certificate">Certificat / Certificate</option>
+<option value="other">Autre / Other</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Numéro / Référence"
+data-en="Number / Reference">
+Numéro / Référence
+</label>
+
+<input id="docNumber"
+placeholder="Ex: FAC-2026-001">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Client / Destinataire"
+data-en="Customer / Recipient">
+Client / Destinataire
+</label>
+
+<input id="docCustomer"
+data-fr-placeholder="Nom du client"
+data-en-placeholder="Customer name"
+placeholder="Nom du client">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Projet"
+data-en="Project">
+Projet
+</label>
+
+<input id="docProject"
+data-fr-placeholder="Projet concerné"
+data-en-placeholder="Related project"
+placeholder="Projet concerné">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Date"
+data-en="Date">
+Date
+</label>
+
+<input type="date" id="docDate">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Montant"
+data-en="Amount">
+Montant
+</label>
+
+<input type="number" id="docAmount" step="0.01">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Statut"
+data-en="Status">
+Statut
+</label>
+
+<select id="docStatus">
+
+<option value="draft"
+data-fr="Brouillon"
+data-en="Draft">
+Brouillon
+</option>
+
+<option value="issued"
+data-fr="Émis"
+data-en="Issued">
+Émis
+</option>
+
+<option value="paid"
+data-fr="Payé"
+data-en="Paid">
+Payé
+</option>
+
+<option value="pending"
+data-fr="En attente"
+data-en="Pending">
+En attente
+</option>
+
+<option value="cancelled"
+data-fr="Annulé"
+data-en="Cancelled">
+Annulé
+</option>
+
+</select>
+
+</div>
+
+
+<div class="full">
+
+<label
+data-fr="Description / Détails"
+data-en="Description / Details">
+Description / Détails
+</label>
+
+<textarea
+id="docDescription"
+rows="5"
+data-fr-placeholder="Détails du document..."
+data-en-placeholder="Document details..."
+placeholder="Détails du document..."
+></textarea>
+
+</div>
+
+</div>
+
+
+<div class="form-actions">
+
+<button class="close" onclick="closeModal()">
+
+<span data-fr="Annuler" data-en="Cancel">
+Annuler
+</span>
+
+</button>
+
+<button class="primary" onclick="saveDocument()">
+
+<span data-fr="Enregistrer" data-en="Save">
+Enregistrer
+</span>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- VIEW MODAL -->
+
+<div class="modal" id="viewModal">
+
+<div class="modal-box">
+
+<div class="modal-header">
+
+<h3
+data-fr="Aperçu du document"
+data-en="Document Preview">
+Aperçu du document
+</h3>
+
+<button class="close" onclick="closeView()">✕</button>
+
+</div>
+
+<div id="preview"></div>
+
+<div class="form-actions">
+
+<button class="close" onclick="closeView()">
+
+<span data-fr="Fermer" data-en="Close">
+Fermer
+</span>
+
+</button>
+
+<button class="primary" onclick="printCurrent()">
+
+<span data-fr="🖨️ Imprimer" data-en="🖨️ Print">
+🖨️ Imprimer
+</span>
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+
+let lang=localStorage.getItem("lang")||"fr";
+
+let documents=[];
+
+let currentDocument=null;
+
+
+function $(id){
+    return document.getElementById(id);
+}
+
+
+function tr(fr,en){
+    return lang==="fr"?fr:en;
+}
+
+
+function applyLanguage(){
+
+    document.documentElement.lang=lang;
+
+    document.querySelectorAll("[data-fr]").forEach(el=>{
+        el.textContent=lang==="fr"
+            ?el.dataset.fr
+            :el.dataset.en;
+    });
+
+    document.querySelectorAll("[data-fr-placeholder]").forEach(el=>{
+        el.placeholder=lang==="fr"
+            ?el.dataset.frPlaceholder
+            :el.dataset.enPlaceholder;
+    });
+
+    $("langBtn").textContent=lang==="fr"?"EN":"FR";
+
+}
+
+
+function toggleLang(){
+
+    lang=lang==="fr"?"en":"fr";
+
+    localStorage.setItem("lang",lang);
+
+    applyLanguage();
+
+    render();
+
+}
+
+
+function toast(message){
+
+    $("toast").textContent=message;
+
+    $("toast").style.display="block";
+
+    setTimeout(()=>{
+        $("toast").style.display="none";
+    },2500);
+
+}
+
+
+async function api(url,opt={}){
+
+    opt.headers={
+        ...(opt.headers||{}),
+        "Content-Type":"application/json",
+        "X-Language":lang
+    };
+
+    const response=await fetch(url,opt);
+
+    if(response.status===401){
+
+        location.href="/login";
+
+        return null;
+    }
+
+    let data={};
+
+    try{
+        data=await response.json();
+    }catch(e){
+        data={};
+    }
+
+    if(!response.ok){
+
+        throw new Error(
+            data.error||
+            tr(
+                "Opération impossible.",
+                "Operation failed."
+            )
+        );
+
+    }
+
+    return data;
+
+}
+
+
+async function loadDocuments(){
+
+    try{
+
+        const data=await api("/api/documents");
+
+        documents=data?.data||[];
+
+        render();
+
+    }catch(error){
+
+        toast(error.message);
+
+        documents=[];
+
+        render();
+
+    }
+
+}
+
+
+function typeLabel(type){
+
+    const labels={
+        invoice:["Facture","Invoice"],
+        receipt:["Reçu","Receipt"],
+        quote:["Devis","Quotation"],
+        payment:["Confirmation de paiement","Payment Confirmation"],
+        contract:["Contrat","Contract"],
+        project:["Document de projet","Project Document"],
+        delivery:["Bon de livraison","Delivery Note"],
+        expense:["Justificatif de dépense","Expense Voucher"],
+        certificate:["Certificat","Certificate"],
+        other:["Autre","Other"]
+    };
+
+    return labels[type]
+        ?labels[type][lang==="fr"?0:1]
+        :type;
+
+}
+
+
+function statusLabel(status){
+
+    const labels={
+        draft:["Brouillon","Draft"],
+        issued:["Émis","Issued"],
+        paid:["Payé","Paid"],
+        pending:["En attente","Pending"],
+        cancelled:["Annulé","Cancelled"]
+    };
+
+    return labels[status]
+        ?labels[status][lang==="fr"?0:1]
+        :status;
+
+}
+
+
+function render(){
+
+    const search=$("search").value.toLowerCase();
+
+    const type=$("typeFilter").value;
+
+    const filtered=documents.filter(d=>{
+
+        const text=JSON.stringify(d).toLowerCase();
+
+        return text.includes(search) &&
+            (!type||d.document_type===type);
+
+    });
+
+
+    $("rows").innerHTML="";
+
+
+    if(!filtered.length){
+
+        $("rows").innerHTML=`
+        <tr>
+        <td colspan="6" class="empty">
+        ${tr(
+            "Aucun document trouvé.",
+            "No documents found."
+        )}
+        </td>
+        </tr>`;
+
+    }else{
+
+        filtered.forEach(d=>{
+
+            const trEl=document.createElement("tr");
+
+            trEl.innerHTML=`
+
+            <td>
+                <strong>${escapeHtml(
+                    d.document_number||"—"
+                )}</strong>
+            </td>
+
+            <td>
+                <span class="badge">
+                ${escapeHtml(
+                    typeLabel(d.document_type)
+                )}
+                </span>
+            </td>
+
+            <td>
+                ${escapeHtml(
+                    d.customer||d.project||"—"
+                )}
+            </td>
+
+            <td>
+                ${escapeHtml(
+                    d.document_date||"—"
+                )}
+            </td>
+
+            <td>
+                ${escapeHtml(
+                    statusLabel(d.status)
+                )}
+            </td>
+
+            <td>
+
+                <div class="row-actions">
+
+                    <button
+                    class="view"
+                    onclick='viewDocument(${JSON.stringify(d)})'>
+                    ${tr("👁️ Voir","👁️ View")}
+                    </button>
+
+                    <button
+                    class="print"
+                    onclick='printDocument(${JSON.stringify(d)})'>
+                    ${tr("🖨️ Imprimer","🖨️ Print")}
+                    </button>
+
+                    <button
+                    class="delete"
+                    onclick="deleteDocument('${d.id}')">
+                    ${tr("🗑️ Supprimer","🗑️ Delete")}
+                    </button>
+
+                </div>
+
+            </td>
+            `;
+
+            $("rows").appendChild(trEl);
+
+        });
+
+    }
+
+
+    $("total").textContent=documents.length;
+
+    $("invoices").textContent=
+        documents.filter(x=>x.document_type==="invoice").length;
+
+    $("receipts").textContent=
+        documents.filter(x=>x.document_type==="receipt").length;
+
+    $("quotes").textContent=
+        documents.filter(x=>x.document_type==="quote").length;
+
+    $("contracts").textContent=
+        documents.filter(x=>x.document_type==="contract").length;
+
+}
+
+
+function escapeHtml(value){
+
+    return String(value??"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+function openModal(){
+
+    $("modal").style.display="flex";
+
+    $("docDate").value=
+        new Date().toISOString().slice(0,10);
+
+}
+
+
+function closeModal(){
+
+    $("modal").style.display="none";
+
+}
+
+
+async function saveDocument(){
+
+    const data={
+
+        document_type:$("docType").value,
+
+        document_number:$("docNumber").value.trim(),
+
+        customer:$("docCustomer").value.trim(),
+
+        project:$("docProject").value.trim(),
+
+        document_date:$("docDate").value,
+
+        amount:Number(
+            $("docAmount").value||0
+        ),
+
+        status:$("docStatus").value,
+
+        description:$("docDescription").value.trim()
+
+    };
+
+
+    if(!data.document_number){
+
+        toast(
+            tr(
+                "Veuillez entrer un numéro ou une référence.",
+                "Please enter a number or reference."
+            )
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        await api(
+            "/api/documents",
+            {
+                method:"POST",
+                body:JSON.stringify(data)
+            }
+        );
+
+        toast(
+            tr(
+                "Document enregistré avec succès.",
+                "Document saved successfully."
+            )
+        );
+
+        closeModal();
+
+        await loadDocuments();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+
+function viewDocument(document){
+
+    currentDocument=document;
+
+    $("preview").innerHTML=`
+
+    <div class="document-preview">
+
+        <h2>
+        TASSIMO BTP CONSTRUCTION SARL
+        </h2>
+
+        <p>
+        Together, let us build excellence.
+        </p>
+
+        <hr><br>
+
+        <p>
+        <strong>${tr(
+            "Type",
+            "Type"
+        )}:</strong>
+        ${escapeHtml(typeLabel(
+            document.document_type
+        ))}
+        </p>
+
+        <p>
+        <strong>${tr(
+            "Référence",
+            "Reference"
+        )}:</strong>
+        ${escapeHtml(
+            document.document_number||"—"
+        )}
+        </p>
+
+        <p>
+        <strong>${tr(
+            "Client",
+            "Customer"
+        )}:</strong>
+        ${escapeHtml(
+            document.customer||"—"
+        )}
+        </p>
+
+        <p>
+        <strong>${tr(
+            "Projet",
+            "Project"
+        )}:</strong>
+        ${escapeHtml(
+            document.project||"—"
+        )}
+        </p>
+
+        <p>
+        <strong>${tr(
+            "Date",
+            "Date"
+        )}:</strong>
+        ${escapeHtml(
+            document.document_date||"—"
+        )}
+        </p>
+
+        <p>
+        <strong>${tr(
+            "Montant",
+            "Amount"
+        )}:</strong>
+        ${Number(
+            document.amount||0
+        ).toLocaleString()} FCFA
+        </p>
+
+        <p>
+        <strong>${tr(
+            "Statut",
+            "Status"
+        )}:</strong>
+        ${escapeHtml(
+            statusLabel(document.status)
+        )}
+        </p>
+
+        <br>
+
+        <p>
+        <strong>${tr(
+            "Description",
+            "Description"
+        )}</strong>
+        </p>
+
+        <p>
+        ${escapeHtml(
+            document.description||""
+        )}
+        </p>
+
+        <br><br>
+
+        <p>
+        TASSIMO BTP CONSTRUCTION SARL
+        </p>
+
+    </div>
+    `;
+
+    $("viewModal").style.display="flex";
+
+}
+
+
+function closeView(){
+
+    $("viewModal").style.display="none";
+
+    currentDocument=null;
+
+}
+
+
+function printCurrent(){
+
+    if(currentDocument){
+
+        printDocument(currentDocument);
+
+    }
+
+}
+
+
+function printDocument(document){
+
+    const printWindow=window.open(
+        "",
+        "_blank"
+    );
+
+    if(!printWindow){
+
+        toast(
+            tr(
+                "Autorisez les fenêtres pop-up pour imprimer.",
+                "Allow pop-ups to print."
+            )
+        );
+
+        return;
+
+    }
+
+
+    const title=typeLabel(
+        document.document_type
+    );
+
+
+    printWindow.document.write(`
+
+    <!DOCTYPE html>
+
+    <html lang="${lang}">
+
+    <head>
+
+    <meta charset="UTF-8">
+
+    <title>
+    ${escapeHtml(title)}
+    -
+    ${escapeHtml(document.document_number||"")}
+    </title>
+
+    <style>
+
+    body{
+        font-family:Arial,sans-serif;
+        padding:40px;
+        color:#111;
+    }
+
+    .header{
+        text-align:center;
+        border-bottom:2px solid #111;
+        padding-bottom:20px;
+        margin-bottom:30px;
+    }
+
+    h1{
+        margin:0;
+    }
+
+    .meta{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:15px;
+        margin-bottom:30px;
+    }
+
+    .box{
+        border:1px solid #ccc;
+        padding:15px;
+    }
+
+    .amount{
+        font-size:25px;
+        font-weight:bold;
+        margin:25px 0;
+    }
+
+    .description{
+        border:1px solid #ddd;
+        padding:20px;
+        min-height:120px;
+    }
+
+    .footer{
+        margin-top:70px;
+        text-align:center;
+        border-top:1px solid #ccc;
+        padding-top:15px;
+    }
+
+    @media print{
+        body{
+            padding:15px;
+        }
+    }
+
+    </style>
+
+    </head>
+
+    <body>
+
+    <div class="header">
+
+        <h1>
+        TASSIMO BTP CONSTRUCTION SARL
+        </h1>
+
+        <p>
+        Together, let us build excellence.
+        </p>
+
+        <h2>
+        ${escapeHtml(title)}
+        </h2>
+
+    </div>
+
+
+    <div class="meta">
+
+        <div class="box">
+
+            <strong>
+            ${tr("Référence","Reference")}
+            </strong>
+
+            <br>
+
+            ${escapeHtml(
+                document.document_number||"—"
+            )}
+
+        </div>
+
+
+        <div class="box">
+
+            <strong>
+            ${tr("Date","Date")}
+            </strong>
+
+            <br>
+
+            ${escapeHtml(
+                document.document_date||"—"
+            )}
+
+        </div>
+
+
+        <div class="box">
+
+            <strong>
+            ${tr("Client","Customer")}
+            </strong>
+
+            <br>
+
+            ${escapeHtml(
+                document.customer||"—"
+            )}
+
+        </div>
+
+
+        <div class="box">
+
+            <strong>
+            ${tr("Projet","Project")}
+            </strong>
+
+            <br>
+
+            ${escapeHtml(
+                document.project||"—"
+            )}
+
+        </div>
+
+    </div>
+
+
+    <div class="amount">
+
+        ${tr("Montant","Amount")}:
+
+        ${Number(
+            document.amount||0
+        ).toLocaleString()} FCFA
+
+    </div>
+
+
+    <div class="description">
+
+        <strong>
+        ${tr("Description / Détails","Description / Details")}
+        </strong>
+
+        <br><br>
+
+        ${escapeHtml(
+            document.description||""
+        )}
+
+    </div>
+
+
+    <div class="footer">
+
+        <p>
+        TASSIMO BTP CONSTRUCTION SARL
+        </p>
+
+        <p>
+        ${tr(
+            "Document généré par la plateforme de gestion TASSIMO BTP.",
+            "Document generated by the TASSIMO BTP management platform."
+        )}
+        </p>
+
+    </div>
+
+
+    <script>
+
+    window.onload=function(){
+
+        window.print();
+
+    };
+
+    <\/script>
+
+    </body>
+
+    </html>
+
+    `);
+
+    printWindow.document.close();
+
+}
+
+
+async function deleteDocument(id){
+
+    if(!confirm(
+        tr(
+            "Voulez-vous vraiment supprimer ce document ?",
+            "Do you really want to delete this document?"
+        )
+    )){
+        return;
+    }
+
+
+    try{
+
+        await api(
+            "/api/documents?id="+
+            encodeURIComponent(id),
+            {
+                method:"DELETE"
+            }
+        );
+
+        toast(
+            tr(
+                "Document supprimé.",
+                "Document deleted."
+            )
+        );
+
+        await loadDocuments();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+
+applyLanguage();
+
+loadDocuments();
+
+</script>
+
+</body>
+
+</html>
