@@ -2107,6 +2107,10 @@ function openPage(p){
   window.location.href="/documents.html";
   return;
 }
+  if(p==="training"){
+  window.location.href="/professional-training.html";
+  return;
+}
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
