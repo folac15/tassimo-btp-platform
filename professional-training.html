@@ -1,0 +1,2625 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Formation Professionnelle - TASSIMO BTP CONSTRUCTION SARL</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#172033;
+}
+
+.header{
+    background:#172033;
+    color:white;
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.brand h1{
+    font-size:21px;
+}
+
+.brand p{
+    margin-top:5px;
+    opacity:.8;
+    font-size:13px;
+}
+
+.header-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+button{
+    border:none;
+    border-radius:8px;
+    padding:10px 14px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.primary{
+    background:#2563eb;
+    color:white;
+}
+
+.success{
+    background:#16a34a;
+    color:white;
+}
+
+.warning{
+    background:#f59e0b;
+    color:white;
+}
+
+.danger{
+    background:#dc2626;
+    color:white;
+}
+
+.secondary{
+    background:#e5e7eb;
+    color:#172033;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:20px;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.topbar h2{
+    font-size:24px;
+}
+
+.topbar p{
+    color:#667085;
+    margin-top:5px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.stat{
+    background:white;
+    border-radius:14px;
+    padding:18px;
+    box-shadow:0 3px 12px rgba(0,0,0,.06);
+}
+
+.stat .icon{
+    font-size:25px;
+}
+
+.stat h3{
+    margin-top:8px;
+    font-size:14px;
+    color:#667085;
+}
+
+.stat strong{
+    display:block;
+    margin-top:8px;
+    font-size:25px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 3px 12px rgba(0,0,0,.06);
+    margin-bottom:20px;
+}
+
+.card h3{
+    margin-bottom:15px;
+}
+
+.actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.form-group.full{
+    grid-column:1/-1;
+}
+
+label{
+    font-size:13px;
+    font-weight:bold;
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    border:1px solid #d7dce5;
+    border-radius:8px;
+    padding:11px;
+    background:white;
+    outline:none;
+}
+
+textarea{
+    min-height:100px;
+    resize:vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+    border-color:#2563eb;
+}
+
+.search-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+    flex-wrap:wrap;
+}
+
+.search-row input,
+.search-row select{
+    flex:1;
+    min-width:180px;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:850px;
+}
+
+th,
+td{
+    padding:12px;
+    border-bottom:1px solid #edf0f4;
+    text-align:left;
+    font-size:13px;
+}
+
+th{
+    background:#f8fafc;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.badge-active{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.badge-pending{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+.badge-completed{
+    background:#dbeafe;
+    color:#1e40af;
+}
+
+.badge-cancelled{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.progress{
+    background:#e5e7eb;
+    height:8px;
+    border-radius:10px;
+    overflow:hidden;
+    min-width:100px;
+}
+
+.progress-bar{
+    height:100%;
+    background:#2563eb;
+}
+
+.empty{
+    text-align:center;
+    padding:30px;
+    color:#667085;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+    z-index:1000;
+}
+
+.modal.open{
+    display:flex;
+}
+
+.modal-box{
+    background:white;
+    width:min(850px,100%);
+    max-height:92vh;
+    overflow-y:auto;
+    border-radius:15px;
+    padding:22px;
+}
+
+.modal-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.close{
+    background:#f1f5f9;
+    font-size:20px;
+    padding:6px 11px;
+}
+
+.ai-output{
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:15px;
+    white-space:pre-wrap;
+    line-height:1.6;
+    min-height:100px;
+}
+
+.certificate{
+    border:2px solid #172033;
+    padding:30px;
+    text-align:center;
+    margin-top:15px;
+    background:#fff;
+}
+
+.certificate h1{
+    font-size:30px;
+    margin-bottom:15px;
+}
+
+.certificate .name{
+    font-size:25px;
+    font-weight:bold;
+    margin:15px 0;
+}
+
+.footer-note{
+    margin-top:20px;
+    color:#667085;
+    font-size:12px;
+    text-align:center;
+}
+
+@media(max-width:1000px){
+    .stats{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+
+@media(max-width:700px){
+
+    .container{
+        padding:12px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .form-group.full{
+        grid-column:auto;
+    }
+
+    .topbar h2{
+        font-size:20px;
+    }
+
+    .header{
+        align-items:flex-start;
+    }
+
+    .header-actions{
+        width:100%;
+    }
+
+    .header-actions button{
+        flex:1;
+    }
+
+}
+
+@media(max-width:430px){
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .actions button{
+        width:100%;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="brand">
+        <h1>TASSIMO BTP CONSTRUCTION SARL</h1>
+        <p>Formation Professionnelle / Professional Training</p>
+    </div>
+
+    <div class="header-actions">
+        <button class="secondary" onclick="goDashboard()">
+            📊 Tableau de bord
+        </button>
+
+        <button class="secondary" onclick="toggleLanguage()">
+            🇫🇷 FR / 🇬🇧 EN
+        </button>
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <div class="topbar">
+
+        <div>
+            <h2 data-fr="🎓 Formation Professionnelle"
+                data-en="🎓 Professional Training">
+                🎓 Formation Professionnelle
+            </h2>
+
+            <p data-fr="Gérez les apprenants, formations, inscriptions, présences, évaluations et certificats."
+               data-en="Manage trainees, training programs, enrollments, attendance, assessments and certificates.">
+                Gérez les apprenants, formations, inscriptions, présences, évaluations et certificats.
+            </p>
+        </div>
+
+        <button class="primary" onclick="openTrainingModal()">
+            ➕ Nouvelle formation
+        </button>
+
+    </div>
+
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+        <div class="stat">
+            <div class="icon">👨‍🎓</div>
+            <h3 data-fr="Apprenants"
+                data-en="Trainees">
+                Apprenants
+            </h3>
+            <strong id="statTrainees">0</strong>
+        </div>
+
+        <div class="stat">
+            <div class="icon">📚</div>
+            <h3 data-fr="Formations"
+                data-en="Training Programs">
+                Formations
+            </h3>
+            <strong id="statPrograms">0</strong>
+        </div>
+
+        <div class="stat">
+            <div class="icon">📝</div>
+            <h3 data-fr="Inscriptions"
+                data-en="Enrollments">
+                Inscriptions
+            </h3>
+            <strong id="statEnrollments">0</strong>
+        </div>
+
+        <div class="stat">
+            <div class="icon">🏆</div>
+            <h3 data-fr="Certificats"
+                data-en="Certificates">
+                Certificats
+            </h3>
+            <strong id="statCertificates">0</strong>
+        </div>
+
+        <div class="stat">
+            <div class="icon">💰</div>
+            <h3 data-fr="Revenus formation"
+                data-en="Training Revenue">
+                Revenus formation
+            </h3>
+            <strong id="statRevenue">0 FCFA</strong>
+        </div>
+
+    </section>
+
+
+    <div class="grid">
+
+        <!-- QUICK ACTIONS -->
+
+        <section class="card">
+
+            <h3 data-fr="⚡ Actions rapides"
+                data-en="⚡ Quick Actions">
+                ⚡ Actions rapides
+            </h3>
+
+            <div class="actions">
+
+                <button class="primary" onclick="openTraineeModal()">
+                    👨‍🎓 Ajouter apprenant
+                </button>
+
+                <button class="success" onclick="openEnrollmentModal()">
+                    📝 Nouvelle inscription
+                </button>
+
+                <button class="warning" onclick="openAttendanceModal()">
+                    📅 Présence
+                </button>
+
+                <button class="secondary" onclick="openCertificateModal()">
+                    🏆 Certificat
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- AI -->
+
+        <section class="card">
+
+            <h3 data-fr="🤖 Assistant IA Formation"
+                data-en="🤖 Training AI Assistant">
+                🤖 Assistant IA Formation
+            </h3>
+
+            <textarea id="aiPrompt"
+                placeholder="Posez une question sur vos formations..."
+                data-fr-placeholder="Posez une question sur vos formations..."
+                data-en-placeholder="Ask a question about your training programs..."></textarea>
+
+            <br><br>
+
+            <button class="primary" onclick="runAI()">
+                🤖 Analyser avec l'IA
+            </button>
+
+            <br><br>
+
+            <div id="aiOutput" class="ai-output">
+                L'analyse IA apparaîtra ici.
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- TRAINING PROGRAMS -->
+
+    <section class="card">
+
+        <div class="topbar">
+
+            <div>
+                <h3 data-fr="📚 Programmes de formation"
+                    data-en="📚 Training Programs">
+                    📚 Programmes de formation
+                </h3>
+            </div>
+
+            <button class="primary" onclick="openTrainingModal()">
+                ➕ Ajouter
+            </button>
+
+        </div>
+
+        <div class="search-row">
+
+            <input id="programSearch"
+                   oninput="renderPrograms()"
+                   placeholder="Rechercher une formation..."
+                   data-fr-placeholder="Rechercher une formation..."
+                   data-en-placeholder="Search training programs...">
+
+            <select id="programStatus" onchange="renderPrograms()">
+                <option value="" data-fr="Tous les statuts" data-en="All statuses">
+                    Tous les statuts
+                </option>
+                <option value="active" data-fr="Active" data-en="Active">
+                    Active
+                </option>
+                <option value="completed" data-fr="Terminée" data-en="Completed">
+                    Terminée
+                </option>
+                <option value="cancelled" data-fr="Annulée" data-en="Cancelled">
+                    Annulée
+                </option>
+            </select>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th data-fr="Formation" data-en="Training">
+                            Formation
+                        </th>
+
+                        <th data-fr="Catégorie" data-en="Category">
+                            Catégorie
+                        </th>
+
+                        <th data-fr="Durée" data-en="Duration">
+                            Durée
+                        </th>
+
+                        <th data-fr="Frais" data-en="Fee">
+                            Frais
+                        </th>
+
+                        <th data-fr="Places" data-en="Capacity">
+                            Places
+                        </th>
+
+                        <th data-fr="Statut" data-en="Status">
+                            Statut
+                        </th>
+
+                        <th data-fr="Actions" data-en="Actions">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody id="programTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- TRAINEES -->
+
+    <section class="card">
+
+        <div class="topbar">
+
+            <h3 data-fr="👨‍🎓 Apprenants"
+                data-en="👨‍🎓 Trainees">
+                👨‍🎓 Apprenants
+            </h3>
+
+            <button class="primary" onclick="openTraineeModal()">
+                ➕ Ajouter
+            </button>
+
+        </div>
+
+        <div class="search-row">
+
+            <input id="traineeSearch"
+                   oninput="renderTrainees()"
+                   placeholder="Rechercher un apprenant..."
+                   data-fr-placeholder="Rechercher un apprenant..."
+                   data-en-placeholder="Search trainee...">
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th data-fr="Nom" data-en="Name">Nom</th>
+                        <th data-fr="Téléphone" data-en="Phone">Téléphone</th>
+                        <th data-fr="Email" data-en="Email">Email</th>
+                        <th data-fr="Entreprise" data-en="Company">Entreprise</th>
+                        <th data-fr="Formation" data-en="Training">Formation</th>
+                        <th data-fr="Statut" data-en="Status">Statut</th>
+                        <th data-fr="Actions" data-en="Actions">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="traineeTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- ENROLLMENTS -->
+
+    <section class="card">
+
+        <div class="topbar">
+
+            <h3 data-fr="📝 Inscriptions"
+                data-en="📝 Enrollments">
+                📝 Inscriptions
+            </h3>
+
+            <button class="success" onclick="openEnrollmentModal()">
+                ➕ Inscription
+            </button>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th data-fr="Apprenant" data-en="Trainee">Apprenant</th>
+                        <th data-fr="Formation" data-en="Training">Formation</th>
+                        <th data-fr="Date début" data-en="Start Date">Date début</th>
+                        <th data-fr="Date fin" data-en="End Date">Date fin</th>
+                        <th data-fr="Frais" data-en="Fee">Frais</th>
+                        <th data-fr="Paiement" data-en="Payment">Paiement</th>
+                        <th data-fr="Progression" data-en="Progress">Progression</th>
+                        <th data-fr="Actions" data-en="Actions">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="enrollmentTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- CERTIFICATES -->
+
+    <section class="card">
+
+        <div class="topbar">
+
+            <h3 data-fr="🏆 Certificats"
+                data-en="🏆 Certificates">
+                🏆 Certificats
+            </h3>
+
+            <button class="secondary" onclick="openCertificateModal()">
+                ➕ Créer certificat
+            </button>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th data-fr="Numéro" data-en="Number">Numéro</th>
+                        <th data-fr="Apprenant" data-en="Trainee">Apprenant</th>
+                        <th data-fr="Formation" data-en="Training">Formation</th>
+                        <th data-fr="Date" data-en="Date">Date</th>
+                        <th data-fr="Résultat" data-en="Result">Résultat</th>
+                        <th data-fr="Actions" data-en="Actions">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="certificateTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <div class="footer-note">
+        TASSIMO BTP CONSTRUCTION SARL —
+        Together, let us build excellence.
+    </div>
+
+</main>
+
+
+<!-- TRAINING MODAL -->
+
+<div class="modal" id="trainingModal">
+
+<div class="modal-box">
+
+<div class="modal-head">
+
+<h3 data-fr="📚 Nouvelle formation"
+    data-en="📚 New Training Program">
+📚 Nouvelle formation
+</h3>
+
+<button class="close" onclick="closeModal('trainingModal')">×</button>
+
+</div>
+
+<div class="form-grid">
+
+<div class="form-group">
+<label data-fr="Nom de la formation" data-en="Training name">
+Nom de la formation
+</label>
+<input id="trainingName">
+</div>
+
+<div class="form-group">
+<label data-fr="Catégorie" data-en="Category">
+Catégorie
+</label>
+<select id="trainingCategory">
+<option value="construction">BTP / Construction</option>
+<option value="civil">Génie civil / Civil Engineering</option>
+<option value="safety">Sécurité chantier / Site Safety</option>
+<option value="drawing">Dessin technique / Technical Drawing</option>
+<option value="autocad">AutoCAD</option>
+<option value="management">Gestion de projet / Project Management</option>
+<option value="other">Autre / Other</option>
+</select>
+</div>
+
+<div class="form-group">
+<label data-fr="Durée" data-en="Duration">
+Durée
+</label>
+<input id="trainingDuration"
+placeholder="Ex: 3 mois / 3 months">
+</div>
+
+<div class="form-group">
+<label data-fr="Frais de formation (FCFA)" data-en="Training fee (FCFA)">
+Frais de formation (FCFA)
+</label>
+<input id="trainingFee" type="number">
+</div>
+
+<div class="form-group">
+<label data-fr="Nombre de places" data-en="Capacity">
+Nombre de places
+</label>
+<input id="trainingCapacity" type="number">
+</div>
+
+<div class="form-group">
+<label data-fr="Statut" data-en="Status">
+Statut
+</label>
+<select id="trainingStatus">
+<option value="active">Active / Active</option>
+<option value="completed">Terminée / Completed</option>
+<option value="cancelled">Annulée / Cancelled</option>
+</select>
+</div>
+
+<div class="form-group full">
+<label data-fr="Description" data-en="Description">
+Description
+</label>
+<textarea id="trainingDescription"></textarea>
+</div>
+
+</div>
+
+<br>
+
+<div class="actions">
+
+<button class="primary" onclick="saveTraining()">
+💾 Enregistrer / Save
+</button>
+
+<button class="secondary" onclick="closeModal('trainingModal')">
+Annuler / Cancel
+</button>
+
+</div>
+
+</div>
+</div>
+
+
+<!-- TRAINEE MODAL -->
+
+<div class="modal" id="traineeModal">
+
+<div class="modal-box">
+
+<div class="modal-head">
+
+<h3 data-fr="👨‍🎓 Ajouter un apprenant"
+    data-en="👨‍🎓 Add Trainee">
+👨‍🎓 Ajouter un apprenant
+</h3>
+
+<button class="close" onclick="closeModal('traineeModal')">×</button>
+
+</div>
+
+<div class="form-grid">
+
+<div class="form-group">
+<label data-fr="Nom complet" data-en="Full name">
+Nom complet
+</label>
+<input id="traineeName">
+</div>
+
+<div class="form-group">
+<label data-fr="Téléphone" data-en="Phone">
+Téléphone
+</label>
+<input id="traineePhone">
+</div>
+
+<div class="form-group">
+<label data-fr="Email" data-en="Email">
+Email
+</label>
+<input id="traineeEmail" type="email">
+</div>
+
+<div class="form-group">
+<label data-fr="Entreprise / Organisation"
+       data-en="Company / Organization">
+Entreprise / Organisation
+</label>
+<input id="traineeCompany">
+</div>
+
+<div class="form-group">
+<label data-fr="Formation"
+       data-en="Training">
+Formation
+</label>
+<select id="traineeProgram"></select>
+</div>
+
+<div class="form-group">
+<label data-fr="Statut"
+       data-en="Status">
+Statut
+</label>
+<select id="traineeStatus">
+<option value="active">Actif / Active</option>
+<option value="completed">Terminé / Completed</option>
+<option value="inactive">Inactif / Inactive</option>
+</select>
+</div>
+
+<div class="form-group full">
+<label data-fr="Adresse"
+       data-en="Address">
+Adresse
+</label>
+<input id="traineeAddress">
+</div>
+
+</div>
+
+<br>
+
+<div class="actions">
+
+<button class="primary" onclick="saveTrainee()">
+💾 Enregistrer / Save
+</button>
+
+<button class="secondary" onclick="closeModal('traineeModal')">
+Annuler / Cancel
+</button>
+
+</div>
+
+</div>
+</div>
+
+
+<!-- ENROLLMENT MODAL -->
+
+<div class="modal" id="enrollmentModal">
+
+<div class="modal-box">
+
+<div class="modal-head">
+
+<h3 data-fr="📝 Nouvelle inscription"
+    data-en="📝 New Enrollment">
+📝 Nouvelle inscription
+</h3>
+
+<button class="close" onclick="closeModal('enrollmentModal')">×</button>
+
+</div>
+
+<div class="form-grid">
+
+<div class="form-group">
+<label data-fr="Apprenant" data-en="Trainee">
+Apprenant
+</label>
+<select id="enrollTrainee"></select>
+</div>
+
+<div class="form-group">
+<label data-fr="Formation" data-en="Training">
+Formation
+</label>
+<select id="enrollProgram"></select>
+</div>
+
+<div class="form-group">
+<label data-fr="Date de début" data-en="Start date">
+Date de début
+</label>
+<input id="enrollStart" type="date">
+</div>
+
+<div class="form-group">
+<label data-fr="Date de fin" data-en="End date">
+Date de fin
+</label>
+<input id="enrollEnd" type="date">
+</div>
+
+<div class="form-group">
+<label data-fr="Frais" data-en="Fee">
+Frais
+</label>
+<input id="enrollFee" type="number">
+</div>
+
+<div class="form-group">
+<label data-fr="Paiement" data-en="Payment">
+Paiement
+</label>
+<select id="enrollPayment">
+<option value="pending">En attente / Pending</option>
+<option value="partial">Partiel / Partial</option>
+<option value="paid">Payé / Paid</option>
+</select>
+</div>
+
+<div class="form-group">
+<label data-fr="Progression (%)" data-en="Progress (%)">
+Progression (%)
+</label>
+<input id="enrollProgress" type="number" min="0" max="100" value="0">
+</div>
+
+</div>
+
+<br>
+
+<div class="actions">
+
+<button class="success" onclick="saveEnrollment()">
+💾 Enregistrer / Save
+</button>
+
+<button class="secondary" onclick="closeModal('enrollmentModal')">
+Annuler / Cancel
+</button>
+
+</div>
+
+</div>
+</div>
+
+
+<!-- ATTENDANCE MODAL -->
+
+<div class="modal" id="attendanceModal">
+
+<div class="modal-box">
+
+<div class="modal-head">
+
+<h3 data-fr="📅 Enregistrer une présence"
+    data-en="📅 Record Attendance">
+📅 Enregistrer une présence
+</h3>
+
+<button class="close" onclick="closeModal('attendanceModal')">×</button>
+
+</div>
+
+<div class="form-grid">
+
+<div class="form-group">
+<label data-fr="Apprenant" data-en="Trainee">
+Apprenant
+</label>
+<select id="attendanceTrainee"></select>
+</div>
+
+<div class="form-group">
+<label data-fr="Date" data-en="Date">
+Date
+</label>
+<input id="attendanceDate" type="date">
+</div>
+
+<div class="form-group">
+<label data-fr="Présence" data-en="Attendance">
+Présence
+</label>
+<select id="attendanceStatus">
+<option value="present">Présent / Present</option>
+<option value="absent">Absent / Absent</option>
+<option value="late">En retard / Late</option>
+</select>
+</div>
+
+<div class="form-group full">
+<label data-fr="Note" data-en="Note">
+Note
+</label>
+<textarea id="attendanceNote"></textarea>
+</div>
+
+</div>
+
+<br>
+
+<button class="primary" onclick="saveAttendance()">
+💾 Enregistrer / Save
+</button>
+
+</div>
+</div>
+
+
+<!-- CERTIFICATE MODAL -->
+
+<div class="modal" id="certificateModal">
+
+<div class="modal-box">
+
+<div class="modal-head">
+
+<h3 data-fr="🏆 Créer un certificat"
+    data-en="🏆 Create Certificate">
+🏆 Créer un certificat
+</h3>
+
+<button class="close" onclick="closeModal('certificateModal')">×</button>
+
+</div>
+
+<div class="form-grid">
+
+<div class="form-group">
+<label data-fr="Apprenant" data-en="Trainee">
+Apprenant
+</label>
+<select id="certificateTrainee"></select>
+</div>
+
+<div class="form-group">
+<label data-fr="Formation" data-en="Training">
+Formation
+</label>
+<select id="certificateProgram"></select>
+</div>
+
+<div class="form-group">
+<label data-fr="Numéro du certificat"
+       data-en="Certificate number">
+Numéro du certificat
+</label>
+<input id="certificateNumber">
+</div>
+
+<div class="form-group">
+<label data-fr="Date" data-en="Date">
+Date
+</label>
+<input id="certificateDate" type="date">
+</div>
+
+<div class="form-group">
+<label data-fr="Résultat"
+       data-en="Result">
+Résultat
+</label>
+<input id="certificateResult"
+       placeholder="Ex: Excellent / Excellent">
+</div>
+
+</div>
+
+<br>
+
+<button class="success" onclick="saveCertificate()">
+🏆 Créer / Create
+</button>
+
+</div>
+</div>
+
+
+<script>
+
+let lang = localStorage.getItem("lang") || "fr";
+
+let programs = [];
+let trainees = [];
+let enrollments = [];
+let certificates = [];
+
+
+function $(id){
+    return document.getElementById(id);
+}
+
+
+function tr(fr,en){
+    return lang === "fr" ? fr : en;
+}
+
+
+function toggleLanguage(){
+
+    lang = lang === "fr" ? "en" : "fr";
+
+    localStorage.setItem("lang",lang);
+
+    applyLanguage();
+
+}
+
+
+function applyLanguage(){
+
+    document.documentElement.lang = lang;
+
+    document.querySelectorAll("[data-fr]").forEach(el=>{
+
+        el.textContent =
+            lang === "fr"
+            ? el.getAttribute("data-fr")
+            : el.getAttribute("data-en");
+
+    });
+
+
+    document.querySelectorAll("[data-fr-placeholder]").forEach(el=>{
+
+        el.placeholder =
+            lang === "fr"
+            ? el.getAttribute("data-fr-placeholder")
+            : el.getAttribute("data-en-placeholder");
+
+    });
+
+}
+
+
+async function api(url,options={}){
+
+    options.headers = {
+        ...(options.headers || {}),
+        "Content-Type":"application/json",
+        "X-Language":lang
+    };
+
+    const response = await fetch(url,options);
+
+    if(response.status === 401){
+
+        window.location.href="/login";
+        return null;
+
+    }
+
+    let data={};
+
+    try{
+        data=await response.json();
+    }catch(e){
+        data={};
+    }
+
+    if(!response.ok){
+
+        throw new Error(
+            data.error ||
+            tr("Une erreur est survenue.","An error occurred.")
+        );
+
+    }
+
+    return data;
+
+}
+
+
+function goDashboard(){
+
+    window.location.href="/";
+
+}
+
+
+function closeModal(id){
+
+    $(id).classList.remove("open");
+
+}
+
+
+function openTrainingModal(){
+
+    $("trainingName").value="";
+    $("trainingDuration").value="";
+    $("trainingFee").value="";
+    $("trainingCapacity").value="";
+    $("trainingDescription").value="";
+
+    $("trainingModal").classList.add("open");
+
+}
+
+
+function openTraineeModal(){
+
+    populateProgramSelect("traineeProgram");
+
+    $("traineeName").value="";
+    $("traineePhone").value="";
+    $("traineeEmail").value="";
+    $("traineeCompany").value="";
+    $("traineeAddress").value="";
+
+    $("traineeModal").classList.add("open");
+
+}
+
+
+function openEnrollmentModal(){
+
+    populateTraineeSelect("enrollTrainee");
+    populateProgramSelect("enrollProgram");
+
+    $("enrollStart").value=new Date().toISOString().slice(0,10);
+    $("enrollEnd").value="";
+    $("enrollFee").value="";
+    $("enrollProgress").value=0;
+
+    $("enrollmentModal").classList.add("open");
+
+}
+
+
+function openAttendanceModal(){
+
+    populateTraineeSelect("attendanceTrainee");
+
+    $("attendanceDate").value=
+        new Date().toISOString().slice(0,10);
+
+    $("attendanceNote").value="";
+
+    $("attendanceModal").classList.add("open");
+
+}
+
+
+function openCertificateModal(){
+
+    populateTraineeSelect("certificateTrainee");
+    populateProgramSelect("certificateProgram");
+
+    $("certificateNumber").value=
+        "CERT-"+Date.now().toString().slice(-8);
+
+    $("certificateDate").value=
+        new Date().toISOString().slice(0,10);
+
+    $("certificateResult").value="";
+
+    $("certificateModal").classList.add("open");
+
+}
+
+
+async function loadAll(){
+
+    try{
+
+        const p = await api("/api/training-programs");
+
+        programs = p?.data || p?.programs || [];
+
+    }catch(e){
+
+        programs=[];
+
+    }
+
+
+    try{
+
+        const t = await api("/api/training-trainees");
+
+        trainees = t?.data || t?.trainees || [];
+
+    }catch(e){
+
+        trainees=[];
+
+    }
+
+
+    try{
+
+        const e = await api("/api/training-enrollments");
+
+        enrollments = e?.data || e?.enrollments || [];
+
+    }catch(e){
+
+        enrollments=[];
+
+    }
+
+
+    try{
+
+        const c = await api("/api/training-certificates");
+
+        certificates = c?.data || c?.certificates || [];
+
+    }catch(e){
+
+        certificates=[];
+
+    }
+
+
+    renderAll();
+
+}
+
+
+function renderAll(){
+
+    renderPrograms();
+    renderTrainees();
+    renderEnrollments();
+    renderCertificates();
+    updateStats();
+
+    populateProgramSelect("traineeProgram");
+    populateProgramSelect("enrollProgram");
+    populateProgramSelect("certificateProgram");
+
+    populateTraineeSelect("enrollTrainee");
+    populateTraineeSelect("attendanceTrainee");
+    populateTraineeSelect("certificateTrainee");
+
+}
+
+
+function updateStats(){
+
+    $("statTrainees").textContent=trainees.length;
+
+    $("statPrograms").textContent=programs.length;
+
+    $("statEnrollments").textContent=enrollments.length;
+
+    $("statCertificates").textContent=certificates.length;
+
+    const revenue=enrollments.reduce(
+        (sum,x)=>sum+Number(x.fee||x.amount||0),
+        0
+    );
+
+    $("statRevenue").textContent=
+        revenue.toLocaleString()+" FCFA";
+
+}
+
+
+function renderPrograms(){
+
+    const search=
+        ($("programSearch").value||"").toLowerCase();
+
+    const status=
+        $("programStatus").value;
+
+    const rows=programs.filter(x=>{
+
+        const name=
+            String(
+                x.name ||
+                x.program_name ||
+                ""
+            ).toLowerCase();
+
+        return (
+            name.includes(search) &&
+            (!status || x.status===status)
+        );
+
+    });
+
+
+    if(!rows.length){
+
+        $("programTable").innerHTML=`
+        <tr>
+        <td colspan="7" class="empty">
+        ${tr(
+            "Aucune formation trouvée.",
+            "No training program found."
+        )}
+        </td>
+        </tr>`;
+
+        return;
+
+    }
+
+
+    $("programTable").innerHTML=rows.map(x=>{
+
+        const id=x.id;
+
+        const name=
+            x.name ||
+            x.program_name ||
+            "";
+
+        const category=x.category || "";
+
+        const duration=x.duration || "-";
+
+        const fee=Number(x.fee||0);
+
+        const capacity=x.capacity || "-";
+
+        const status=x.status || "active";
+
+        return `
+        <tr>
+
+        <td><strong>${escapeHtml(name)}</strong></td>
+
+        <td>${escapeHtml(category)}</td>
+
+        <td>${escapeHtml(duration)}</td>
+
+        <td>${fee.toLocaleString()} FCFA</td>
+
+        <td>${capacity}</td>
+
+        <td>
+        <span class="badge ${statusClass(status)}">
+        ${statusLabel(status)}
+        </span>
+        </td>
+
+        <td>
+
+        <button class="danger"
+        onclick="deleteRecord('training-programs','${id}')">
+        🗑️
+        </button>
+
+        </td>
+
+        </tr>`;
+
+    }).join("");
+
+}
+
+
+function renderTrainees(){
+
+    const search=
+        ($("traineeSearch").value||"").toLowerCase();
+
+    const rows=trainees.filter(x=>{
+
+        const text=(
+            String(x.name||x.full_name||"")+" "+
+            String(x.phone||"")+" "+
+            String(x.email||"")+" "+
+            String(x.company||"")
+        ).toLowerCase();
+
+        return text.includes(search);
+
+    });
+
+
+    if(!rows.length){
+
+        $("traineeTable").innerHTML=`
+        <tr>
+        <td colspan="7" class="empty">
+        ${tr(
+            "Aucun apprenant trouvé.",
+            "No trainee found."
+        )}
+        </td>
+        </tr>`;
+
+        return;
+
+    }
+
+
+    $("traineeTable").innerHTML=rows.map(x=>{
+
+        const program=programs.find(
+            p=>p.id===x.program_id
+        );
+
+        return `
+        <tr>
+
+        <td>
+        <strong>
+        ${escapeHtml(x.name||x.full_name||"")}
+        </strong>
+        </td>
+
+        <td>${escapeHtml(x.phone||"-")}</td>
+
+        <td>${escapeHtml(x.email||"-")}</td>
+
+        <td>${escapeHtml(x.company||"-")}</td>
+
+        <td>
+        ${escapeHtml(
+            program?.name ||
+            program?.program_name ||
+            "-"
+        )}
+        </td>
+
+        <td>
+        <span class="badge ${statusClass(x.status)}">
+        ${statusLabel(x.status)}
+        </span>
+        </td>
+
+        <td>
+
+        <button class="danger"
+        onclick="deleteRecord('training-trainees','${x.id}')">
+        🗑️
+        </button>
+
+        </td>
+
+        </tr>`;
+
+    }).join("");
+
+}
+
+
+function renderEnrollments(){
+
+    if(!enrollments.length){
+
+        $("enrollmentTable").innerHTML=`
+        <tr>
+        <td colspan="8" class="empty">
+        ${tr(
+            "Aucune inscription trouvée.",
+            "No enrollment found."
+        )}
+        </td>
+        </tr>`;
+
+        return;
+
+    }
+
+
+    $("enrollmentTable").innerHTML=
+    enrollments.map(x=>{
+
+        const trainee=trainees.find(
+            t=>t.id===x.trainee_id
+        );
+
+        const program=programs.find(
+            p=>p.id===x.program_id
+        );
+
+        const progress=
+            Math.min(
+                100,
+                Math.max(
+                    0,
+                    Number(x.progress||0)
+                )
+            );
+
+        return `
+        <tr>
+
+        <td>
+        ${escapeHtml(
+            trainee?.name ||
+            trainee?.full_name ||
+            x.trainee ||
+            "-"
+        )}
+        </td>
+
+        <td>
+        ${escapeHtml(
+            program?.name ||
+            program?.program_name ||
+            x.program ||
+            "-"
+        )}
+        </td>
+
+        <td>${escapeHtml(x.start_date||"-")}</td>
+
+        <td>${escapeHtml(x.end_date||"-")}</td>
+
+        <td>
+        ${Number(x.fee||0).toLocaleString()} FCFA
+        </td>
+
+        <td>
+        ${paymentLabel(x.payment_status)}
+        </td>
+
+        <td>
+
+        <div class="progress">
+        <div class="progress-bar"
+        style="width:${progress}%"></div>
+        </div>
+
+        ${progress}%
+
+        </td>
+
+        <td>
+
+        <button class="danger"
+        onclick="deleteRecord('training-enrollments','${x.id}')">
+        🗑️
+        </button>
+
+        </td>
+
+        </tr>`;
+
+    }).join("");
+
+}
+
+
+function renderCertificates(){
+
+    if(!certificates.length){
+
+        $("certificateTable").innerHTML=`
+        <tr>
+        <td colspan="6" class="empty">
+        ${tr(
+            "Aucun certificat trouvé.",
+            "No certificate found."
+        )}
+        </td>
+        </tr>`;
+
+        return;
+
+    }
+
+
+    $("certificateTable").innerHTML=
+    certificates.map(x=>{
+
+        const trainee=trainees.find(
+            t=>t.id===x.trainee_id
+        );
+
+        const program=programs.find(
+            p=>p.id===x.program_id
+        );
+
+        return `
+        <tr>
+
+        <td>
+        <strong>${escapeHtml(
+            x.certificate_number||x.number||"-"
+        )}</strong>
+        </td>
+
+        <td>
+        ${escapeHtml(
+            trainee?.name ||
+            trainee?.full_name ||
+            x.trainee ||
+            "-"
+        )}
+        </td>
+
+        <td>
+        ${escapeHtml(
+            program?.name ||
+            program?.program_name ||
+            x.program ||
+            "-"
+        )}
+        </td>
+
+        <td>${escapeHtml(x.certificate_date||x.date||"-")}</td>
+
+        <td>${escapeHtml(x.result||"-")}</td>
+
+        <td>
+
+        <button class="primary"
+        onclick="printCertificate('${x.id}')">
+        🖨️
+        </button>
+
+        <button class="danger"
+        onclick="deleteRecord('training-certificates','${x.id}')">
+        🗑️
+        </button>
+
+        </td>
+
+        </tr>`;
+
+    }).join("");
+
+}
+
+
+async function saveTraining(){
+
+    const data={
+
+        name:$("trainingName").value.trim(),
+
+        category:$("trainingCategory").value,
+
+        duration:$("trainingDuration").value.trim(),
+
+        fee:Number($("trainingFee").value||0),
+
+        capacity:Number($("trainingCapacity").value||0),
+
+        status:$("trainingStatus").value,
+
+        description:$("trainingDescription").value.trim()
+
+    };
+
+
+    if(!data.name){
+
+        return alert(
+            tr(
+                "Le nom de la formation est requis.",
+                "Training name is required."
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api("/api/training-programs",{
+            method:"POST",
+            body:JSON.stringify(data)
+        });
+
+        closeModal("trainingModal");
+
+        alert(
+            tr(
+                "Formation enregistrée avec succès.",
+                "Training program saved successfully."
+            )
+        );
+
+        loadAll();
+
+    }catch(e){
+
+        alert(e.message);
+
+    }
+
+}
+
+
+async function saveTrainee(){
+
+    const data={
+
+        name:$("traineeName").value.trim(),
+
+        phone:$("traineePhone").value.trim(),
+
+        email:$("traineeEmail").value.trim(),
+
+        company:$("traineeCompany").value.trim(),
+
+        address:$("traineeAddress").value.trim(),
+
+        program_id:$("traineeProgram").value,
+
+        status:$("traineeStatus").value
+
+    };
+
+
+    if(!data.name){
+
+        return alert(
+            tr(
+                "Le nom de l'apprenant est requis.",
+                "Trainee name is required."
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api("/api/training-trainees",{
+            method:"POST",
+            body:JSON.stringify(data)
+        });
+
+        closeModal("traineeModal");
+
+        alert(
+            tr(
+                "Apprenant enregistré avec succès.",
+                "Trainee saved successfully."
+            )
+        );
+
+        loadAll();
+
+    }catch(e){
+
+        alert(e.message);
+
+    }
+
+}
+
+
+async function saveEnrollment(){
+
+    const data={
+
+        trainee_id:$("enrollTrainee").value,
+
+        program_id:$("enrollProgram").value,
+
+        start_date:$("enrollStart").value,
+
+        end_date:$("enrollEnd").value,
+
+        fee:Number($("enrollFee").value||0),
+
+        payment_status:$("enrollPayment").value,
+
+        progress:Number($("enrollProgress").value||0)
+
+    };
+
+
+    if(!data.trainee_id || !data.program_id){
+
+        return alert(
+            tr(
+                "L'apprenant et la formation sont requis.",
+                "Trainee and training program are required."
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api("/api/training-enrollments",{
+            method:"POST",
+            body:JSON.stringify(data)
+        });
+
+        closeModal("enrollmentModal");
+
+        alert(
+            tr(
+                "Inscription enregistrée avec succès.",
+                "Enrollment saved successfully."
+            )
+        );
+
+        loadAll();
+
+    }catch(e){
+
+        alert(e.message);
+
+    }
+
+}
+
+
+async function saveAttendance(){
+
+    const data={
+
+        trainee_id:$("attendanceTrainee").value,
+
+        attendance_date:$("attendanceDate").value,
+
+        status:$("attendanceStatus").value,
+
+        note:$("attendanceNote").value.trim()
+
+    };
+
+
+    if(!data.trainee_id){
+
+        return alert(
+            tr(
+                "Veuillez sélectionner un apprenant.",
+                "Please select a trainee."
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api("/api/training-attendance",{
+            method:"POST",
+            body:JSON.stringify(data)
+        });
+
+        closeModal("attendanceModal");
+
+        alert(
+            tr(
+                "Présence enregistrée.",
+                "Attendance recorded."
+            )
+        );
+
+    }catch(e){
+
+        alert(e.message);
+
+    }
+
+}
+
+
+async function saveCertificate(){
+
+    const data={
+
+        trainee_id:$("certificateTrainee").value,
+
+        program_id:$("certificateProgram").value,
+
+        certificate_number:$("certificateNumber").value.trim(),
+
+        certificate_date:$("certificateDate").value,
+
+        result:$("certificateResult").value.trim()
+
+    };
+
+
+    if(
+        !data.trainee_id ||
+        !data.program_id ||
+        !data.certificate_number
+    ){
+
+        return alert(
+            tr(
+                "Apprenant, formation et numéro de certificat requis.",
+                "Trainee, training and certificate number are required."
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api("/api/training-certificates",{
+            method:"POST",
+            body:JSON.stringify(data)
+        });
+
+        closeModal("certificateModal");
+
+        alert(
+            tr(
+                "Certificat créé avec succès.",
+                "Certificate created successfully."
+            )
+        );
+
+        loadAll();
+
+    }catch(e){
+
+        alert(e.message);
+
+    }
+
+}
+
+
+async function deleteRecord(resource,id){
+
+    if(!confirm(
+        tr(
+            "Supprimer cet enregistrement ?",
+            "Delete this record?"
+        )
+    )) return;
+
+
+    try{
+
+        await api(
+            "/api/"+resource+
+            "?id="+encodeURIComponent(id),
+            {
+                method:"DELETE"
+            }
+        );
+
+        loadAll();
+
+    }catch(e){
+
+        alert(e.message);
+
+    }
+
+}
+
+
+function populateProgramSelect(id){
+
+    const select=$(id);
+
+    if(!select) return;
+
+    select.innerHTML=
+        `<option value="">
+        ${tr(
+            "Sélectionner une formation",
+            "Select training"
+        )}
+        </option>`+
+        programs.map(x=>`
+
+        <option value="${x.id}">
+        ${escapeHtml(
+            x.name ||
+            x.program_name ||
+            ""
+        )}
+        </option>
+
+        `).join("");
+
+}
+
+
+function populateTraineeSelect(id){
+
+    const select=$(id);
+
+    if(!select) return;
+
+    select.innerHTML=
+        `<option value="">
+        ${tr(
+            "Sélectionner un apprenant",
+            "Select trainee"
+        )}
+        </option>`+
+        trainees.map(x=>`
+
+        <option value="${x.id}">
+        ${escapeHtml(
+            x.name ||
+            x.full_name ||
+            ""
+        )}
+        </option>
+
+        `).join("");
+
+}
+
+
+function statusClass(status){
+
+    if(status==="completed")
+        return "badge-completed";
+
+    if(status==="cancelled")
+        return "badge-cancelled";
+
+    if(status==="pending")
+        return "badge-pending";
+
+    return "badge-active";
+
+}
+
+
+function statusLabel(status){
+
+    const map={
+
+        active:tr("Active","Active"),
+
+        completed:tr("Terminée","Completed"),
+
+        cancelled:tr("Annulée","Cancelled"),
+
+        pending:tr("En attente","Pending"),
+
+        inactive:tr("Inactif","Inactive")
+
+    };
+
+    return map[status] || status || "-";
+
+}
+
+
+function paymentLabel(status){
+
+    const map={
+
+        paid:tr("Payé","Paid"),
+
+        partial:tr("Partiel","Partial"),
+
+        pending:tr("En attente","Pending")
+
+    };
+
+    return map[status] || status || "-";
+
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/[&<>"']/g,char=>({
+
+            "&":"&amp;",
+            "<":"&lt;",
+            ">":"&gt;",
+            '"':"&quot;",
+            "'":"&#039;"
+
+        }[char]));
+
+}
+
+
+async function runAI(){
+
+    const prompt=
+        $("aiPrompt").value.trim() ||
+        tr(
+            "Analyse mes formations professionnelles et donne-moi des recommandations.",
+            "Analyze my professional training programs and give me recommendations."
+        );
+
+
+    $("aiOutput").textContent=
+        tr(
+            "Analyse en cours...",
+            "Analysis in progress..."
+        );
+
+
+    try{
+
+        const result=await api("/api/ai",{
+
+            method:"POST",
+
+            body:JSON.stringify({
+
+                message:prompt,
+
+                context:{
+
+                    module:"Professional Training",
+
+                    business:
+                        "TASSIMO BTP CONSTRUCTION SARL",
+
+                    language:lang,
+
+                    domain:
+                        "Professional training, construction, civil engineering and workforce development",
+
+                    statistics:{
+
+                        trainees:trainees.length,
+
+                        programs:programs.length,
+
+                        enrollments:enrollments.length,
+
+                        certificates:certificates.length
+
+                    }
+
+                }
+
+            })
+
+        });
+
+
+        $("aiOutput").textContent=
+            result.reply ||
+            result.response ||
+            result.message ||
+            tr(
+                "Aucune réponse reçue.",
+                "No response received."
+            );
+
+    }catch(e){
+
+        $("aiOutput").textContent=e.message;
+
+    }
+
+}
+
+
+function printCertificate(id){
+
+    const certificate=
+        certificates.find(x=>x.id===id);
+
+    if(!certificate) return;
+
+
+    const trainee=
+        trainees.find(
+            x=>x.id===certificate.trainee_id
+        );
+
+    const program=
+        programs.find(
+            x=>x.id===certificate.program_id
+        );
+
+
+    const traineeName=
+        trainee?.name ||
+        trainee?.full_name ||
+        certificate.trainee ||
+        "";
+
+
+    const programName=
+        program?.name ||
+        program?.program_name ||
+        certificate.program ||
+        "";
+
+
+    const title=
+        tr(
+            "CERTIFICAT DE FORMATION PROFESSIONNELLE",
+            "PROFESSIONAL TRAINING CERTIFICATE"
+        );
+
+
+    const w=window.open("","_blank");
+
+
+    if(!w){
+
+        alert(
+            tr(
+                "La fenêtre d'impression a été bloquée.",
+                "The print window was blocked."
+            )
+        );
+
+        return;
+
+    }
+
+
+    w.document.write(`
+
+<!DOCTYPE html>
+
+<html lang="${lang}">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>${title}</title>
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+padding:50px;
+text-align:center;
+}
+
+.certificate{
+border:8px double #172033;
+padding:60px;
+min-height:650px;
+}
+
+h1{
+font-size:30px;
+margin-bottom:30px;
+}
+
+.name{
+font-size:34px;
+font-weight:bold;
+margin:30px 0;
+}
+
+.program{
+font-size:22px;
+margin:25px 0;
+}
+
+.number{
+margin-top:40px;
+font-size:14px;
+}
+
+.footer{
+margin-top:70px;
+font-size:13px;
+}
+
+@media print{
+body{padding:10px}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="certificate">
+
+<h1>${title}</h1>
+
+<p>
+TASSIMO BTP CONSTRUCTION SARL
+</p>
+
+<p>
+${tr(
+"Certifie que",
+"Certifies that"
+)}
+</p>
+
+<div class="name">
+${escapeHtml(traineeName)}
+</div>
+
+<p>
+${tr(
+"a suivi avec succès la formation :",
+"has successfully completed the training program:"
+)}
+</p>
+
+<div class="program">
+${escapeHtml(programName)}
+</div>
+
+<p>
+${escapeHtml(certificate.result||"")}
+</p>
+
+<div class="number">
+${tr("Certificat N°","Certificate No.")}:
+${escapeHtml(
+certificate.certificate_number||""
+)}
+</div>
+
+<div class="number">
+${tr("Date","Date")}:
+${escapeHtml(
+certificate.certificate_date||""
+)}
+</div>
+
+<div class="footer">
+
+TASSIMO BTP CONSTRUCTION SARL<br>
+
+Together, let us build excellence.
+
+</div>
+
+</div>
+
+</body>
+
+</html>
+
+`);
+
+
+    w.document.close();
+
+    setTimeout(()=>{
+
+        w.focus();
+        w.print();
+
+    },500);
+
+}
+
+
+window.addEventListener("click",e=>{
+
+    if(e.target.classList.contains("modal")){
+
+        e.target.classList.remove("open");
+
+    }
+
+});
+
+
+applyLanguage();
+
+loadAll();
+
+</script>
+
+</body>
+</html>
