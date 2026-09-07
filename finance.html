@@ -3033,98 +3033,57 @@ function openInvoice(){
 
 
 async function saveInvoice(){
-
-    let d = {
-
-        invoice_number:
-            $('invNo').value.trim(),
-
-        customer:
-            $('invCustomer').value.trim(),
-
-        invoice_date:
-            $('invDate').value,
-
-        due_date:
-            $('invDue').value,
-
-        amount:Number(
-            $('invAmount').value || 0
-        ),
-
-        status:
-            $('invStatus').value,
-
-        description:
-            $('invDesc').value.trim()
-
+    let d={
+        invoice_number:$('invNo').value.trim(),
+        customer:$('invCustomer').value.trim(),
+        invoice_date:$('invDate').value,
+        due_date:$('invDue').value,
+        amount:Number($('invAmount').value||0),
+        status:$('invStatus').value,
+        description:$('invDesc').value.trim()
     };
 
-
-    if(
-        !d.invoice_number ||
-        !d.customer ||
-        !d.amount
-    ){
-
-        return toast(
-            tr(
-                'Numéro, client et montant requis.',
-                'Number, customer and amount are required.'
-            )
-        );
-
-    }
-
+    if(!d.invoice_number||!d.customer||!d.amount)
+        return toast(tr(
+            'Numéro, client et montant requis.',
+            'Number, customer and amount are required.'
+        ));
 
     try{
+        await api('/api/finance-invoices',{
+            method:'POST',
+            body:JSON.stringify(d)
+        });
 
-        await api(
-            '/api/finance-invoices',
-            {
-                method:'POST',
-                body:JSON.stringify(d)
-            }
-        );
-
+        /* Automatically register invoice in Documents */
+        await api('/api/documents',{
+            method:'POST',
+            body:JSON.stringify({
+                document_type:'invoice',
+                document_number:d.invoice_number,
+                customer:d.customer,
+                document_date:d.invoice_date,
+                amount:d.amount,
+                status:
+                    d.status==='paid'?'paid':
+                    d.status==='cancelled'?'cancelled':
+                    d.status==='draft'?'draft':'issued',
+                description:d.description
+            })
+        });
 
         closeM('invModal');
 
-        toast(
-            tr(
-                'Facture enregistrée.',
-                'Invoice saved.'
-            )
-        );
-
+        toast(tr(
+            'Facture enregistrée et ajoutée aux Documents.',
+            'Invoice saved and added to Documents.'
+        ));
 
         loadAll();
 
     }catch(e){
-
         toast(e.message);
-
     }
-
-}
-
-
-function openPayment(){
-
-    $('payCustomer').value = '';
-
-    $('payInvoice').value = '';
-
-    $('payDate').value = today();
-
-    $('payAmount').value = '';
-
-    $('payMethod').value = 'cash';
-
-    $('payRef').value = '';
-
-    modal('payModal');
-
 }
 
 
