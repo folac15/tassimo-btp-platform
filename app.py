@@ -2094,6 +2094,10 @@ function openPage(p){
   window.location.href="/inventory.html";
   return;
 } 
+  if(p==="finance"){
+  window.location.href="/finance.html";
+  return;
+}
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
