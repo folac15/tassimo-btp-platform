@@ -3175,81 +3175,64 @@ function openQuote(){
 
 
 async function saveQuote(){
-
-    let d = {
-
-        quote_number:
-            $('quoteNo').value.trim(),
-
-        customer:
-            $('quoteCustomer').value.trim(),
-
-        quote_date:
-            $('quoteDate').value,
-
-        valid_until:
-            $('quoteValid').value,
-
-        amount:Number(
-            $('quoteAmount').value || 0
-        ),
-
-        status:
-            $('quoteStatus').value,
-
-        description:
-            $('quoteDesc').value.trim()
-
+    let d={
+        quote_number:$('quoteNo').value.trim(),
+        customer:$('quoteCustomer').value.trim(),
+        quote_date:$('quoteDate').value,
+        valid_until:$('quoteValid').value,
+        amount:Number($('quoteAmount').value||0),
+        status:$('quoteStatus').value,
+        description:$('quoteDesc').value.trim()
     };
 
-
-    if(
-        !d.quote_number ||
-        !d.customer ||
-        !d.amount
-    ){
-
-        return toast(
-            tr(
-                'Numéro, client et montant requis.',
-                'Number, customer and amount are required.'
-            )
-        );
-
-    }
-
+    if(!d.quote_number||!d.customer||!d.amount)
+        return toast(tr(
+            'Numéro, client et montant requis.',
+            'Number, customer and amount are required.'
+        ));
 
     try{
+        await api('/api/finance-quotes',{
+            method:'POST',
+            body:JSON.stringify(d)
+        });
 
-        await api(
-            '/api/finance-quotes',
-            {
-                method:'POST',
-                body:JSON.stringify(d)
-            }
-        );
-
+        /* Automatically register quotation in Documents */
+        await api('/api/documents',{
+            method:'POST',
+            body:JSON.stringify({
+                document_type:'quote',
+                document_number:d.quote_number,
+                customer:d.customer,
+                document_date:d.quote_date,
+                amount:d.amount,
+                status:
+                    d.status==='rejected' || d.status==='expired'
+                        ?'cancelled'
+                        :d.status==='draft'
+                        ?'draft'
+                        :'issued',
+                description:d.description
+            })
+        });
 
         closeM('quoteModal');
 
-        toast(
-            tr(
-                'Devis enregistré.',
-                'Quotation saved.'
-            )
-        );
-
+        toast(tr(
+            'Devis enregistré et ajouté aux Documents.',
+            'Quotation saved and added to Documents.'
+        ));
 
         loadAll();
 
     }catch(e){
-
         toast(e.message);
-
     }
-
 }
 
+
+
+        
 
 async function del(res,id){
 
