@@ -3436,6 +3436,10 @@ def finance_page():
 @protected
 def documents_page():
     return send_from_directory(".", "documents.html")
+@app.route("/professional-training.html")
+@protected
+def professional_training_page():
+    return send_from_directory(".", "professional-training.html")
 
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
