@@ -3229,7 +3229,172 @@ async function saveQuote(){
 
 
         
+function printFinanceDocument(type,number){
 
+    let record=null;
+
+    if(type==='invoice'){
+        record=inv.find(x=>x.invoice_number===number);
+    }
+
+    if(!record){
+        return toast(tr(
+            'Document introuvable.',
+            'Document not found.'
+        ));
+    }
+
+    const title=tr('FACTURE','INVOICE');
+
+    const html=`
+<!DOCTYPE html>
+<html lang="${lang}">
+<head>
+<meta charset="UTF-8">
+<title>${title} ${number}</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    padding:40px;
+    color:#172033;
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    border-bottom:2px solid #172033;
+    padding-bottom:20px;
+    margin-bottom:30px;
+}
+
+h1{
+    margin:0;
+    font-size:28px;
+}
+
+.company{
+    font-weight:bold;
+    font-size:20px;
+}
+
+.info{
+    margin:20px 0;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:25px;
+}
+
+th,td{
+    padding:12px;
+    border:1px solid #ddd;
+    text-align:left;
+}
+
+.total{
+    text-align:right;
+    font-size:22px;
+    font-weight:bold;
+    margin-top:25px;
+}
+
+.footer{
+    margin-top:60px;
+    border-top:1px solid #ddd;
+    padding-top:15px;
+    font-size:12px;
+}
+
+@media print{
+    body{padding:10px}
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div>
+        <div class="company">
+            TASSIMO BTP CONSTRUCTION SARL
+        </div>
+        <div>
+            ${tr(
+                'Together, let us build excellence.',
+                'Together, let us build excellence.'
+            )}
+        </div>
+    </div>
+
+    <div>
+        <h1>${title}</h1>
+        <div>${number}</div>
+    </div>
+</div>
+
+<div class="info">
+    <strong>${tr('Client','Customer')}:</strong>
+    ${escapeHtml(record.customer||'')}<br>
+
+    <strong>${tr('Date','Date')}:</strong>
+    ${escapeHtml(record.invoice_date||'')}<br>
+
+    <strong>${tr('Échéance','Due Date')}:</strong>
+    ${escapeHtml(record.due_date||'')}
+</div>
+
+<table>
+<thead>
+<tr>
+<th>${tr('Description','Description')}</th>
+<th>${tr('Montant','Amount')}</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>${escapeHtml(record.description||'')}</td>
+<td>${money(record.amount)}</td>
+</tr>
+</tbody>
+</table>
+
+<div class="total">
+${tr('Total','Total')}: ${money(record.amount)}
+</div>
+
+<div class="footer">
+TASSIMO BTP CONSTRUCTION SARL<br>
+${tr(
+    'Document généré depuis le système de gestion.',
+    'Document generated from the business management system.'
+)}
+</div>
+
+</body>
+</html>
+`;
+
+    const w=window.open('','_blank');
+
+    if(!w){
+        return toast(tr(
+            'La fenêtre d’impression a été bloquée.',
+            'The print window was blocked.'
+        ));
+    }
+
+    w.document.write(html);
+    w.document.close();
+
+    setTimeout(()=>{
+        w.focus();
+        w.print();
+    },500);
+}
 async function del(res,id){
 
     if(
