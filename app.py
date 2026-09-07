@@ -2098,6 +2098,10 @@ function openPage(p){
   window.location.href="/finance.html";
   return;
 }
+  if(p==="documents"){
+  window.location.href="/documents.html";
+  return;
+}
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
@@ -3423,6 +3427,10 @@ def inventory_page():
 @protected
 def finance_page():
     return send_from_directory(".", "finance.html")
+@app.route("/documents.html")
+@protected
+def documents_page():
+    return send_from_directory(".", "documents.html")
 
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
