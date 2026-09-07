@@ -3088,76 +3088,65 @@ async function saveInvoice(){
 
 
 async function savePayment(){
-
-    let d = {
-
-        customer:
-            $('payCustomer').value.trim(),
-
-        invoice_number:
-            $('payInvoice').value.trim(),
-
-        payment_date:
-            $('payDate').value,
-
-        amount:Number(
-            $('payAmount').value || 0
-        ),
-
-        method:
-            $('payMethod').value,
-
-        reference:
-            $('payRef').value.trim()
-
+    let d={
+        customer:$('payCustomer').value.trim(),
+        invoice_number:$('payInvoice').value.trim(),
+        payment_date:$('payDate').value,
+        amount:Number($('payAmount').value||0),
+        method:$('payMethod').value,
+        reference:$('payRef').value.trim()
     };
 
-
-    if(
-        !d.customer ||
-        !d.amount
-    ){
-
-        return toast(
-            tr(
-                'Client et montant requis.',
-                'Customer and amount are required.'
-            )
-        );
-
-    }
-
+    if(!d.customer||!d.amount)
+        return toast(tr(
+            'Client et montant requis.',
+            'Customer and amount are required.'
+        ));
 
     try{
+        await api('/api/finance-payments',{
+            method:'POST',
+            body:JSON.stringify(d)
+        });
 
-        await api(
-            '/api/finance-payments',
-            {
-                method:'POST',
-                body:JSON.stringify(d)
-            }
-        );
+        /* Automatically create a receipt in Documents */
+        const receiptNumber =
+            d.reference ||
+            ('REC-'+Date.now().toString().slice(-6));
 
+        await api('/api/documents',{
+            method:'POST',
+            body:JSON.stringify({
+                document_type:'receipt',
+                document_number:receiptNumber,
+                customer:d.customer,
+                document_date:d.payment_date,
+                amount:d.amount,
+                status:'paid',
+                description:
+                    (lang==='fr'?'Paiement':'Payment')+
+                    (d.invoice_number
+                        ? ' — '+d.invoice_number
+                        : '')
+                    +' | '+d.method
+            })
+        });
 
         closeM('payModal');
 
-        toast(
-            tr(
-                'Paiement enregistré.',
-                'Payment saved.'
-            )
-        );
-
+        toast(tr(
+            'Paiement enregistré et reçu ajouté aux Documents.',
+            'Payment saved and receipt added to Documents.'
+        ));
 
         loadAll();
 
     }catch(e){
-
         toast(e.message);
-
     }
-
 }
+
+
 
 
 function openQuote(){
