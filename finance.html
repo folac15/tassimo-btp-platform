@@ -2703,16 +2703,12 @@ function renderInvoices(){
 
             <td>
 
-                <button
-                    class="danger"
-                    onclick="del(
-                        'finance-invoices',
-                        '${x.id}'
-                    )">
-
-                    ${tr('Supprimer','Delete')}
-
-                </button>
+                <button class="primary" onclick="printFinanceDocument('invoice','${x.invoice_number}')">
+${tr('🖨️ Imprimer','🖨️ Print')}
+</button>
+<button class="danger" onclick="del('finance-invoices','${x.id}')">
+${tr('Supprimer','Delete')}
+</button>
 
             </td>
 
