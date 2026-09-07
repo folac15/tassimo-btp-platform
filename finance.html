@@ -1,0 +1,3483 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TASSIMO BTP CONSTRUCTION SARL — Finance</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif
+}
+
+body{
+    background:#f4f7fb;
+    color:#172033;
+    min-height:100vh
+}
+
+header{
+    background:#fff;
+    border-bottom:1px solid #e2e8f0;
+    padding:15px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    position:sticky;
+    top:0;
+    z-index:10
+}
+
+.brand h1{
+    font-size:20px
+}
+
+.brand p{
+    font-size:12px;
+    color:#64748b;
+    margin-top:4px
+}
+
+.actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap
+}
+
+button{
+    border:0;
+    border-radius:9px;
+    padding:10px 14px;
+    font-weight:700;
+    cursor:pointer
+}
+
+.primary{
+    background:#1f5eff;
+    color:#fff
+}
+
+.secondary{
+    background:#e8edf5;
+    color:#172033
+}
+
+.danger{
+    background:#dc3545;
+    color:#fff
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:20px
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:14px;
+    margin-bottom:18px
+}
+
+.card{
+    background:#fff;
+    border:1px solid #e3e8f0;
+    border-radius:14px;
+    padding:17px;
+    box-shadow:0 4px 14px rgba(20,35,60,.05)
+}
+
+.label{
+    font-size:12px;
+    color:#64748b
+}
+
+.value{
+    font-size:23px;
+    font-weight:800;
+    margin-top:7px
+}
+
+.tabs{
+    display:flex;
+    gap:8px;
+    overflow:auto;
+    margin-bottom:16px
+}
+
+.tab{
+    white-space:nowrap;
+    background:#e8edf5
+}
+
+.tab.active{
+    background:#1f5eff;
+    color:#fff
+}
+
+.section{
+    display:none
+}
+
+.section.active{
+    display:block
+}
+
+.grid2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px
+}
+
+.grid3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px
+}
+
+.formgrid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:12px;
+    margin-top:14px
+}
+
+label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    color:#475569;
+    margin-bottom:6px
+}
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:11px;
+    border:1px solid #d6deea;
+    border-radius:9px;
+    background:#fff;
+    font-size:14px
+}
+
+textarea{
+    min-height:90px;
+    resize:vertical
+}
+
+.toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:12px
+}
+
+.toolbar input{
+    max-width:360px
+}
+
+.tablewrap{
+    overflow:auto
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:850px
+}
+
+th,
+td{
+    padding:11px 9px;
+    border-bottom:1px solid #edf0f5;
+    text-align:left;
+    font-size:13px
+}
+
+th{
+    background:#f7f9fc;
+    color:#475569
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 8px;
+    border-radius:20px;
+    background:#edf2ff;
+    font-size:11px;
+    font-weight:700
+}
+
+.money{
+    font-weight:800
+}
+
+.muted{
+    color:#64748b;
+    font-size:13px
+}
+
+.actionsrow{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:14px
+}
+
+.alert{
+    padding:12px;
+    border-radius:10px;
+    background:#fff5e8;
+    border:1px solid #ffd9a8;
+    margin-top:14px
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(10,20,35,.55);
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+    z-index:50
+}
+
+.modal.open{
+    display:flex
+}
+
+.modalbox{
+    background:#fff;
+    border-radius:15px;
+    padding:20px;
+    width:100%;
+    max-width:650px;
+    max-height:90vh;
+    overflow:auto
+}
+
+.toast{
+    display:none;
+    position:fixed;
+    right:15px;
+    bottom:15px;
+    background:#172033;
+    color:#fff;
+    padding:12px 15px;
+    border-radius:10px;
+    z-index:100
+}
+
+.empty{
+    text-align:center;
+    padding:28px;
+    color:#64748b
+}
+
+.aiout{
+    white-space:pre-wrap;
+    line-height:1.55;
+    margin-top:12px
+}
+
+.ai{
+    background:#f7f8ff;
+    border-color:#dfe4ff
+}
+
+@media(max-width:1000px){
+    .stats{
+        grid-template-columns:repeat(3,1fr)
+    }
+
+    .grid2{
+        grid-template-columns:1fr
+    }
+}
+
+@media(max-width:650px){
+    header{
+        flex-direction:column;
+        align-items:flex-start
+    }
+
+    .container{
+        padding:12px
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr
+    }
+
+    .formgrid{
+        grid-template-columns:1fr
+    }
+
+    .actions{
+        width:100%
+    }
+
+    .actions button{
+        flex:1
+    }
+
+    .brand h1{
+        font-size:17px
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="brand">
+
+<h1>
+💰 TASSIMO BTP CONSTRUCTION SARL — Finance
+</h1>
+
+<p id="subtitle">
+Gestion financière, revenus, dépenses, factures et rentabilité
+</p>
+
+</div>
+
+<div class="actions">
+
+<button
+class="secondary"
+onclick="location.href='/'">
+
+📊
+<span
+data-fr="Tableau de bord"
+data-en="Dashboard">
+Tableau de bord
+</span>
+
+</button>
+
+<button
+class="secondary"
+id="langBtn"
+onclick="toggleLang()">
+
+🇬🇧 English
+
+</button>
+
+</div>
+
+</header>
+
+
+<main class="container">
+
+
+<!-- FINANCIAL STATS -->
+
+<div class="stats">
+
+<div class="card">
+
+<div
+class="label"
+data-fr="Revenus"
+data-en="Income">
+
+Revenus
+
+</div>
+
+<div
+class="value"
+id="income">
+
+0 FCFA
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div
+class="label"
+data-fr="Dépenses"
+data-en="Expenses">
+
+Dépenses
+
+</div>
+
+<div
+class="value"
+id="expense">
+
+0 FCFA
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div
+class="label"
+data-fr="Bénéfice net"
+data-en="Net Profit">
+
+Bénéfice net
+
+</div>
+
+<div
+class="value"
+id="profit">
+
+0 FCFA
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div
+class="label"
+data-fr="Créances"
+data-en="Receivables">
+
+Créances
+
+</div>
+
+<div
+class="value"
+id="receivable">
+
+0 FCFA
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div
+class="label"
+data-fr="Flux net"
+data-en="Net Cash Flow">
+
+Flux net
+
+</div>
+
+<div
+class="value"
+id="cash">
+
+0 FCFA
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- TABS -->
+
+<div class="tabs">
+
+<button
+class="tab active"
+onclick="tab('overview',this)"
+data-fr="Vue financière"
+data-en="Financial Overview">
+
+Vue financière
+
+</button>
+
+
+<button
+class="tab"
+onclick="tab('transactions',this)"
+data-fr="Transactions"
+data-en="Transactions">
+
+Transactions
+
+</button>
+
+
+<button
+class="tab"
+onclick="tab('invoices',this)"
+data-fr="Factures"
+data-en="Invoices">
+
+Factures
+
+</button>
+
+
+<button
+class="tab"
+onclick="tab('payments',this)"
+data-fr="Paiements"
+data-en="Payments">
+
+Paiements
+
+</button>
+
+
+<button
+class="tab"
+onclick="tab('quotes',this)"
+data-fr="Devis"
+data-en="Quotations">
+
+Devis
+
+</button>
+
+
+<button
+class="tab"
+onclick="tab('ai',this)"
+data-fr="Analyse IA"
+data-en="AI Analysis">
+
+Analyse IA
+
+</button>
+
+</div>
+
+
+<!-- OVERVIEW -->
+
+<section
+id="overview"
+class="section active">
+
+<div class="grid2">
+
+
+<div class="card">
+
+<h2
+data-fr="Résumé financier"
+data-en="Financial Summary">
+
+Résumé financier
+
+</h2>
+
+<p
+class="muted"
+data-fr="Suivi global de l'activité financière."
+data-en="Overall financial activity monitoring.">
+
+Suivi global de l'activité financière.
+
+</p>
+
+
+<div
+class="grid3"
+style="margin-top:18px">
+
+
+<div>
+
+<span
+class="muted"
+data-fr="Transactions"
+data-en="Transactions">
+
+Transactions
+
+</span>
+
+<strong
+id="tc"
+style="display:block;font-size:22px">
+
+0
+
+</strong>
+
+</div>
+
+
+<div>
+
+<span
+class="muted"
+data-fr="Factures"
+data-en="Invoices">
+
+Factures
+
+</span>
+
+<strong
+id="ic"
+style="display:block;font-size:22px">
+
+0
+
+</strong>
+
+</div>
+
+
+<div>
+
+<span
+class="muted"
+data-fr="Paiements"
+data-en="Payments">
+
+Paiements
+
+</span>
+
+<strong
+id="pc"
+style="display:block;font-size:22px">
+
+0
+
+</strong>
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2
+data-fr="Actions rapides"
+data-en="Quick Actions">
+
+Actions rapides
+
+</h2>
+
+
+<div class="actionsrow">
+
+<button
+class="primary"
+onclick="openTx('income')"
+data-fr="+ Ajouter un revenu"
+data-en="+ Add Income">
+
++ Ajouter un revenu
+
+</button>
+
+
+<button
+class="danger"
+onclick="openTx('expense')"
+data-fr="+ Ajouter une dépense"
+data-en="+ Add Expense">
+
++ Ajouter une dépense
+
+</button>
+
+
+<button
+class="secondary"
+onclick="openInvoice()"
+data-fr="+ Nouvelle facture"
+data-en="+ New Invoice">
+
++ Nouvelle facture
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div
+id="alert"
+class="alert"
+style="display:none">
+
+</div>
+
+</section>
+
+
+<!-- TRANSACTIONS -->
+
+<section
+id="transactions"
+class="section">
+
+<div class="card">
+
+
+<div class="toolbar">
+
+<input
+id="txSearch"
+oninput="renderTx()"
+data-fr-placeholder="Rechercher une transaction..."
+data-en-placeholder="Search transactions..."
+placeholder="Rechercher une transaction...">
+
+
+<select
+id="txFilter"
+onchange="renderTx()">
+
+<option
+value=""
+data-fr="Tous les types"
+data-en="All Types">
+
+Tous les types
+
+</option>
+
+<option
+value="income"
+data-fr="Revenu"
+data-en="Income">
+
+Revenu
+
+</option>
+
+<option
+value="expense"
+data-fr="Dépense"
+data-en="Expense">
+
+Dépense
+
+</option>
+
+</select>
+
+
+<button
+class="primary"
+onclick="openTx()"
+data-fr="+ Nouvelle transaction"
+data-en="+ New Transaction">
+
++ Nouvelle transaction
+
+</button>
+
+</div>
+
+
+<div class="tablewrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th
+data-fr="Date"
+data-en="Date">
+
+Date
+
+</th>
+
+<th
+data-fr="Type"
+data-en="Type">
+
+Type
+
+</th>
+
+<th
+data-fr="Catégorie"
+data-en="Category">
+
+Catégorie
+
+</th>
+
+<th
+data-fr="Description"
+data-en="Description">
+
+Description
+
+</th>
+
+<th
+data-fr="Projet"
+data-en="Project">
+
+Projet
+
+</th>
+
+<th
+data-fr="Montant"
+data-en="Amount">
+
+Montant
+
+</th>
+
+<th
+data-fr="Actions"
+data-en="Actions">
+
+Actions
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="txBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- INVOICES -->
+
+<section
+id="invoices"
+class="section">
+
+<div class="card">
+
+<div class="toolbar">
+
+<input
+id="invSearch"
+oninput="renderInvoices()"
+data-fr-placeholder="Rechercher une facture..."
+data-en-placeholder="Search invoices..."
+placeholder="Rechercher une facture...">
+
+
+<select
+id="invFilter"
+onchange="renderInvoices()">
+
+<option
+value=""
+data-fr="Tous les statuts"
+data-en="All Statuses">
+
+Tous les statuts
+
+</option>
+
+
+<option
+value="draft"
+data-fr="Brouillon"
+data-en="Draft">
+
+Brouillon
+
+</option>
+
+
+<option
+value="sent"
+data-fr="Envoyée"
+data-en="Sent">
+
+Envoyée
+
+</option>
+
+
+<option
+value="paid"
+data-fr="Payée"
+data-en="Paid">
+
+Payée
+
+</option>
+
+
+<option
+value="overdue"
+data-fr="En retard"
+data-en="Overdue">
+
+En retard
+
+</option>
+
+
+<option
+value="cancelled"
+data-fr="Annulée"
+data-en="Cancelled">
+
+Annulée
+
+</option>
+
+</select>
+
+
+<button
+class="primary"
+onclick="openInvoice()"
+data-fr="+ Nouvelle facture"
+data-en="+ New Invoice">
+
++ Nouvelle facture
+
+</button>
+
+</div>
+
+
+<div class="tablewrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th
+data-fr="N° Facture"
+data-en="Invoice No.">
+
+N° Facture
+
+</th>
+
+<th
+data-fr="Client"
+data-en="Customer">
+
+Client
+
+</th>
+
+<th
+data-fr="Date"
+data-en="Date">
+
+Date
+
+</th>
+
+<th
+data-fr="Échéance"
+data-en="Due Date">
+
+Échéance
+
+</th>
+
+<th
+data-fr="Montant"
+data-en="Amount">
+
+Montant
+
+</th>
+
+<th
+data-fr="Statut"
+data-en="Status">
+
+Statut
+
+</th>
+
+<th
+data-fr="Actions"
+data-en="Actions">
+
+Actions
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="invBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- PAYMENTS -->
+
+<section
+id="payments"
+class="section">
+
+<div class="card">
+
+<div class="toolbar">
+
+<input
+id="paySearch"
+oninput="renderPayments()"
+data-fr-placeholder="Rechercher un paiement..."
+data-en-placeholder="Search payments..."
+placeholder="Rechercher un paiement...">
+
+
+<button
+class="primary"
+onclick="openPayment()"
+data-fr="+ Nouveau paiement"
+data-en="+ New Payment">
+
++ Nouveau paiement
+
+</button>
+
+</div>
+
+
+<div class="tablewrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th
+data-fr="Date"
+data-en="Date">
+
+Date
+
+</th>
+
+<th
+data-fr="Client"
+data-en="Customer">
+
+Client
+
+</th>
+
+<th
+data-fr="Facture"
+data-en="Invoice">
+
+Facture
+
+</th>
+
+<th
+data-fr="Méthode"
+data-en="Method">
+
+Méthode
+
+</th>
+
+<th
+data-fr="Référence"
+data-en="Reference">
+
+Référence
+
+</th>
+
+<th
+data-fr="Montant"
+data-en="Amount">
+
+Montant
+
+</th>
+
+<th
+data-fr="Actions"
+data-en="Actions">
+
+Actions
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="payBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- QUOTES -->
+
+<section
+id="quotes"
+class="section">
+
+<div class="card">
+
+<div class="toolbar">
+
+<input
+id="quoteSearch"
+oninput="renderQuotes()"
+data-fr-placeholder="Rechercher un devis..."
+data-en-placeholder="Search quotations..."
+placeholder="Rechercher un devis...">
+
+
+<button
+class="primary"
+onclick="openQuote()"
+data-fr="+ Nouveau devis"
+data-en="+ New Quotation">
+
++ Nouveau devis
+
+</button>
+
+</div>
+
+
+<div class="tablewrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th
+data-fr="N° Devis"
+data-en="Quotation No.">
+
+N° Devis
+
+</th>
+
+<th
+data-fr="Client"
+data-en="Customer">
+
+Client
+
+</th>
+
+<th
+data-fr="Date"
+data-en="Date">
+
+Date
+
+</th>
+
+<th
+data-fr="Valable jusqu'au"
+data-en="Valid Until">
+
+Valable jusqu'au
+
+</th>
+
+<th
+data-fr="Montant"
+data-en="Amount">
+
+Montant
+
+</th>
+
+<th
+data-fr="Statut"
+data-en="Status">
+
+Statut
+
+</th>
+
+<th
+data-fr="Actions"
+data-en="Actions">
+
+Actions
+
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="quoteBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- AI -->
+
+<section
+id="ai"
+class="section">
+
+<div class="card ai">
+
+<h2
+data-fr="🤖 Analyse financière par IA"
+data-en="🤖 AI Financial Analysis">
+
+🤖 Analyse financière par IA
+
+</h2>
+
+
+<p
+class="muted"
+data-fr="Analysez les revenus, dépenses, créances et rentabilité de l'entreprise."
+data-en="Analyze company income, expenses, receivables and profitability.">
+
+Analysez les revenus, dépenses, créances et rentabilité de l'entreprise.
+
+</p>
+
+
+<div
+class="formgrid">
+
+
+<div style="grid-column:1/-1">
+
+<label
+data-fr="Votre demande"
+data-en="Your Request">
+
+Votre demande
+
+</label>
+
+
+<textarea
+id="aiPrompt"
+data-fr-placeholder="Exemple : Analyse ma situation financière et donne-moi les principales actions à prendre."
+data-en-placeholder="Example: Analyze my financial situation and give me the main actions to take."
+placeholder="Exemple : Analyse ma situation financière et donne-moi les principales actions à prendre.">
+</textarea>
+
+</div>
+
+</div>
+
+
+<div class="actionsrow">
+
+<button
+class="primary"
+onclick="runAI()"
+data-fr="🤖 Lancer l'analyse"
+data-en="🤖 Run Analysis">
+
+🤖 Lancer l'analyse
+
+</button>
+
+</div>
+
+
+<div
+id="aiOut"
+class="aiout">
+
+</div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<!-- TRANSACTION MODAL -->
+
+<div
+id="txModal"
+class="modal">
+
+<div class="modalbox">
+
+<h2
+data-fr="Nouvelle transaction"
+data-en="New Transaction">
+
+Nouvelle transaction
+
+</h2>
+
+
+<div class="formgrid">
+
+
+<div>
+
+<label
+data-fr="Type"
+data-en="Type">
+
+Type
+
+</label>
+
+<select id="txType">
+
+<option
+value="income"
+data-fr="Revenu"
+data-en="Income">
+
+Revenu
+
+</option>
+
+<option
+value="expense"
+data-fr="Dépense"
+data-en="Expense">
+
+Dépense
+
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Montant"
+data-en="Amount">
+
+Montant
+
+</label>
+
+<input
+id="txAmount"
+type="number"
+min="0"
+placeholder="0">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Date"
+data-en="Date">
+
+Date
+
+</label>
+
+<input
+id="txDate"
+type="date">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Catégorie"
+data-en="Category">
+
+Catégorie
+
+</label>
+
+<input
+id="txCategory"
+data-fr-placeholder="Ex: matériaux, salaire..."
+data-en-placeholder="e.g. materials, salary..."
+placeholder="Ex: matériaux, salaire...">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Projet"
+data-en="Project">
+
+Projet
+
+</label>
+
+<input
+id="txProject"
+data-fr-placeholder="Nom du projet"
+data-en-placeholder="Project name"
+placeholder="Nom du projet">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Référence"
+data-en="Reference">
+
+Référence
+
+</label>
+
+<input
+id="txRef"
+data-fr-placeholder="Référence"
+data-en-placeholder="Reference"
+placeholder="Référence">
+
+</div>
+
+
+<div style="grid-column:1/-1">
+
+<label
+data-fr="Description"
+data-en="Description">
+
+Description
+
+</label>
+
+<textarea id="txDesc"></textarea>
+
+</div>
+
+</div>
+
+
+<div class="actionsrow">
+
+<button
+class="primary"
+onclick="saveTx()"
+data-fr="Enregistrer"
+data-en="Save">
+
+Enregistrer
+
+</button>
+
+
+<button
+class="secondary"
+onclick="closeM('txModal')"
+data-fr="Annuler"
+data-en="Cancel">
+
+Annuler
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- INVOICE MODAL -->
+
+<div
+id="invModal"
+class="modal">
+
+<div class="modalbox">
+
+<h2
+data-fr="Nouvelle facture"
+data-en="New Invoice">
+
+Nouvelle facture
+
+</h2>
+
+
+<div class="formgrid">
+
+
+<div>
+
+<label
+data-fr="N° Facture"
+data-en="Invoice No.">
+
+N° Facture
+
+</label>
+
+<input id="invNo">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Client"
+data-en="Customer">
+
+Client
+
+</label>
+
+<input
+id="invCustomer"
+data-fr-placeholder="Nom du client"
+data-en-placeholder="Customer name"
+placeholder="Nom du client">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Date"
+data-en="Date">
+
+Date
+
+</label>
+
+<input
+id="invDate"
+type="date">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Échéance"
+data-en="Due Date">
+
+Échéance
+
+</label>
+
+<input
+id="invDue"
+type="date">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Montant"
+data-en="Amount">
+
+Montant
+
+</label>
+
+<input
+id="invAmount"
+type="number"
+min="0">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Statut"
+data-en="Status">
+
+Statut
+
+</label>
+
+<select id="invStatus">
+
+<option
+value="draft"
+data-fr="Brouillon"
+data-en="Draft">
+
+Brouillon
+
+</option>
+
+<option
+value="sent"
+data-fr="Envoyée"
+data-en="Sent">
+
+Envoyée
+
+</option>
+
+<option
+value="paid"
+data-fr="Payée"
+data-en="Paid">
+
+Payée
+
+</option>
+
+<option
+value="overdue"
+data-fr="En retard"
+data-en="Overdue">
+
+En retard
+
+</option>
+
+<option
+value="cancelled"
+data-fr="Annulée"
+data-en="Cancelled">
+
+Annulée
+
+</option>
+
+</select>
+
+</div>
+
+
+<div style="grid-column:1/-1">
+
+<label
+data-fr="Description"
+data-en="Description">
+
+Description
+
+</label>
+
+<textarea id="invDesc"></textarea>
+
+</div>
+
+</div>
+
+
+<div class="actionsrow">
+
+<button
+class="primary"
+onclick="saveInvoice()"
+data-fr="Enregistrer"
+data-en="Save">
+
+Enregistrer
+
+</button>
+
+
+<button
+class="secondary"
+onclick="closeM('invModal')"
+data-fr="Annuler"
+data-en="Cancel">
+
+Annuler
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- PAYMENT MODAL -->
+
+<div
+id="payModal"
+class="modal">
+
+<div class="modalbox">
+
+<h2
+data-fr="Nouveau paiement"
+data-en="New Payment">
+
+Nouveau paiement
+
+</h2>
+
+
+<div class="formgrid">
+
+
+<div>
+
+<label
+data-fr="Client"
+data-en="Customer">
+
+Client
+
+</label>
+
+<input
+id="payCustomer"
+data-fr-placeholder="Nom du client"
+data-en-placeholder="Customer name"
+placeholder="Nom du client">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Facture"
+data-en="Invoice">
+
+Facture
+
+</label>
+
+<input
+id="payInvoice"
+data-fr-placeholder="N° facture"
+data-en-placeholder="Invoice number"
+placeholder="N° facture">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Date"
+data-en="Date">
+
+Date
+
+</label>
+
+<input
+id="payDate"
+type="date">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Montant"
+data-en="Amount">
+
+Montant
+
+</label>
+
+<input
+id="payAmount"
+type="number"
+min="0">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Méthode"
+data-en="Method">
+
+Méthode
+
+</label>
+
+<select id="payMethod">
+
+<option
+value="cash"
+data-fr="Espèces"
+data-en="Cash">
+
+Espèces
+
+</option>
+
+<option
+value="bank"
+data-fr="Virement bancaire"
+data-en="Bank Transfer">
+
+Virement bancaire
+
+</option>
+
+<option
+value="mobile_money"
+data-fr="Mobile Money"
+data-en="Mobile Money">
+
+Mobile Money
+
+</option>
+
+<option
+value="card"
+data-fr="Carte bancaire"
+data-en="Bank Card">
+
+Carte bancaire
+
+</option>
+
+<option
+value="other"
+data-fr="Autre"
+data-en="Other">
+
+Autre
+
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Référence"
+data-en="Reference">
+
+Référence
+
+</label>
+
+<input
+id="payRef"
+data-fr-placeholder="Référence du paiement"
+data-en-placeholder="Payment reference"
+placeholder="Référence du paiement">
+
+</div>
+
+</div>
+
+
+<div class="actionsrow">
+
+<button
+class="primary"
+onclick="savePayment()"
+data-fr="Enregistrer"
+data-en="Save">
+
+Enregistrer
+
+</button>
+
+
+<button
+class="secondary"
+onclick="closeM('payModal')"
+data-fr="Annuler"
+data-en="Cancel">
+
+Annuler
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- QUOTE MODAL -->
+
+<div
+id="quoteModal"
+class="modal">
+
+<div class="modalbox">
+
+<h2
+data-fr="Nouveau devis"
+data-en="New Quotation">
+
+Nouveau devis
+
+</h2>
+
+
+<div class="formgrid">
+
+
+<div>
+
+<label
+data-fr="N° Devis"
+data-en="Quotation No.">
+
+N° Devis
+
+</label>
+
+<input id="quoteNo">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Client"
+data-en="Customer">
+
+Client
+
+</label>
+
+<input
+id="quoteCustomer"
+data-fr-placeholder="Nom du client"
+data-en-placeholder="Customer name"
+placeholder="Nom du client">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Date"
+data-en="Date">
+
+Date
+
+</label>
+
+<input
+id="quoteDate"
+type="date">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Valable jusqu'au"
+data-en="Valid Until">
+
+Valable jusqu'au
+
+</label>
+
+<input
+id="quoteValid"
+type="date">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Montant"
+data-en="Amount">
+
+Montant
+
+</label>
+
+<input
+id="quoteAmount"
+type="number"
+min="0">
+
+</div>
+
+
+<div>
+
+<label
+data-fr="Statut"
+data-en="Status">
+
+Statut
+
+</label>
+
+<select id="quoteStatus">
+
+<option
+value="draft"
+data-fr="Brouillon"
+data-en="Draft">
+
+Brouillon
+
+</option>
+
+<option
+value="sent"
+data-fr="Envoyé"
+data-en="Sent">
+
+Envoyé
+
+</option>
+
+<option
+value="accepted"
+data-fr="Accepté"
+data-en="Accepted">
+
+Accepté
+
+</option>
+
+<option
+value="rejected"
+data-fr="Refusé"
+data-en="Rejected">
+
+Refusé
+
+</option>
+
+<option
+value="expired"
+data-fr="Expiré"
+data-en="Expired">
+
+Expiré
+
+</option>
+
+</select>
+
+</div>
+
+
+<div style="grid-column:1/-1">
+
+<label
+data-fr="Description"
+data-en="Description">
+
+Description
+
+</label>
+
+<textarea id="quoteDesc"></textarea>
+
+</div>
+
+</div>
+
+
+<div class="actionsrow">
+
+<button
+class="primary"
+onclick="saveQuote()"
+data-fr="Enregistrer"
+data-en="Save">
+
+Enregistrer
+
+</button>
+
+
+<button
+class="secondary"
+onclick="closeM('quoteModal')"
+data-fr="Annuler"
+data-en="Cancel">
+
+Annuler
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div
+id="toast"
+class="toast">
+</div>
+
+
+<script>
+
+let lang = localStorage.getItem('lang') || 'fr';
+
+let tx = [];
+let inv = [];
+let pay = [];
+let quotes = [];
+
+
+function $(id){
+    return document.getElementById(id);
+}
+
+
+function tr(fr,en){
+    return lang === 'fr' ? fr : en;
+}
+
+
+function today(){
+    return new Date().toISOString().slice(0,10);
+}
+
+
+function money(n){
+
+    return new Intl.NumberFormat(
+        lang === 'fr' ? 'fr-FR' : 'en-US'
+    ).format(Number(n) || 0) + ' FCFA';
+
+}
+
+
+async function api(url,opt={}){
+
+    opt.headers = {
+        ...(opt.headers || {}),
+        'Content-Type':'application/json',
+        'X-Language':lang
+    };
+
+    const r = await fetch(url,opt);
+
+    if(r.status === 401){
+
+        location.href='/login';
+
+        return null;
+    }
+
+    let d={};
+
+    try{
+        d=await r.json();
+    }catch(e){
+        d={};
+    }
+
+    if(!r.ok){
+
+        throw Error(
+            d.error ||
+            tr(
+                'Opération impossible',
+                'Operation failed'
+            )
+        );
+
+    }
+
+    return d;
+}
+
+
+function toggleLang(){
+
+    lang = lang === 'fr' ? 'en' : 'fr';
+
+    localStorage.setItem('lang',lang);
+
+    applyLang();
+
+    renderAll();
+
+}
+
+
+function applyLang(){
+
+    document.documentElement.lang = lang;
+
+    document
+        .querySelectorAll('[data-fr][data-en]')
+        .forEach(e=>{
+
+            e.textContent =
+                lang === 'fr'
+                ? e.dataset.fr
+                : e.dataset.en;
+
+        });
+
+
+    document
+        .querySelectorAll(
+            '[data-fr-placeholder][data-en-placeholder]'
+        )
+        .forEach(e=>{
+
+            e.placeholder =
+                lang === 'fr'
+                ? e.dataset.frPlaceholder
+                : e.dataset.enPlaceholder;
+
+        });
+
+
+    $('langBtn').textContent =
+        lang === 'fr'
+        ? '🇬🇧 English'
+        : '🇫🇷 Français';
+
+
+    $('subtitle').textContent =
+        tr(
+            'Gestion financière, revenus, dépenses, factures et rentabilité',
+            'Financial management, income, expenses, invoices and profitability'
+        );
+
+}
+
+
+function tab(id,b){
+
+    document
+        .querySelectorAll('.section')
+        .forEach(e=>e.classList.remove('active'));
+
+    $(id).classList.add('active');
+
+
+    document
+        .querySelectorAll('.tab')
+        .forEach(e=>e.classList.remove('active'));
+
+
+    if(b){
+
+        b.classList.add('active');
+
+    }else{
+
+        [
+            ...document.querySelectorAll('.tab')
+        ]
+        .find(
+            e =>
+            e.getAttribute('onclick')
+            ?.includes("'" + id + "'")
+        )
+        ?.classList.add('active');
+
+    }
+
+}
+
+
+async function load(res){
+
+    try{
+
+        let d = await api('/api/' + res);
+
+        return d?.data || [];
+
+    }catch(e){
+
+        toast(e.message);
+
+        return [];
+
+    }
+
+}
+
+
+async function loadAll(){
+
+    [
+        tx,
+        inv,
+        pay,
+        quotes
+    ] = await Promise.all([
+
+        load('finance-transactions'),
+
+        load('finance-invoices'),
+
+        load('finance-payments'),
+
+        load('finance-quotes')
+
+    ]);
+
+
+    renderAll();
+
+}
+
+
+function renderAll(){
+
+    applyLang();
+
+    renderStats();
+
+    renderTx();
+
+    renderInvoices();
+
+    renderPayments();
+
+    renderQuotes();
+
+}
+
+
+function renderStats(){
+
+    let i =
+        tx
+        .filter(x=>x.type==='income')
+        .reduce(
+            (a,x)=>a+Number(x.amount||0),
+            0
+        );
+
+
+    let e =
+        tx
+        .filter(x=>x.type==='expense')
+        .reduce(
+            (a,x)=>a+Number(x.amount||0),
+            0
+        );
+
+
+    let r =
+        inv
+        .filter(
+            x =>
+            ['sent','overdue']
+            .includes(x.status)
+        )
+        .reduce(
+            (a,x)=>a+Number(x.amount||0),
+            0
+        );
+
+
+    $('income').textContent = money(i);
+
+    $('expense').textContent = money(e);
+
+    $('profit').textContent = money(i-e);
+
+    $('receivable').textContent = money(r);
+
+    $('cash').textContent = money(i-e);
+
+    $('tc').textContent = tx.length;
+
+    $('ic').textContent = inv.length;
+
+    $('pc').textContent = pay.length;
+
+
+    $('alert').style.display =
+        r ? 'block' : 'none';
+
+
+    $('alert').textContent =
+        tr(
+            '⚠️ Créances à surveiller : ' +
+            money(r) +
+            ' de factures envoyées ou en retard.',
+            '⚠️ Receivables to monitor: ' +
+            money(r) +
+            ' in sent or overdue invoices.'
+        );
+
+}
+
+
+function empty(n){
+
+    return `
+    <tr>
+        <td colspan="${n}" class="empty">
+            ${tr(
+                'Aucun enregistrement.',
+                'No records found.'
+            )}
+        </td>
+    </tr>`;
+
+}
+
+
+function renderTx(){
+
+    let q =
+        ($('txSearch').value || '')
+        .toLowerCase();
+
+    let f =
+        $('txFilter').value;
+
+
+    let a =
+        tx.filter(
+            x =>
+            (!f || x.type === f) &&
+            JSON.stringify(x)
+                .toLowerCase()
+                .includes(q)
+        );
+
+
+    $('txBody').innerHTML =
+        a.length
+
+        ?
+
+        a.map(x=>`
+
+        <tr>
+
+            <td>${x.transaction_date || ''}</td>
+
+            <td>
+
+                <span class="badge">
+
+                    ${
+                        x.type === 'income'
+                        ? tr('Revenu','Income')
+                        : tr('Dépense','Expense')
+                    }
+
+                </span>
+
+            </td>
+
+            <td>${x.category || ''}</td>
+
+            <td>${x.description || ''}</td>
+
+            <td>${x.project || ''}</td>
+
+            <td class="money">
+                ${money(x.amount)}
+            </td>
+
+            <td>
+
+                <button
+                    class="danger"
+                    onclick="del(
+                        'finance-transactions',
+                        '${x.id}'
+                    )">
+
+                    ${tr('Supprimer','Delete')}
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `).join('')
+
+        :
+
+        empty(7);
+
+}
+
+
+function status(s){
+
+    let m = {
+
+        draft:[
+            'Brouillon',
+            'Draft'
+        ],
+
+        sent:[
+            'Envoyée',
+            'Sent'
+        ],
+
+        paid:[
+            'Payée',
+            'Paid'
+        ],
+
+        overdue:[
+            'En retard',
+            'Overdue'
+        ],
+
+        cancelled:[
+            'Annulée',
+            'Cancelled'
+        ],
+
+        accepted:[
+            'Accepté',
+            'Accepted'
+        ],
+
+        rejected:[
+            'Refusé',
+            'Rejected'
+        ],
+
+        expired:[
+            'Expiré',
+            'Expired'
+        ]
+
+    };
+
+
+    return m[s]
+        ? tr(m[s][0],m[s][1])
+        : s;
+
+}
+
+
+function renderInvoices(){
+
+    let q =
+        ($('invSearch').value || '')
+        .toLowerCase();
+
+    let f =
+        $('invFilter').value;
+
+
+    let a =
+        inv.filter(
+            x =>
+            (!f || x.status === f) &&
+            JSON.stringify(x)
+                .toLowerCase()
+                .includes(q)
+        );
+
+
+    $('invBody').innerHTML =
+        a.length
+
+        ?
+
+        a.map(x=>`
+
+        <tr>
+
+            <td>
+                ${x.invoice_number || ''}
+            </td>
+
+            <td>
+                ${x.customer || ''}
+            </td>
+
+            <td>
+                ${x.invoice_date || ''}
+            </td>
+
+            <td>
+                ${x.due_date || ''}
+            </td>
+
+            <td class="money">
+                ${money(x.amount)}
+            </td>
+
+            <td>
+
+                <span class="badge">
+                    ${status(x.status)}
+                </span>
+
+            </td>
+
+            <td>
+
+                <button
+                    class="danger"
+                    onclick="del(
+                        'finance-invoices',
+                        '${x.id}'
+                    )">
+
+                    ${tr('Supprimer','Delete')}
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `).join('')
+
+        :
+
+        empty(7);
+
+}
+
+
+function renderPayments(){
+
+    let q =
+        ($('paySearch').value || '')
+        .toLowerCase();
+
+
+    let a =
+        pay.filter(
+            x =>
+            JSON.stringify(x)
+                .toLowerCase()
+                .includes(q)
+        );
+
+
+    $('payBody').innerHTML =
+        a.length
+
+        ?
+
+        a.map(x=>`
+
+        <tr>
+
+            <td>
+                ${x.payment_date || ''}
+            </td>
+
+            <td>
+                ${x.customer || ''}
+            </td>
+
+            <td>
+                ${x.invoice_number || ''}
+            </td>
+
+            <td>
+                ${x.method || ''}
+            </td>
+
+            <td>
+                ${x.reference || ''}
+            </td>
+
+            <td class="money">
+                ${money(x.amount)}
+            </td>
+
+            <td>
+
+                <button
+                    class="danger"
+                    onclick="del(
+                        'finance-payments',
+                        '${x.id}'
+                    )">
+
+                    ${tr('Supprimer','Delete')}
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `).join('')
+
+        :
+
+        empty(7);
+
+}
+
+
+function renderQuotes(){
+
+    let q =
+        ($('quoteSearch').value || '')
+        .toLowerCase();
+
+
+    let a =
+        quotes.filter(
+            x =>
+            JSON.stringify(x)
+                .toLowerCase()
+                .includes(q)
+        );
+
+
+    $('quoteBody').innerHTML =
+        a.length
+
+        ?
+
+        a.map(x=>`
+
+        <tr>
+
+            <td>
+                ${x.quote_number || ''}
+            </td>
+
+            <td>
+                ${x.customer || ''}
+            </td>
+
+            <td>
+                ${x.quote_date || ''}
+            </td>
+
+            <td>
+                ${x.valid_until || ''}
+            </td>
+
+            <td class="money">
+                ${money(x.amount)}
+            </td>
+
+            <td>
+
+                <span class="badge">
+                    ${status(x.status)}
+                </span>
+
+            </td>
+
+            <td>
+
+                <button
+                    class="danger"
+                    onclick="del(
+                        'finance-quotes',
+                        '${x.id}'
+                    )">
+
+                    ${tr('Supprimer','Delete')}
+
+                </button>
+
+            </td>
+
+        </tr>
+
+        `).join('')
+
+        :
+
+        empty(7);
+
+}
+
+
+function modal(id){
+
+    $(id).classList.add('open');
+
+}
+
+
+function closeM(id){
+
+    $(id).classList.remove('open');
+
+}
+
+
+function toast(s){
+
+    $('toast').textContent = s;
+
+    $('toast').style.display = 'block';
+
+    setTimeout(
+        () =>
+        $('toast').style.display = 'none',
+        2500
+    );
+
+}
+
+
+function openTx(type){
+
+    $('txType').value =
+        type || 'income';
+
+    $('txAmount').value = '';
+
+    $('txDate').value = today();
+
+    $('txCategory').value = '';
+
+    $('txProject').value = '';
+
+    $('txRef').value = '';
+
+    $('txDesc').value = '';
+
+    modal('txModal');
+
+}
+
+
+async function saveTx(){
+
+    let d = {
+
+        type:$('txType').value,
+
+        amount:Number(
+            $('txAmount').value || 0
+        ),
+
+        transaction_date:
+            $('txDate').value,
+
+        category:
+            $('txCategory').value.trim(),
+
+        project:
+            $('txProject').value.trim(),
+
+        reference:
+            $('txRef').value.trim(),
+
+        description:
+            $('txDesc').value.trim()
+
+    };
+
+
+    if(
+        !d.amount ||
+        !d.transaction_date
+    ){
+
+        return toast(
+            tr(
+                'Montant et date requis.',
+                'Amount and date are required.'
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api(
+            '/api/finance-transactions',
+            {
+                method:'POST',
+                body:JSON.stringify(d)
+            }
+        );
+
+
+        closeM('txModal');
+
+        toast(
+            tr(
+                'Transaction enregistrée.',
+                'Transaction saved.'
+            )
+        );
+
+
+        loadAll();
+
+    }catch(e){
+
+        toast(e.message);
+
+    }
+
+}
+
+
+function openInvoice(){
+
+    $('invNo').value =
+        'FAC-' +
+        Date.now()
+        .toString()
+        .slice(-6);
+
+    $('invCustomer').value = '';
+
+    $('invDate').value = today();
+
+    $('invDue').value = '';
+
+    $('invAmount').value = '';
+
+    $('invStatus').value = 'draft';
+
+    $('invDesc').value = '';
+
+    modal('invModal');
+
+}
+
+
+async function saveInvoice(){
+
+    let d = {
+
+        invoice_number:
+            $('invNo').value.trim(),
+
+        customer:
+            $('invCustomer').value.trim(),
+
+        invoice_date:
+            $('invDate').value,
+
+        due_date:
+            $('invDue').value,
+
+        amount:Number(
+            $('invAmount').value || 0
+        ),
+
+        status:
+            $('invStatus').value,
+
+        description:
+            $('invDesc').value.trim()
+
+    };
+
+
+    if(
+        !d.invoice_number ||
+        !d.customer ||
+        !d.amount
+    ){
+
+        return toast(
+            tr(
+                'Numéro, client et montant requis.',
+                'Number, customer and amount are required.'
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api(
+            '/api/finance-invoices',
+            {
+                method:'POST',
+                body:JSON.stringify(d)
+            }
+        );
+
+
+        closeM('invModal');
+
+        toast(
+            tr(
+                'Facture enregistrée.',
+                'Invoice saved.'
+            )
+        );
+
+
+        loadAll();
+
+    }catch(e){
+
+        toast(e.message);
+
+    }
+
+}
+
+
+function openPayment(){
+
+    $('payCustomer').value = '';
+
+    $('payInvoice').value = '';
+
+    $('payDate').value = today();
+
+    $('payAmount').value = '';
+
+    $('payMethod').value = 'cash';
+
+    $('payRef').value = '';
+
+    modal('payModal');
+
+}
+
+
+async function savePayment(){
+
+    let d = {
+
+        customer:
+            $('payCustomer').value.trim(),
+
+        invoice_number:
+            $('payInvoice').value.trim(),
+
+        payment_date:
+            $('payDate').value,
+
+        amount:Number(
+            $('payAmount').value || 0
+        ),
+
+        method:
+            $('payMethod').value,
+
+        reference:
+            $('payRef').value.trim()
+
+    };
+
+
+    if(
+        !d.customer ||
+        !d.amount
+    ){
+
+        return toast(
+            tr(
+                'Client et montant requis.',
+                'Customer and amount are required.'
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api(
+            '/api/finance-payments',
+            {
+                method:'POST',
+                body:JSON.stringify(d)
+            }
+        );
+
+
+        closeM('payModal');
+
+        toast(
+            tr(
+                'Paiement enregistré.',
+                'Payment saved.'
+            )
+        );
+
+
+        loadAll();
+
+    }catch(e){
+
+        toast(e.message);
+
+    }
+
+}
+
+
+function openQuote(){
+
+    $('quoteNo').value =
+        'DEV-' +
+        Date.now()
+        .toString()
+        .slice(-6);
+
+    $('quoteCustomer').value = '';
+
+    $('quoteDate').value = today();
+
+    $('quoteValid').value = '';
+
+    $('quoteAmount').value = '';
+
+    $('quoteStatus').value = 'draft';
+
+    $('quoteDesc').value = '';
+
+    modal('quoteModal');
+
+}
+
+
+async function saveQuote(){
+
+    let d = {
+
+        quote_number:
+            $('quoteNo').value.trim(),
+
+        customer:
+            $('quoteCustomer').value.trim(),
+
+        quote_date:
+            $('quoteDate').value,
+
+        valid_until:
+            $('quoteValid').value,
+
+        amount:Number(
+            $('quoteAmount').value || 0
+        ),
+
+        status:
+            $('quoteStatus').value,
+
+        description:
+            $('quoteDesc').value.trim()
+
+    };
+
+
+    if(
+        !d.quote_number ||
+        !d.customer ||
+        !d.amount
+    ){
+
+        return toast(
+            tr(
+                'Numéro, client et montant requis.',
+                'Number, customer and amount are required.'
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api(
+            '/api/finance-quotes',
+            {
+                method:'POST',
+                body:JSON.stringify(d)
+            }
+        );
+
+
+        closeM('quoteModal');
+
+        toast(
+            tr(
+                'Devis enregistré.',
+                'Quotation saved.'
+            )
+        );
+
+
+        loadAll();
+
+    }catch(e){
+
+        toast(e.message);
+
+    }
+
+}
+
+
+async function del(res,id){
+
+    if(
+        !confirm(
+            tr(
+                'Supprimer cet enregistrement ?',
+                'Delete this record?'
+            )
+        )
+    ){
+
+        return;
+
+    }
+
+
+    try{
+
+        await api(
+            '/api/' +
+            res +
+            '?id=' +
+            encodeURIComponent(id),
+            {
+                method:'DELETE'
+            }
+        );
+
+
+        toast(
+            tr(
+                'Supprimé avec succès.',
+                'Deleted successfully.'
+            )
+        );
+
+
+        loadAll();
+
+    }catch(e){
+
+        toast(e.message);
+
+    }
+
+}
+
+
+async function runAI(){
+
+    let p =
+        $('aiPrompt').value.trim()
+        ||
+        tr(
+            'Analyse ma situation financière et donne-moi les priorités.',
+            'Analyze my financial situation and give me priorities.'
+        );
+
+
+    $('aiOut').textContent =
+        tr(
+            'Analyse en cours...',
+            'Analysis in progress...'
+        );
+
+
+    let context = {
+
+        module:'Finance',
+
+        business:
+            'TASSIMO BTP CONSTRUCTION SARL',
+
+        language:lang,
+
+        summary:{
+
+            income:
+                tx
+                .filter(x=>x.type==='income')
+                .reduce(
+                    (a,x)=>
+                    a+Number(x.amount||0),
+                    0
+                ),
+
+            expenses:
+                tx
+                .filter(x=>x.type==='expense')
+                .reduce(
+                    (a,x)=>
+                    a+Number(x.amount||0),
+                    0
+                ),
+
+            receivables:
+                inv
+                .filter(
+                    x =>
+                    ['sent','overdue']
+                    .includes(x.status)
+                )
+                .reduce(
+                    (a,x)=>
+                    a+Number(x.amount||0),
+                    0
+                )
+
+        }
+
+    };
+
+
+    try{
+
+        let d =
+            await api(
+                '/api/ai',
+                {
+                    method:'POST',
+
+                    body:
+                        JSON.stringify({
+
+                            message:p,
+
+                            context:context
+
+                        })
+
+                }
+            );
+
+
+        $('aiOut').textContent =
+            d.reply ||
+            d.response ||
+            d.message ||
+            tr(
+                'Aucune réponse reçue.',
+                'No response received.'
+            );
+
+
+    }catch(e){
+
+        $('aiOut').textContent =
+            e.message;
+
+    }
+
+}
+
+
+window.addEventListener(
+    'click',
+    e => {
+
+        if(
+            e.target.classList.contains('modal')
+        ){
+
+            e.target.classList.remove('open');
+
+        }
+
+    }
+);
+
+
+applyLang();
+
+loadAll();
+
+</script>
+
+</body>
+</html>
