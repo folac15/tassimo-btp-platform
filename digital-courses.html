@@ -1,0 +1,3262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TASSIMO BTP CONSTRUCTION SARL - Cours numériques</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#172033;
+    min-height:100vh;
+}
+
+button,
+input,
+select,
+textarea{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.header{
+    background:#172033;
+    color:white;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo{
+    width:46px;
+    height:46px;
+    border-radius:12px;
+    background:#f59e0b;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.brand h1{
+    font-size:18px;
+}
+
+.brand p{
+    font-size:12px;
+    opacity:.75;
+    margin-top:3px;
+}
+
+.header-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.btn{
+    border:none;
+    border-radius:9px;
+    padding:10px 14px;
+    font-weight:bold;
+    transition:.2s;
+}
+
+.btn:hover{
+    transform:translateY(-1px);
+}
+
+.btn-primary{
+    background:#2563eb;
+    color:white;
+}
+
+.btn-success{
+    background:#16a34a;
+    color:white;
+}
+
+.btn-warning{
+    background:#f59e0b;
+    color:#111827;
+}
+
+.btn-danger{
+    background:#dc2626;
+    color:white;
+}
+
+.btn-dark{
+    background:#334155;
+    color:white;
+}
+
+.btn-light{
+    background:#e5e7eb;
+    color:#172033;
+}
+
+.lang-btn{
+    min-width:48px;
+}
+
+.container{
+    width:min(1400px,94%);
+    margin:25px auto;
+}
+
+.hero{
+    background:white;
+    border-radius:18px;
+    padding:25px;
+    margin-bottom:20px;
+    box-shadow:0 5px 20px rgba(0,0,0,.06);
+}
+
+.hero h2{
+    font-size:28px;
+    margin-bottom:8px;
+}
+
+.hero p{
+    color:#64748b;
+    line-height:1.6;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:15px;
+    margin-top:22px;
+}
+
+.stat{
+    background:#fff;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 5px 18px rgba(0,0,0,.05);
+}
+
+.stat .icon{
+    font-size:25px;
+    margin-bottom:10px;
+}
+
+.stat h3{
+    font-size:25px;
+    margin-bottom:4px;
+}
+
+.stat p{
+    color:#64748b;
+    font-size:13px;
+}
+
+.section{
+    background:white;
+    border-radius:17px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 5px 20px rgba(0,0,0,.05);
+}
+
+.section-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+}
+
+.section-header h3{
+    font-size:19px;
+}
+
+.quick-actions{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.action{
+    border:1px solid #e2e8f0;
+    background:#f8fafc;
+    padding:18px;
+    border-radius:13px;
+    text-align:left;
+    transition:.2s;
+}
+
+.action:hover{
+    border-color:#2563eb;
+    background:#eff6ff;
+}
+
+.action strong{
+    display:block;
+    margin-bottom:6px;
+}
+
+.action span{
+    color:#64748b;
+    font-size:12px;
+}
+
+.ai-box{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+
+.ai-input{
+    width:100%;
+    min-height:130px;
+    border:1px solid #dbe2ea;
+    border-radius:10px;
+    padding:13px;
+    resize:vertical;
+}
+
+.ai-output{
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:10px;
+    min-height:130px;
+    padding:15px;
+    white-space:pre-wrap;
+    line-height:1.6;
+}
+
+.search-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.search-row input,
+.search-row select{
+    padding:11px 13px;
+    border:1px solid #dbe2ea;
+    border-radius:9px;
+    background:white;
+}
+
+.search-row input{
+    flex:1;
+    min-width:200px;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:850px;
+}
+
+th,
+td{
+    padding:13px 10px;
+    border-bottom:1px solid #edf0f4;
+    text-align:left;
+    font-size:13px;
+}
+
+th{
+    background:#f8fafc;
+    color:#475569;
+    font-size:12px;
+    text-transform:uppercase;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.badge-blue{
+    background:#dbeafe;
+    color:#1d4ed8;
+}
+
+.badge-green{
+    background:#dcfce7;
+    color:#15803d;
+}
+
+.badge-orange{
+    background:#fef3c7;
+    color:#b45309;
+}
+
+.badge-red{
+    background:#fee2e2;
+    color:#b91c1c;
+}
+
+.badge-gray{
+    background:#e5e7eb;
+    color:#475569;
+}
+
+.actions{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+}
+
+.small-btn{
+    border:none;
+    border-radius:7px;
+    padding:7px 9px;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.empty{
+    text-align:center;
+    padding:30px;
+    color:#64748b;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    z-index:500;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+}
+
+.modal.open{
+    display:flex;
+}
+
+.modal-card{
+    width:min(700px,100%);
+    max-height:92vh;
+    overflow:auto;
+    background:white;
+    border-radius:17px;
+    padding:22px;
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.close{
+    border:none;
+    background:#f1f5f9;
+    width:35px;
+    height:35px;
+    border-radius:50%;
+    font-size:18px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.form-group.full{
+    grid-column:1/-1;
+}
+
+.form-group label{
+    font-size:12px;
+    font-weight:bold;
+    color:#475569;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+    border:1px solid #dbe2ea;
+    border-radius:9px;
+    padding:11px;
+    outline:none;
+}
+
+.form-group textarea{
+    min-height:100px;
+    resize:vertical;
+}
+
+.modal-footer{
+    display:flex;
+    justify-content:flex-end;
+    gap:9px;
+    margin-top:20px;
+}
+
+.toast{
+    position:fixed;
+    right:18px;
+    bottom:18px;
+    background:#172033;
+    color:white;
+    padding:13px 17px;
+    border-radius:10px;
+    display:none;
+    z-index:1000;
+    max-width:350px;
+}
+
+.toast.show{
+    display:block;
+}
+
+.footer{
+    text-align:center;
+    padding:25px;
+    color:#64748b;
+    font-size:12px;
+}
+
+@media(max-width:1000px){
+    .stats{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .quick-actions{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:700px){
+    .header{
+        padding:12px;
+    }
+
+    .brand h1{
+        font-size:14px;
+    }
+
+    .brand p{
+        font-size:10px;
+    }
+
+    .logo{
+        width:40px;
+        height:40px;
+        font-size:20px;
+    }
+
+    .container{
+        width:96%;
+        margin:15px auto;
+    }
+
+    .hero{
+        padding:18px;
+    }
+
+    .hero h2{
+        font-size:22px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+        gap:10px;
+    }
+
+    .stat{
+        padding:15px;
+    }
+
+    .stat h3{
+        font-size:21px;
+    }
+
+    .quick-actions{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .ai-box{
+        grid-template-columns:1fr;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .form-group.full{
+        grid-column:auto;
+    }
+
+    .header-actions .btn:first-child{
+        display:none;
+    }
+}
+
+@media(max-width:430px){
+    .quick-actions{
+        grid-template-columns:1fr;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .header-actions{
+        gap:4px;
+    }
+
+    .btn{
+        padding:8px 10px;
+        font-size:12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="brand">
+        <div class="logo">T</div>
+        <div>
+            <h1>TASSIMO BTP CONSTRUCTION SARL</h1>
+            <p>Cours numériques / Digital Courses</p>
+        </div>
+    </div>
+
+    <div class="header-actions">
+        <button class="btn btn-light" onclick="goDashboard()">
+            🏠 <span data-fr="Tableau de bord" data-en="Dashboard">Tableau de bord</span>
+        </button>
+
+        <button class="btn btn-warning lang-btn" onclick="toggleLanguage()">
+            FR
+        </button>
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <section class="hero">
+
+        <h2 data-fr="💻 Cours numériques"
+            data-en="💻 Digital Courses">
+            💻 Cours numériques
+        </h2>
+
+        <p data-fr="Gérez vos formations numériques, leçons, apprenants, inscriptions et certificats depuis un seul espace."
+           data-en="Manage your digital courses, lessons, learners, enrollments and certificates from one place.">
+            Gérez vos formations numériques, leçons, apprenants, inscriptions et certificats depuis un seul espace.
+        </p>
+
+        <div class="stats">
+
+            <div class="stat">
+                <div class="icon">📚</div>
+                <h3 id="statCourses">0</h3>
+                <p data-fr="Cours" data-en="Courses">Cours</p>
+            </div>
+
+            <div class="stat">
+                <div class="icon">🎬</div>
+                <h3 id="statLessons">0</h3>
+                <p data-fr="Leçons" data-en="Lessons">Leçons</p>
+            </div>
+
+            <div class="stat">
+                <div class="icon">👨‍🎓</div>
+                <h3 id="statLearners">0</h3>
+                <p data-fr="Apprenants" data-en="Learners">Apprenants</p>
+            </div>
+
+            <div class="stat">
+                <div class="icon">📝</div>
+                <h3 id="statEnrollments">0</h3>
+                <p data-fr="Inscriptions" data-en="Enrollments">Inscriptions</p>
+            </div>
+
+            <div class="stat">
+                <div class="icon">💰</div>
+                <h3 id="statRevenue">0</h3>
+                <p data-fr="Revenus" data-en="Revenue">Revenus</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- QUICK ACTIONS -->
+
+    <section class="section">
+
+        <div class="section-header">
+            <h3 data-fr="⚡ Actions rapides"
+                data-en="⚡ Quick Actions">
+                ⚡ Actions rapides
+            </h3>
+        </div>
+
+        <div class="quick-actions">
+
+            <button class="action" onclick="openCourse()">
+                <strong>➕ <span data-fr="Nouveau cours"
+                                  data-en="New Course">Nouveau cours</span></strong>
+                <span data-fr="Créer un nouveau cours numérique"
+                      data-en="Create a new digital course">
+                    Créer un nouveau cours numérique
+                </span>
+            </button>
+
+            <button class="action" onclick="openLesson()">
+                <strong>🎬 <span data-fr="Nouvelle leçon"
+                                  data-en="New Lesson">Nouvelle leçon</span></strong>
+                <span data-fr="Ajouter une leçon au programme"
+                      data-en="Add a lesson to a course">
+                    Ajouter une leçon au programme
+                </span>
+            </button>
+
+            <button class="action" onclick="openEnrollment()">
+                <strong>👨‍🎓 <span data-fr="Nouvelle inscription"
+                                      data-en="New Enrollment">Nouvelle inscription</span></strong>
+                <span data-fr="Inscrire un apprenant"
+                      data-en="Enroll a learner">
+                    Inscrire un apprenant
+                </span>
+            </button>
+
+            <button class="action" onclick="openCertificate()">
+                <strong>🏆 <span data-fr="Certificat"
+                                  data-en="Certificate">Certificat</span></strong>
+                <span data-fr="Créer un certificat"
+                      data-en="Create a certificate">
+                    Créer un certificat
+                </span>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- AI -->
+
+    <section class="section">
+
+        <div class="section-header">
+            <h3>🤖 <span data-fr="Assistant IA des cours"
+                        data-en="Course AI Assistant">
+                Assistant IA des cours
+            </span></h3>
+        </div>
+
+        <div class="ai-box">
+
+            <div>
+
+                <textarea id="aiPrompt"
+                    class="ai-input"
+                    data-placeholder-fr="Demandez à l'IA de créer un programme, améliorer un cours, proposer des leçons ou analyser vos formations..."
+                    data-placeholder-en="Ask AI to create a curriculum, improve a course, suggest lessons or analyze your training..."
+                    placeholder="Demandez à l'IA de créer un programme, améliorer un cours, proposer des leçons ou analyser vos formations..."></textarea>
+
+                <br><br>
+
+                <button class="btn btn-primary" onclick="runAI()">
+                    🤖 <span data-fr="Analyser avec l'IA"
+                              data-en="Analyze with AI">
+                        Analyser avec l'IA
+                    </span>
+                </button>
+
+            </div>
+
+            <div id="aiOutput" class="ai-output">
+                <span data-fr="La réponse de l'IA apparaîtra ici."
+                      data-en="The AI response will appear here.">
+                    La réponse de l'IA apparaîtra ici.
+                </span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- COURSES -->
+
+    <section class="section">
+
+        <div class="section-header">
+
+            <h3>📚 <span data-fr="Cours numériques"
+                        data-en="Digital Courses">
+                Cours numériques
+            </span></h3>
+
+            <button class="btn btn-primary" onclick="openCourse()">
+                ➕ <span data-fr="Ajouter"
+                          data-en="Add">
+                    Ajouter
+                </span>
+            </button>
+
+        </div>
+
+        <div class="search-row">
+
+            <input id="courseSearch"
+                   type="text"
+                   oninput="renderCourses()"
+                   data-placeholder-fr="Rechercher un cours..."
+                   data-placeholder-en="Search for a course..."
+                   placeholder="Rechercher un cours...">
+
+            <select id="courseStatusFilter" onchange="renderCourses()">
+                <option value=""
+                        data-fr="Tous les statuts"
+                        data-en="All statuses">
+                    Tous les statuts
+                </option>
+
+                <option value="draft"
+                        data-fr="Brouillon"
+                        data-en="Draft">
+                    Brouillon
+                </option>
+
+                <option value="published"
+                        data-fr="Publié"
+                        data-en="Published">
+                    Publié
+                </option>
+
+                <option value="completed"
+                        data-fr="Terminé"
+                        data-en="Completed">
+                    Terminé
+                </option>
+
+                <option value="cancelled"
+                        data-fr="Annulé"
+                        data-en="Cancelled">
+                    Annulé
+                </option>
+            </select>
+
+        </div>
+
+        <br>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th data-fr="Cours" data-en="Course">Cours</th>
+                        <th data-fr="Catégorie" data-en="Category">Catégorie</th>
+                        <th data-fr="Formateur" data-en="Instructor">Formateur</th>
+                        <th data-fr="Prix" data-en="Price">Prix</th>
+                        <th data-fr="Niveau" data-en="Level">Niveau</th>
+                        <th data-fr="Statut" data-en="Status">Statut</th>
+                        <th data-fr="Actions" data-en="Actions">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="coursesBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- LESSONS -->
+
+    <section class="section">
+
+        <div class="section-header">
+
+            <h3>🎬 <span data-fr="Leçons"
+                        data-en="Lessons">
+                Leçons
+            </span></h3>
+
+            <button class="btn btn-primary" onclick="openLesson()">
+                ➕ <span data-fr="Ajouter"
+                          data-en="Add">
+                    Ajouter
+                </span>
+            </button>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th data-fr="Leçon" data-en="Lesson">Leçon</th>
+                        <th data-fr="Cours" data-en="Course">Cours</th>
+                        <th data-fr="Type" data-en="Type">Type</th>
+                        <th data-fr="Durée" data-en="Duration">Durée</th>
+                        <th data-fr="Ordre" data-en="Order">Ordre</th>
+                        <th data-fr="Actions" data-en="Actions">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="lessonsBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- LEARNERS -->
+
+    <section class="section">
+
+        <div class="section-header">
+
+            <h3>👨‍🎓 <span data-fr="Apprenants"
+                        data-en="Learners">
+                Apprenants
+            </span></h3>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th data-fr="Nom" data-en="Name">Nom</th>
+                        <th data-fr="Email" data-en="Email">Email</th>
+                        <th data-fr="Cours" data-en="Course">Cours</th>
+                        <th data-fr="Date d'inscription"
+                            data-en="Enrollment Date">
+                            Date d'inscription
+                        </th>
+                        <th data-fr="Paiement"
+                            data-en="Payment">
+                            Paiement
+                        </th>
+                        <th data-fr="Progression"
+                            data-en="Progress">
+                            Progression
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody id="learnersBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- ENROLLMENTS -->
+
+    <section class="section">
+
+        <div class="section-header">
+
+            <h3>📝 <span data-fr="Inscriptions"
+                        data-en="Enrollments">
+                Inscriptions
+            </span></h3>
+
+            <button class="btn btn-primary" onclick="openEnrollment()">
+                ➕ <span data-fr="Nouvelle inscription"
+                          data-en="New Enrollment">
+                    Nouvelle inscription
+                </span>
+            </button>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th data-fr="Apprenant" data-en="Learner">Apprenant</th>
+                        <th data-fr="Cours" data-en="Course">Cours</th>
+                        <th data-fr="Montant payé" data-en="Amount Paid">Montant payé</th>
+                        <th data-fr="Date" data-en="Date">Date</th>
+                        <th data-fr="Paiement" data-en="Payment">Paiement</th>
+                        <th data-fr="Progression" data-en="Progress">Progression</th>
+                        <th data-fr="Actions" data-en="Actions">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="enrollmentsBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- CERTIFICATES -->
+
+    <section class="section">
+
+        <div class="section-header">
+
+            <h3>🏆 <span data-fr="Certificats"
+                        data-en="Certificates">
+                Certificats
+            </span></h3>
+
+            <button class="btn btn-success" onclick="openCertificate()">
+                🏆 <span data-fr="Créer"
+                          data-en="Create">
+                    Créer
+                </span>
+            </button>
+
+        </div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th data-fr="Apprenant" data-en="Learner">Apprenant</th>
+                        <th data-fr="Cours" data-en="Course">Cours</th>
+                        <th data-fr="N° certificat" data-en="Certificate No.">N° certificat</th>
+                        <th data-fr="Date" data-en="Date">Date</th>
+                        <th data-fr="Résultat" data-en="Result">Résultat</th>
+                        <th data-fr="Actions" data-en="Actions">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="certificatesBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="footer">
+    TASSIMO BTP CONSTRUCTION SARL —
+    <span data-fr="Together, let us build excellence."
+          data-en="Together, let us build excellence.">
+        Together, let us build excellence.
+    </span>
+</footer>
+
+
+<!-- COURSE MODAL -->
+
+<div id="courseModal" class="modal">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <h3 data-fr="📚 Nouveau cours"
+                data-en="📚 New Course">
+                📚 Nouveau cours
+            </h3>
+
+            <button class="close" onclick="closeModal('courseModal')">×</button>
+
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group full">
+                <label data-fr="Nom du cours *"
+                       data-en="Course Name *">
+                    Nom du cours *
+                </label>
+
+                <input id="courseName">
+            </div>
+
+            <div class="form-group">
+                <label data-fr="Catégorie"
+                       data-en="Category">
+                    Catégorie
+                </label>
+
+                <input id="courseCategory">
+            </div>
+
+            <div class="form-group">
+                <label data-fr="Formateur"
+                       data-en="Instructor">
+                    Formateur
+                </label>
+
+                <input id="courseInstructor">
+            </div>
+
+            <div class="form-group">
+                <label data-fr="Prix"
+                       data-en="Price">
+                    Prix
+                </label>
+
+                <input id="coursePrice" type="number" min="0">
+            </div>
+
+            <div class="form-group">
+                <label data-fr="Durée"
+                       data-en="Duration">
+                    Durée
+                </label>
+
+                <input id="courseDuration"
+                       data-placeholder-fr="Ex: 6 semaines"
+                       data-placeholder-en="Example: 6 weeks"
+                       placeholder="Ex: 6 semaines">
+            </div>
+
+            <div class="form-group">
+                <label data-fr="Niveau"
+                       data-en="Level">
+                    Niveau
+                </label>
+
+                <select id="courseLevel">
+
+                    <option value="beginner"
+                            data-fr="Débutant"
+                            data-en="Beginner">
+                        Débutant
+                    </option>
+
+                    <option value="intermediate"
+                            data-fr="Intermédiaire"
+                            data-en="Intermediate">
+                        Intermédiaire
+                    </option>
+
+                    <option value="advanced"
+                            data-fr="Avancé"
+                            data-en="Advanced">
+                        Avancé
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label data-fr="Statut"
+                       data-en="Status">
+                    Statut
+                </label>
+
+                <select id="courseStatus">
+
+                    <option value="draft"
+                            data-fr="Brouillon"
+                            data-en="Draft">
+                        Brouillon
+                    </option>
+
+                    <option value="published"
+                            data-fr="Publié"
+                            data-en="Published">
+                        Publié
+                    </option>
+
+                    <option value="completed"
+                            data-fr="Terminé"
+                            data-en="Completed">
+                        Terminé
+                    </option>
+
+                    <option value="cancelled"
+                            data-fr="Annulé"
+                            data-en="Cancelled">
+                        Annulé
+                    </option>
+
+                </select>
+            </div>
+
+            <div class="form-group full">
+                <label data-fr="Description"
+                       data-en="Description">
+                    Description
+                </label>
+
+                <textarea id="courseDescription"></textarea>
+            </div>
+
+            <div class="form-group full">
+                <label data-fr="URL de couverture"
+                       data-en="Cover URL">
+                    URL de couverture
+                </label>
+
+                <input id="courseCover">
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button class="btn btn-light"
+                    onclick="closeModal('courseModal')">
+                <span data-fr="Annuler"
+                      data-en="Cancel">
+                    Annuler
+                </span>
+            </button>
+
+            <button class="btn btn-primary"
+                    onclick="saveCourse()">
+                💾 <span data-fr="Enregistrer"
+                          data-en="Save">
+                    Enregistrer
+                </span>
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- LESSON MODAL -->
+
+<div id="lessonModal" class="modal">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <h3 data-fr="🎬 Nouvelle leçon"
+                data-en="🎬 New Lesson">
+                🎬 Nouvelle leçon
+            </h3>
+
+            <button class="close" onclick="closeModal('lessonModal')">×</button>
+
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group full">
+
+                <label data-fr="Titre de la leçon *"
+                       data-en="Lesson Title *">
+                    Titre de la leçon *
+                </label>
+
+                <input id="lessonTitle">
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Cours"
+                       data-en="Course">
+                    Cours
+                </label>
+
+                <select id="lessonCourse"></select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Type"
+                       data-en="Type">
+                    Type
+                </label>
+
+                <select id="lessonType">
+
+                    <option value="video"
+                            data-fr="Vidéo"
+                            data-en="Video">
+                        Vidéo
+                    </option>
+
+                    <option value="document"
+                            data-fr="Document"
+                            data-en="Document">
+                        Document
+                    </option>
+
+                    <option value="quiz"
+                            data-fr="Quiz"
+                            data-en="Quiz">
+                        Quiz
+                    </option>
+
+                    <option value="live"
+                            data-fr="Session en direct"
+                            data-en="Live Session">
+                        Session en direct
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Durée"
+                       data-en="Duration">
+                    Durée
+                </label>
+
+                <input id="lessonDuration">
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Ordre"
+                       data-en="Order">
+                    Ordre
+                </label>
+
+                <input id="lessonOrder"
+                       type="number"
+                       value="1"
+                       min="1">
+
+            </div>
+
+            <div class="form-group full">
+
+                <label data-fr="URL vidéo"
+                       data-en="Video URL">
+                    URL vidéo
+                </label>
+
+                <input id="lessonVideo">
+
+            </div>
+
+            <div class="form-group full">
+
+                <label data-fr="Contenu"
+                       data-en="Content">
+                    Contenu
+                </label>
+
+                <textarea id="lessonContent"></textarea>
+
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button class="btn btn-light"
+                    onclick="closeModal('lessonModal')">
+                <span data-fr="Annuler"
+                      data-en="Cancel">
+                    Annuler
+                </span>
+            </button>
+
+            <button class="btn btn-primary"
+                    onclick="saveLesson()">
+                💾 <span data-fr="Enregistrer"
+                          data-en="Save">
+                    Enregistrer
+                </span>
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ENROLLMENT MODAL -->
+
+<div id="enrollmentModal" class="modal">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <h3 data-fr="👨‍🎓 Nouvelle inscription"
+                data-en="👨‍🎓 New Enrollment">
+                👨‍🎓 Nouvelle inscription
+            </h3>
+
+            <button class="close" onclick="closeModal('enrollmentModal')">×</button>
+
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label data-fr="Nom de l'apprenant *"
+                       data-en="Learner Name *">
+                    Nom de l'apprenant *
+                </label>
+
+                <input id="enrollLearner">
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Email"
+                       data-en="Email">
+                    Email
+                </label>
+
+                <input id="enrollEmail"
+                       type="email">
+
+            </div>
+
+            <div class="form-group full">
+
+                <label data-fr="Cours"
+                       data-en="Course">
+                    Cours
+                </label>
+
+                <select id="enrollCourse"></select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Montant payé"
+                       data-en="Amount Paid">
+                    Montant payé
+                </label>
+
+                <input id="enrollAmount"
+                       type="number"
+                       min="0">
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Date d'inscription"
+                       data-en="Enrollment Date">
+                    Date d'inscription
+                </label>
+
+                <input id="enrollDate"
+                       type="date">
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Statut du paiement"
+                       data-en="Payment Status">
+                    Statut du paiement
+                </label>
+
+                <select id="enrollPayment">
+
+                    <option value="pending"
+                            data-fr="En attente"
+                            data-en="Pending">
+                        En attente
+                    </option>
+
+                    <option value="partial"
+                            data-fr="Partiel"
+                            data-en="Partial">
+                        Partiel
+                    </option>
+
+                    <option value="paid"
+                            data-fr="Payé"
+                            data-en="Paid">
+                        Payé
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Progression (%)"
+                       data-en="Progress (%)">
+                    Progression (%)
+                </label>
+
+                <input id="enrollProgress"
+                       type="number"
+                       min="0"
+                       max="100"
+                       value="0">
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button class="btn btn-light"
+                    onclick="closeModal('enrollmentModal')">
+                <span data-fr="Annuler"
+                      data-en="Cancel">
+                    Annuler
+                </span>
+            </button>
+
+            <button class="btn btn-primary"
+                    onclick="saveEnrollment()">
+                💾 <span data-fr="Enregistrer"
+                          data-en="Save">
+                    Enregistrer
+                </span>
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- CERTIFICATE MODAL -->
+
+<div id="certificateModal" class="modal">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <h3 data-fr="🏆 Nouveau certificat"
+                data-en="🏆 New Certificate">
+                🏆 Nouveau certificat
+            </h3>
+
+            <button class="close" onclick="closeModal('certificateModal')">×</button>
+
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label data-fr="Nom de l'apprenant *"
+                       data-en="Learner Name *">
+                    Nom de l'apprenant *
+                </label>
+
+                <input id="certLearner">
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Cours"
+                       data-en="Course">
+                    Cours
+                </label>
+
+                <select id="certCourse"></select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Numéro du certificat *"
+                       data-en="Certificate Number *">
+                    Numéro du certificat *
+                </label>
+
+                <input id="certNumber">
+
+            </div>
+
+            <div class="form-group">
+
+                <label data-fr="Date"
+                       data-en="Date">
+                    Date
+                </label>
+
+                <input id="certDate"
+                       type="date">
+
+            </div>
+
+            <div class="form-group full">
+
+                <label data-fr="Résultat"
+                       data-en="Result">
+                    Résultat
+                </label>
+
+                <input id="certResult"
+                       data-placeholder-fr="Ex: Réussite avec distinction"
+                       data-placeholder-en="Example: Passed with distinction"
+                       placeholder="Ex: Réussite avec distinction">
+
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button class="btn btn-light"
+                    onclick="closeModal('certificateModal')">
+                <span data-fr="Annuler"
+                      data-en="Cancel">
+                    Annuler
+                </span>
+            </button>
+
+            <button class="btn btn-success"
+                    onclick="saveCertificate()">
+                🏆 <span data-fr="Créer le certificat"
+                          data-en="Create Certificate">
+                    Créer le certificat
+                </span>
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="toast" class="toast"></div>
+
+
+<script>
+
+let language = localStorage.getItem("lang") || "fr";
+
+let courses = [];
+let lessons = [];
+let enrollments = [];
+let certificates = [];
+
+
+/* =========================
+   TRANSLATION
+========================= */
+
+function tr(fr,en){
+    return language === "fr" ? fr : en;
+}
+
+
+function applyLanguage(){
+
+    document.documentElement.lang = language;
+
+    document.querySelectorAll("[data-fr][data-en]").forEach(el=>{
+
+        if(el.tagName === "OPTION"){
+            el.textContent =
+                language === "fr"
+                ? el.getAttribute("data-fr")
+                : el.getAttribute("data-en");
+        }else{
+            el.textContent =
+                language === "fr"
+                ? el.getAttribute("data-fr")
+                : el.getAttribute("data-en");
+        }
+
+    });
+
+
+    document.querySelectorAll("[data-placeholder-fr]").forEach(el=>{
+
+        el.placeholder =
+            language === "fr"
+            ? el.getAttribute("data-placeholder-fr")
+            : el.getAttribute("data-placeholder-en");
+
+    });
+
+    const langButton = document.querySelector(".lang-btn");
+
+    if(langButton){
+        langButton.textContent = language === "fr" ? "EN" : "FR";
+    }
+
+    renderCourses();
+    renderLessons();
+    renderEnrollments();
+    renderLearners();
+    renderCertificates();
+
+}
+
+
+function toggleLanguage(){
+
+    language = language === "fr" ? "en" : "fr";
+
+    localStorage.setItem("lang",language);
+
+    applyLanguage();
+
+}
+
+
+/* =========================
+   API
+========================= */
+
+async function api(url,options={}){
+
+    options.headers = {
+        ...(options.headers || {}),
+        "Content-Type":"application/json",
+        "X-Language":language
+    };
+
+    const response = await fetch(url,options);
+
+    if(response.status === 401){
+
+        window.location.href="/login";
+
+        return null;
+    }
+
+    let data={};
+
+    try{
+        data = await response.json();
+    }catch(error){
+        data={};
+    }
+
+    if(!response.ok){
+
+        throw new Error(
+            data.error ||
+            tr(
+                "Une erreur est survenue.",
+                "An error occurred."
+            )
+        );
+
+    }
+
+    return data;
+
+}
+
+
+/* =========================
+   HELPERS
+========================= */
+
+function $(id){
+    return document.getElementById(id);
+}
+
+
+function esc(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+function today(){
+
+    return new Date().toISOString().slice(0,10);
+
+}
+
+
+function money(value){
+
+    return Number(value || 0).toLocaleString(
+        language === "fr" ? "fr-FR" : "en-US"
+    ) + " FCFA";
+
+}
+
+
+function toast(message){
+
+    const box = $("toast");
+
+    box.textContent = message;
+
+    box.classList.add("show");
+
+    setTimeout(()=>{
+        box.classList.remove("show");
+    },3000);
+
+}
+
+
+function openModal(id){
+
+    $(id).classList.add("open");
+
+}
+
+
+function closeModal(id){
+
+    $(id).classList.remove("open");
+
+}
+
+
+function goDashboard(){
+
+    window.location.href="/";
+
+}
+
+
+/* =========================
+   COURSE
+========================= */
+
+function openCourse(){
+
+    $("courseName").value="";
+    $("courseCategory").value="";
+    $("courseInstructor").value="";
+    $("coursePrice").value="";
+    $("courseDuration").value="";
+    $("courseLevel").value="beginner";
+    $("courseStatus").value="draft";
+    $("courseDescription").value="";
+    $("courseCover").value="";
+
+    openModal("courseModal");
+
+}
+
+
+async function saveCourse(){
+
+    const data = {
+
+        name:$("courseName").value.trim(),
+
+        title:$("courseName").value.trim(),
+
+        category:$("courseCategory").value.trim(),
+
+        instructor:$("courseInstructor").value.trim(),
+
+        price:Number($("coursePrice").value || 0),
+
+        duration:$("courseDuration").value.trim(),
+
+        level:$("courseLevel").value,
+
+        status:$("courseStatus").value,
+
+        description:$("courseDescription").value.trim(),
+
+        cover_url:$("courseCover").value.trim()
+
+    };
+
+
+    if(!data.name){
+
+        return toast(
+            tr(
+                "Le nom du cours est obligatoire.",
+                "Course name is required."
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api(
+            "/api/digital-courses",
+            {
+                method:"POST",
+                body:JSON.stringify(data)
+            }
+        );
+
+        closeModal("courseModal");
+
+        toast(
+            tr(
+                "Cours enregistré avec succès.",
+                "Course saved successfully."
+            )
+        );
+
+        await loadAll();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+
+/* =========================
+   LESSON
+========================= */
+
+function populateCourseSelects(){
+
+    const selects = [
+        $("lessonCourse"),
+        $("enrollCourse"),
+        $("certCourse")
+    ];
+
+    selects.forEach(select=>{
+
+        if(!select) return;
+
+        select.innerHTML =
+            `<option value="">
+                ${tr("Sélectionner un cours","Select a course")}
+            </option>`;
+
+        courses.forEach(course=>{
+
+            const option=document.createElement("option");
+
+            option.value=course.id;
+
+            option.textContent=
+                course.name ||
+                course.title ||
+                "Cours";
+
+            select.appendChild(option);
+
+        });
+
+    });
+
+}
+
+
+function openLesson(){
+
+    populateCourseSelects();
+
+    $("lessonTitle").value="";
+    $("lessonCourse").value="";
+    $("lessonType").value="video";
+    $("lessonDuration").value="";
+    $("lessonOrder").value="1";
+    $("lessonVideo").value="";
+    $("lessonContent").value="";
+
+    openModal("lessonModal");
+
+}
+
+
+async function saveLesson(){
+
+    const data={
+
+        title:$("lessonTitle").value.trim(),
+
+        course_id:$("lessonCourse").value || null,
+
+        type:$("lessonType").value,
+
+        duration:$("lessonDuration").value.trim(),
+
+        lesson_order:Number($("lessonOrder").value || 1),
+
+        video_url:$("lessonVideo").value.trim(),
+
+        content:$("lessonContent").value.trim()
+
+    };
+
+
+    if(!data.title){
+
+        return toast(
+            tr(
+                "Le titre de la leçon est obligatoire.",
+                "Lesson title is required."
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api(
+            "/api/digital-lessons",
+            {
+                method:"POST",
+                body:JSON.stringify(data)
+            }
+        );
+
+        closeModal("lessonModal");
+
+        toast(
+            tr(
+                "Leçon enregistrée avec succès.",
+                "Lesson saved successfully."
+            )
+        );
+
+        await loadAll();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+
+/* =========================
+   ENROLLMENT
+========================= */
+
+function openEnrollment(){
+
+    populateCourseSelects();
+
+    $("enrollLearner").value="";
+    $("enrollEmail").value="";
+    $("enrollCourse").value="";
+    $("enrollAmount").value="";
+    $("enrollDate").value=today();
+    $("enrollPayment").value="pending";
+    $("enrollProgress").value="0";
+
+    openModal("enrollmentModal");
+
+}
+
+
+async function saveEnrollment(){
+
+    const data={
+
+        learner_name:$("enrollLearner").value.trim(),
+
+        email:$("enrollEmail").value.trim(),
+
+        course_id:$("enrollCourse").value || null,
+
+        amount_paid:Number($("enrollAmount").value || 0),
+
+        enrollment_date:$("enrollDate").value || today(),
+
+        payment_status:$("enrollPayment").value,
+
+        progress:Number($("enrollProgress").value || 0)
+
+    };
+
+
+    if(!data.learner_name){
+
+        return toast(
+            tr(
+                "Le nom de l'apprenant est obligatoire.",
+                "Learner name is required."
+            )
+        );
+
+    }
+
+
+    if(data.progress < 0) data.progress=0;
+
+    if(data.progress > 100) data.progress=100;
+
+
+    try{
+
+        await api(
+            "/api/digital-enrollments",
+            {
+                method:"POST",
+                body:JSON.stringify(data)
+            }
+        );
+
+        closeModal("enrollmentModal");
+
+        toast(
+            tr(
+                "Inscription enregistrée avec succès.",
+                "Enrollment saved successfully."
+            )
+        );
+
+        await loadAll();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+
+/* =========================
+   CERTIFICATE
+========================= */
+
+function openCertificate(){
+
+    populateCourseSelects();
+
+    $("certLearner").value="";
+    $("certCourse").value="";
+    $("certNumber").value=
+        "CERT-"+Date.now().toString().slice(-8);
+
+    $("certDate").value=today();
+
+    $("certResult").value="";
+
+    openModal("certificateModal");
+
+}
+
+
+async function saveCertificate(){
+
+    const data={
+
+        learner_name:$("certLearner").value.trim(),
+
+        course_id:$("certCourse").value || null,
+
+        certificate_number:$("certNumber").value.trim(),
+
+        certificate_date:$("certDate").value || today(),
+
+        result:$("certResult").value.trim()
+
+    };
+
+
+    if(!data.learner_name || !data.certificate_number){
+
+        return toast(
+            tr(
+                "Le nom et le numéro du certificat sont obligatoires.",
+                "Learner name and certificate number are required."
+            )
+        );
+
+    }
+
+
+    try{
+
+        await api(
+            "/api/digital-certificates",
+            {
+                method:"POST",
+                body:JSON.stringify(data)
+            }
+        );
+
+        closeModal("certificateModal");
+
+        toast(
+            tr(
+                "Certificat créé avec succès.",
+                "Certificate created successfully."
+            )
+        );
+
+        await loadAll();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+
+/* =========================
+   COURSE NAME
+========================= */
+
+function courseName(id){
+
+    const course=courses.find(
+        x=>String(x.id)===String(id)
+    );
+
+    if(!course){
+
+        return "—";
+
+    }
+
+    return esc(
+        course.name ||
+        course.title ||
+        "Cours"
+    );
+
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+function statusLabel(status){
+
+    const map={
+
+        draft:{
+            fr:"Brouillon",
+            en:"Draft",
+            cls:"badge-gray"
+        },
+
+        published:{
+            fr:"Publié",
+            en:"Published",
+            cls:"badge-green"
+        },
+
+        completed:{
+            fr:"Terminé",
+            en:"Completed",
+            cls:"badge-blue"
+        },
+
+        cancelled:{
+            fr:"Annulé",
+            en:"Cancelled",
+            cls:"badge-red"
+        }
+
+    };
+
+    const x=map[status] || {
+        fr:status || "—",
+        en:status || "—",
+        cls:"badge-gray"
+    };
+
+    return `<span class="badge ${x.cls}">
+        ${language==="fr"?x.fr:x.en}
+    </span>`;
+
+}
+
+
+function paymentLabel(status){
+
+    const map={
+
+        pending:{
+            fr:"En attente",
+            en:"Pending",
+            cls:"badge-orange"
+        },
+
+        partial:{
+            fr:"Partiel",
+            en:"Partial",
+            cls:"badge-blue"
+        },
+
+        paid:{
+            fr:"Payé",
+            en:"Paid",
+            cls:"badge-green"
+        }
+
+    };
+
+    const x=map[status] || {
+        fr:status || "—",
+        en:status || "—",
+        cls:"badge-gray"
+    };
+
+    return `<span class="badge ${x.cls}">
+        ${language==="fr"?x.fr:x.en}
+    </span>`;
+
+}
+
+
+function lessonTypeLabel(type){
+
+    const map={
+
+        video:{
+            fr:"Vidéo",
+            en:"Video"
+        },
+
+        document:{
+            fr:"Document",
+            en:"Document"
+        },
+
+        quiz:{
+            fr:"Quiz",
+            en:"Quiz"
+        },
+
+        live:{
+            fr:"Direct",
+            en:"Live"
+        }
+
+    };
+
+    return language==="fr"
+        ? (map[type]?.fr || type || "—")
+        : (map[type]?.en || type || "—");
+
+}
+
+
+/* =========================
+   RENDER COURSES
+========================= */
+
+function renderCourses(){
+
+    const body=$("coursesBody");
+
+    if(!body) return;
+
+    const search=
+        ($("courseSearch")?.value || "")
+        .trim()
+        .toLowerCase();
+
+    const status=
+        $("courseStatusFilter")?.value || "";
+
+
+    const filtered=courses.filter(course=>{
+
+        const name=String(
+            course.name ||
+            course.title ||
+            ""
+        ).toLowerCase();
+
+        const category=String(
+            course.category || ""
+        ).toLowerCase();
+
+        const matchesSearch=
+            !search ||
+            name.includes(search) ||
+            category.includes(search);
+
+        const matchesStatus=
+            !status ||
+            course.status===status;
+
+        return matchesSearch && matchesStatus;
+
+    });
+
+
+    if(!filtered.length){
+
+        body.innerHTML=`
+            <tr>
+                <td colspan="7" class="empty">
+                    ${tr(
+                        "Aucun cours disponible.",
+                        "No courses available."
+                    )}
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+
+    body.innerHTML=filtered.map(course=>`
+
+        <tr>
+
+            <td>
+                <strong>
+                    ${esc(course.name || course.title || "—")}
+                </strong>
+
+                ${
+                    course.duration
+                    ? `<br><small>${esc(course.duration)}</small>`
+                    : ""
+                }
+
+            </td>
+
+            <td>
+                ${esc(course.category || "—")}
+            </td>
+
+            <td>
+                ${esc(course.instructor || "—")}
+            </td>
+
+            <td>
+                ${money(course.price)}
+            </td>
+
+            <td>
+                ${esc(course.level || "—")}
+            </td>
+
+            <td>
+                ${statusLabel(course.status)}
+            </td>
+
+            <td>
+
+                <div class="actions">
+
+                    <button
+                        class="small-btn btn-danger"
+                        onclick="deleteRecord('digital-courses','${course.id}')">
+                        🗑️
+                    </button>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+    `).join("");
+
+}
+
+
+/* =========================
+   RENDER LESSONS
+========================= */
+
+function renderLessons(){
+
+    const body=$("lessonsBody");
+
+    if(!body) return;
+
+
+    if(!lessons.length){
+
+        body.innerHTML=`
+            <tr>
+                <td colspan="6" class="empty">
+                    ${tr(
+                        "Aucune leçon disponible.",
+                        "No lessons available."
+                    )}
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+
+    body.innerHTML=lessons.map(lesson=>`
+
+        <tr>
+
+            <td>
+                <strong>
+                    ${esc(lesson.title || "—")}
+                </strong>
+            </td>
+
+            <td>
+                ${courseName(lesson.course_id)}
+            </td>
+
+            <td>
+                ${esc(
+                    lessonTypeLabel(lesson.type)
+                )}
+            </td>
+
+            <td>
+                ${esc(lesson.duration || "—")}
+            </td>
+
+            <td>
+                ${esc(lesson.lesson_order || "—")}
+            </td>
+
+            <td>
+
+                <div class="actions">
+
+                    ${
+                        lesson.video_url
+                        ?
+                        `<a
+                            href="${esc(lesson.video_url)}"
+                            target="_blank"
+                            class="small-btn btn-primary"
+                            style="text-decoration:none;">
+                            ▶️
+                        </a>`
+                        :
+                        ""
+                    }
+
+                    <button
+                        class="small-btn btn-danger"
+                        onclick="deleteRecord('digital-lessons','${lesson.id}')">
+                        🗑️
+                    </button>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+    `).join("");
+
+}
+
+
+/* =========================
+   LEARNERS
+========================= */
+
+function renderLearners(){
+
+    const body=$("learnersBody");
+
+    if(!body) return;
+
+
+    const map=new Map();
+
+
+    enrollments.forEach(enrollment=>{
+
+        const key=
+            String(
+                enrollment.email ||
+                enrollment.learner_name ||
+                ""
+            ).toLowerCase();
+
+
+        if(!key) return;
+
+
+        if(!map.has(key)){
+
+            map.set(key,enrollment);
+
+        }
+
+    });
+
+
+    const learners=[...map.values()];
+
+
+    if(!learners.length){
+
+        body.innerHTML=`
+            <tr>
+                <td colspan="6" class="empty">
+                    ${tr(
+                        "Aucun apprenant disponible.",
+                        "No learners available."
+                    )}
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+
+    body.innerHTML=learners.map(learner=>`
+
+        <tr>
+
+            <td>
+                <strong>
+                    ${esc(learner.learner_name || "—")}
+                </strong>
+            </td>
+
+            <td>
+                ${esc(learner.email || "—")}
+            </td>
+
+            <td>
+                ${courseName(learner.course_id)}
+            </td>
+
+            <td>
+                ${esc(learner.enrollment_date || "—")}
+            </td>
+
+            <td>
+                ${paymentLabel(learner.payment_status)}
+            </td>
+
+            <td>
+                ${Number(learner.progress || 0)}%
+            </td>
+
+        </tr>
+
+    `).join("");
+
+}
+
+
+/* =========================
+   ENROLLMENTS
+========================= */
+
+function renderEnrollments(){
+
+    const body=$("enrollmentsBody");
+
+    if(!body) return;
+
+
+    if(!enrollments.length){
+
+        body.innerHTML=`
+            <tr>
+                <td colspan="7" class="empty">
+                    ${tr(
+                        "Aucune inscription disponible.",
+                        "No enrollments available."
+                    )}
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+
+    body.innerHTML=enrollments.map(enrollment=>`
+
+        <tr>
+
+            <td>
+                ${esc(enrollment.learner_name || "—")}
+            </td>
+
+            <td>
+                ${courseName(enrollment.course_id)}
+            </td>
+
+            <td>
+                ${money(enrollment.amount_paid)}
+            </td>
+
+            <td>
+                ${esc(enrollment.enrollment_date || "—")}
+            </td>
+
+            <td>
+                ${paymentLabel(enrollment.payment_status)}
+            </td>
+
+            <td>
+                ${Number(enrollment.progress || 0)}%
+            </td>
+
+            <td>
+
+                <div class="actions">
+
+                    <button
+                        class="small-btn btn-danger"
+                        onclick="deleteRecord('digital-enrollments','${enrollment.id}')">
+                        🗑️
+                    </button>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+    `).join("");
+
+}
+
+
+/* =========================
+   CERTIFICATES
+========================= */
+
+function renderCertificates(){
+
+    const body=$("certificatesBody");
+
+    if(!body) return;
+
+
+    if(!certificates.length){
+
+        body.innerHTML=`
+            <tr>
+                <td colspan="6" class="empty">
+                    ${tr(
+                        "Aucun certificat disponible.",
+                        "No certificates available."
+                    )}
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+
+    body.innerHTML=certificates.map(cert=>`
+
+        <tr>
+
+            <td>
+                ${esc(cert.learner_name || "—")}
+            </td>
+
+            <td>
+                ${courseName(cert.course_id)}
+            </td>
+
+            <td>
+                <strong>
+                    ${esc(cert.certificate_number || "—")}
+                </strong>
+            </td>
+
+            <td>
+                ${esc(cert.certificate_date || "—")}
+            </td>
+
+            <td>
+                ${esc(cert.result || "—")}
+            </td>
+
+            <td>
+
+                <div class="actions">
+
+                    <button
+                        class="small-btn btn-success"
+                        onclick='printCertificate(${JSON.stringify(cert)})'>
+                        🖨️
+                    </button>
+
+                    <button
+                        class="small-btn btn-danger"
+                        onclick="deleteRecord('digital-certificates','${cert.id}')">
+                        🗑️
+                    </button>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+    `).join("");
+
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+function renderStats(){
+
+    $("statCourses").textContent=
+        courses.length;
+
+    $("statLessons").textContent=
+        lessons.length;
+
+    const uniqueLearners=new Set();
+
+    enrollments.forEach(x=>{
+
+        const key=
+            String(
+                x.email ||
+                x.learner_name ||
+                ""
+            ).trim().toLowerCase();
+
+        if(key){
+            uniqueLearners.add(key);
+        }
+
+    });
+
+
+    $("statLearners").textContent=
+        uniqueLearners.size;
+
+    $("statEnrollments").textContent=
+        enrollments.length;
+
+
+    const revenue=enrollments.reduce(
+        (total,item)=>
+            total + Number(item.amount_paid || 0),
+        0
+    );
+
+
+    $("statRevenue").textContent=
+        money(revenue);
+
+}
+
+
+/* =========================
+   DELETE
+========================= */
+
+async function deleteRecord(resource,id){
+
+    if(!confirm(
+        tr(
+            "Voulez-vous vraiment supprimer cet enregistrement ?",
+            "Do you really want to delete this record?"
+        )
+    )){
+
+        return;
+
+    }
+
+
+    try{
+
+        await api(
+            "/api/"+resource+"?id="+
+            encodeURIComponent(id),
+            {
+                method:"DELETE"
+            }
+        );
+
+
+        toast(
+            tr(
+                "Supprimé avec succès.",
+                "Deleted successfully."
+            )
+        );
+
+
+        await loadAll();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+
+/* =========================
+   LOAD ALL
+========================= */
+
+async function loadAll(){
+
+    try{
+
+        const [
+            courseData,
+            lessonData,
+            enrollmentData,
+            certificateData
+        ] = await Promise.all([
+
+            api("/api/digital-courses"),
+
+            api("/api/digital-lessons"),
+
+            api("/api/digital-enrollments"),
+
+            api("/api/digital-certificates")
+
+        ]);
+
+
+        courses =
+            courseData?.data ||
+            courseData?.courses ||
+            [];
+
+
+        lessons =
+            lessonData?.data ||
+            lessonData?.lessons ||
+            [];
+
+
+        enrollments =
+            enrollmentData?.data ||
+            enrollmentData?.enrollments ||
+            [];
+
+
+        certificates =
+            certificateData?.data ||
+            certificateData?.certificates ||
+            [];
+
+
+        renderStats();
+
+        populateCourseSelects();
+
+        renderCourses();
+
+        renderLessons();
+
+        renderLearners();
+
+        renderEnrollments();
+
+        renderCertificates();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        toast(error.message);
+
+    }
+
+}
+
+
+/* =========================
+   AI
+========================= */
+
+async function runAI(){
+
+    const prompt=
+        $("aiPrompt").value.trim() ||
+        tr(
+            "Analyse mes cours numériques et propose des améliorations.",
+            "Analyze my digital courses and suggest improvements."
+        );
+
+
+    $("aiOutput").textContent=
+        tr(
+            "Analyse en cours...",
+            "Analysis in progress..."
+        );
+
+
+    const context={
+
+        module:"Digital Courses",
+
+        business:"TASSIMO BTP CONSTRUCTION SARL",
+
+        language:language,
+
+        summary:{
+
+            courses:courses.length,
+
+            lessons:lessons.length,
+
+            learners:new Set(
+                enrollments.map(
+                    x=>x.email || x.learner_name
+                )
+            ).size,
+
+            enrollments:enrollments.length,
+
+            revenue:enrollments.reduce(
+                (a,x)=>
+                    a+Number(x.amount_paid || 0),
+                0
+            )
+
+        }
+
+    };
+
+
+    try{
+
+        const data=await api(
+            "/api/ai",
+            {
+                method:"POST",
+
+                body:JSON.stringify({
+
+                    message:prompt,
+
+                    context:context
+
+                })
+
+            }
+        );
+
+
+        $("aiOutput").textContent=
+            data?.reply ||
+            data?.response ||
+            data?.message ||
+            tr(
+                "Aucune réponse reçue.",
+                "No response received."
+            );
+
+
+    }catch(error){
+
+        $("aiOutput").textContent=
+            error.message;
+
+    }
+
+}
+
+
+/* =========================
+   PRINT CERTIFICATE
+========================= */
+
+function printCertificate(cert){
+
+    const course=
+        courses.find(
+            x=>String(x.id)===String(cert.course_id)
+        );
+
+
+    const courseTitle=
+        course?.name ||
+        course?.title ||
+        tr(
+            "Formation numérique",
+            "Digital Course"
+        );
+
+
+    const win=window.open(
+        "",
+        "_blank"
+    );
+
+
+    if(!win){
+
+        return toast(
+            tr(
+                "Autorisez les fenêtres contextuelles pour imprimer.",
+                "Allow pop-ups to print."
+            )
+        );
+
+    }
+
+
+    win.document.write(`
+
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+
+            <title>
+                ${esc(cert.certificate_number)}
+            </title>
+
+            <style>
+
+                body{
+                    font-family:Arial,sans-serif;
+                    padding:50px;
+                    text-align:center;
+                    color:#172033;
+                }
+
+                .certificate{
+                    border:8px solid #172033;
+                    padding:60px 30px;
+                    max-width:900px;
+                    margin:auto;
+                }
+
+                h1{
+                    font-size:38px;
+                    margin-bottom:15px;
+                }
+
+                h2{
+                    font-size:28px;
+                    margin:25px 0;
+                }
+
+                .name{
+                    font-size:34px;
+                    font-weight:bold;
+                    margin:25px 0;
+                }
+
+                .course{
+                    font-size:23px;
+                    margin:20px 0;
+                }
+
+                .number{
+                    margin-top:35px;
+                    font-size:13px;
+                }
+
+                .footer{
+                    margin-top:50px;
+                    font-size:13px;
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            <div class="certificate">
+
+                <h1>
+                    TASSIMO BTP CONSTRUCTION SARL
+                </h1>
+
+                <h2>
+                    ${language==="fr"
+                        ? "CERTIFICAT DE RÉUSSITE"
+                        : "CERTIFICATE OF COMPLETION"}
+                </h2>
+
+                <p>
+                    ${language==="fr"
+                        ? "Ce certificat est décerné à"
+                        : "This certificate is awarded to"}
+                </p>
+
+                <div class="name">
+                    ${esc(cert.learner_name)}
+                </div>
+
+                <p>
+                    ${language==="fr"
+                        ? "pour avoir complété avec succès le cours"
+                        : "for successfully completing the course"}
+                </p>
+
+                <div class="course">
+                    ${esc(courseTitle)}
+                </div>
+
+                <p>
+                    ${esc(cert.result || "")}
+                </p>
+
+                <div class="number">
+
+                    ${language==="fr"
+                        ? "Numéro du certificat"
+                        : "Certificate Number"}:
+
+                    <strong>
+                        ${esc(cert.certificate_number)}
+                    </strong>
+
+                    <br><br>
+
+                    ${language==="fr"
+                        ? "Date"
+                        : "Date"}:
+
+                    ${esc(cert.certificate_date || "")}
+
+                </div>
+
+                <div class="footer">
+
+                    Together, let us build excellence.
+
+                </div>
+
+            </div>
+
+            <script>
+
+                window.onload=function(){
+                    window.print();
+                };
+
+            <\/script>
+
+        </body>
+
+        </html>
+
+    `);
+
+
+    win.document.close();
+
+}
+
+
+/* =========================
+   CLOSE MODALS ON OUTSIDE CLICK
+========================= */
+
+window.addEventListener(
+    "click",
+    function(event){
+
+        if(event.target.classList.contains("modal")){
+
+            event.target.classList.remove("open");
+
+        }
+
+    }
+);
+
+
+/* =========================
+   START
+========================= */
+
+applyLanguage();
+
+loadAll();
+
+</script>
+
+</body>
+</html>
