@@ -2118,6 +2118,10 @@ function openPage(p){
   window.location.href="/digital-courses.html";
   return;
 }
+  if(p==="analytics"){
+    window.location.href="/analytics.html";
+    return;
+  }
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
@@ -3461,7 +3465,14 @@ def digital_courses_page():
     response.headers["Pragma"] = "no-cache"
     return response
 
+# ------------------------------------------------------------
+# ANALYTICS PAGE
+# ------------------------------------------------------------
 
+@app.route("/analytics.html")
+@protected
+def analytics_page():
+    return send_from_directory(".", "analytics.html")
 # ------------------------------------------------------------
 # Error handling
 # ------------------------------------------------------------
