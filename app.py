@@ -3473,6 +3473,10 @@ def digital_courses_page():
 @protected
 def analytics_page():
     return send_from_directory(".", "analytics.html")
+@app.route("/reports.html")
+@protected
+def reports_page():
+    return send_from_directory(".", "reports.html")
 # ------------------------------------------------------------
 # Error handling
 # ------------------------------------------------------------
