@@ -2114,6 +2114,10 @@ function openPage(p){
   window.location.href="/professional-training.html";
   return;
 }
+  if(p==="digital"){
+  window.location.href="/digital-courses.html";
+  return;
+}
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
@@ -3447,6 +3451,10 @@ def documents_page():
 @protected
 def professional_training_page():
     return send_from_directory(".", "professional-training.html")
+@app.route("/digital-courses.html")
+@protected
+def digital_courses_page():
+    return send_from_directory(".", "digital-courses.html")
 
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
