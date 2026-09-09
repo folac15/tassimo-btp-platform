@@ -3482,6 +3482,10 @@ def analytics_page():
 @protected
 def reports_page():
     return send_from_directory(".", "reports.html")
+@app.route("/automation.html")
+@protected
+def automation_page():
+    return send_from_directory(".", "automation.html")
 # ------------------------------------------------------------
 # Error handling
 # ------------------------------------------------------------
