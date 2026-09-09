@@ -488,32 +488,150 @@ def profile_api():
 @app.route("/api/settings", methods=["GET", "POST", "PUT"])
 @protected
 def settings_api():
+
+    DEFAULT_SETTINGS = {
+        "language": "fr",
+        "ai_enabled": True,
+        "auto_reply_enabled": True,
+        "message_automation": True,
+        "task_automation": True,
+        "approval_required_for_quotes": True,
+        "approval_required_for_finance": True,
+        "approval_required_for_contracts": True,
+        "approval_required_for_technical_decisions": True,
+        "language_detection": True,
+        "customer_intent_detection": True,
+        "smart_prioritization": True,
+    }
+
+    SETTINGS_FIELDS = set(DEFAULT_SETTINGS.keys())
+
     if request.method == "GET":
+
         rows = sb_select(
             "automation_settings",
-            {"select": "*", "limit": "1"},
+            {
+                "select": "*",
+                "limit": "1"
+            },
         )
-        return jsonify(rows[0] if rows else {
-            "language": "fr",
-            "auto_reply_enabled": True,
-            "ai_enabled": True,
-            "approval_required_for_quotes": True,
-            "approval_required_for_finance": True,
-            "approval_required_for_contracts": True,
-            "approval_required_for_technical_decisions": True,
-        })
+
+        if rows:
+            settings = DEFAULT_SETTINGS.copy()
+            settings.update(rows[0])
+            return jsonify(settings)
+
+        return jsonify(DEFAULT_SETTINGS)
 
     data = request.get_json(silent=True) or {}
-    data["updated_at"] = utc_now()
-    rows = sb_select(
-        "automation_settings",
-        {"select": "id", "limit": "1"},
-    )
-    saved = (
-        sb_update("automation_settings", {"id": f"eq.{rows[0]['id']}"}, data)
-        if rows else sb_insert("automation_settings", data)
-    )
-    return jsonify({"message": t("saved"), "settings": saved or data})
+
+    # Only accept fields that belong to automation_settings
+    settings = {
+        key: data[key]
+        for key in SETTINGS_FIELDS
+        if key in data
+    }
+
+    # Make sure all switch values are stored as real booleans
+    boolean_fields = {
+        "ai_enabled",
+        "auto_reply_enabled",
+        "message_automation",
+        "task_automation",
+        "approval_required_for_quotes",
+        "approval_required_for_finance",
+        "approval_required_for_contracts",
+        "approval_required_for_technical_decisions",
+        "language_detection",
+        "customer_intent_detection",
+        "smart_prioritization",
+    }
+
+    for field in boolean_fields:
+        if field in settings:
+            settings[field] = bool(settings[field])
+
+    # Normalize language
+    if "language" in settings:
+        settings["language"] = str(settings["language"]).lower()
+
+    settings["updated_at"] = utc_now()
+
+    try:
+
+        # Find the existing automation settings row
+        rows = sb_select(
+            "automation_settings",
+            {
+                "select": "id",
+                "limit": "1"
+            },
+        )
+
+        # Update existing row
+        if rows and rows[0].get("id"):
+
+            saved = sb_update(
+                "automation_settings",
+                {
+                    "id": f"eq.{rows[0]['id']}"
+                },
+                settings,
+            )
+
+        # Create first row if none exists
+        else:
+
+            insert_data = DEFAULT_SETTINGS.copy()
+            insert_data.update(settings)
+            insert_data["created_at"] = utc_now()
+
+            saved = sb_insert(
+                "automation_settings",
+                insert_data,
+            )
+
+        # IMPORTANT:
+        # Read the database again to confirm that the values
+        # were actually saved.
+        verify_rows = sb_select(
+            "automation_settings",
+            {
+                "select": "*",
+                "limit": "1"
+            },
+        )
+
+        if not verify_rows:
+
+            return jsonify({
+                "success": False,
+                "error": "Automation settings could not be verified in the database."
+            }), 500
+
+        verified = DEFAULT_SETTINGS.copy()
+        verified.update(verify_rows[0])
+
+        return jsonify({
+            "success": True,
+            "settings": verified,
+            "message": t("saved")
+        })
+
+    except Exception as error:
+
+        print(
+            "AUTOMATION SETTINGS SAVE ERROR:",
+            repr(error),
+            flush=True
+        )
+
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "error": str(error)
+        }), 500
 
 
 # ------------------------------------------------------------
