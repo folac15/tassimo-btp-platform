@@ -2118,6 +2118,10 @@ function openPage(p){
   window.location.href="/digital-courses.html";
   return;
 }
+  if(p==="automation"){
+  window.location.href="/automation.html";
+  return;
+} 
   if(p==="reports"){
     window.location.href="/reports.html";
     return;
