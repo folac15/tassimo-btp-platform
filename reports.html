@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TASSIMO BTP — Rapports / Reports</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#172033;
+    min-height:100vh;
+}
+
+header{
+    background:#ffffff;
+    border-bottom:1px solid #e5e9f0;
+    padding:15px 20px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.logo{
+    width:42px;
+    height:42px;
+    border-radius:10px;
+    background:#172033;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+}
+
+.header-title{
+    flex:1;
+}
+
+.header-title h1{
+    font-size:20px;
+}
+
+.header-title p{
+    color:#6b7280;
+    font-size:13px;
+    margin-top:3px;
+}
+
+.btn{
+    border:0;
+    border-radius:9px;
+    padding:10px 14px;
+    background:#172033;
+    color:white;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.btn:hover{
+    opacity:.9;
+}
+
+.btn.alt{
+    background:#eef2f7;
+    color:#172033;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:20px;
+}
+
+.toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.toolbar select,
+.toolbar input{
+    border:1px solid #d8dee8;
+    border-radius:9px;
+    padding:10px 12px;
+    background:white;
+    min-width:160px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:18px;
+}
+
+.card{
+    background:white;
+    border:1px solid #e5e9f0;
+    border-radius:14px;
+    padding:18px;
+    box-shadow:0 4px 16px rgba(0,0,0,.04);
+}
+
+.card .label{
+    color:#6b7280;
+    font-size:13px;
+    margin-bottom:8px;
+}
+
+.card .value{
+    font-size:25px;
+    font-weight:bold;
+}
+
+.panel{
+    background:white;
+    border:1px solid #e5e9f0;
+    border-radius:14px;
+    padding:18px;
+    margin-bottom:18px;
+    box-shadow:0 4px 16px rgba(0,0,0,.04);
+}
+
+.panel h2{
+    font-size:19px;
+    margin-bottom:6px;
+}
+
+.panel h3{
+    font-size:16px;
+    margin-bottom:10px;
+}
+
+.muted{
+    color:#6b7280;
+    font-size:13px;
+}
+
+.report-buttons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:9px;
+    margin-top:15px;
+}
+
+.report-buttons button.active{
+    background:#172033;
+    color:#fff;
+}
+
+.report-area{
+    min-height:250px;
+}
+
+.table-wrap{
+    overflow:auto;
+    margin-top:15px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:650px;
+}
+
+th,
+td{
+    padding:11px 10px;
+    border-bottom:1px solid #edf0f4;
+    text-align:left;
+    font-size:13px;
+}
+
+th{
+    background:#f7f9fc;
+    font-weight:700;
+}
+
+tr:hover td{
+    background:#fafbfd;
+}
+
+.actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:9px;
+    margin-top:15px;
+}
+
+.status{
+    padding:10px 12px;
+    border-radius:9px;
+    background:#f7f9fc;
+    color:#667085;
+    margin-top:12px;
+}
+
+.empty{
+    padding:35px 15px;
+    text-align:center;
+    color:#6b7280;
+}
+
+.loading{
+    padding:35px;
+    text-align:center;
+}
+
+.ai-box{
+    background:#f7f9fc;
+    border-radius:10px;
+    padding:15px;
+    white-space:pre-wrap;
+    line-height:1.6;
+    margin-top:12px;
+}
+
+#toast{
+    position:fixed;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#172033;
+    color:white;
+    padding:11px 16px;
+    border-radius:9px;
+    display:none;
+    z-index:100;
+    max-width:90%;
+    text-align:center;
+}
+
+@media(max-width:1000px){
+    .grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:650px){
+    header{
+        padding:12px;
+    }
+
+    .header-title h1{
+        font-size:17px;
+    }
+
+    .container{
+        padding:12px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .toolbar{
+        flex-direction:column;
+    }
+
+    .toolbar select,
+    .toolbar input{
+        width:100%;
+    }
+
+    .toolbar .btn{
+        width:100%;
+    }
+
+    .actions .btn{
+        flex:1;
+    }
+}
+
+@media print{
+    header .btn,
+    .toolbar,
+    .report-buttons,
+    .actions,
+    #toast{
+        display:none !important;
+    }
+
+    body{
+        background:white;
+    }
+
+    .container{
+        max-width:none;
+        padding:0;
+    }
+
+    .panel,
+    .card{
+        box-shadow:none;
+        border:1px solid #ddd;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">TB</div>
+
+<div class="header-title">
+<h1 id="pageTitle">📋 Rapports</h1>
+<p id="pageSubtitle">
+Rapports de gestion et de performance / Management & performance reports
+</p>
+</div>
+
+<button class="btn alt" onclick="toggleLanguage()" id="langBtn">
+EN
+</button>
+
+<button class="btn alt" onclick="goDashboard()" id="dashboardBtn">
+🏠 Tableau de bord
+</button>
+
+</header>
+
+<div class="container">
+
+<div class="toolbar">
+
+<select id="period">
+<option value="all">Toute la période / All time</option>
+<option value="today">Aujourd'hui / Today</option>
+<option value="7">7 derniers jours / Last 7 days</option>
+<option value="30">30 derniers jours / Last 30 days</option>
+<option value="90">90 derniers jours / Last 90 days</option>
+<option value="365">365 derniers jours / Last 365 days</option>
+</select>
+
+<input
+type="text"
+id="search"
+placeholder="Rechercher dans le rapport / Search report..."
+oninput="filterRows()"
+>
+
+<button class="btn" onclick="refreshReport()">
+↻ Actualiser / Refresh
+</button>
+
+<button class="btn alt" onclick="window.print()">
+🖨 Imprimer / Print
+</button>
+
+</div>
+
+
+<div class="grid">
+
+<div class="card">
+<div class="label" id="kpiReportLabel">Rapport sélectionné</div>
+<div class="value" id="kpiReport">—</div>
+</div>
+
+<div class="card">
+<div class="label" id="kpiRecordsLabel">Enregistrements</div>
+<div class="value" id="kpiRecords">0</div>
+</div>
+
+<div class="card">
+<div class="label" id="kpiDateLabel">Généré le</div>
+<div class="value" id="kpiDate">—</div>
+</div>
+
+<div class="card">
+<div class="label" id="kpiStatusLabel">Statut</div>
+<div class="value" id="kpiStatus">—</div>
+</div>
+
+</div>
+
+
+<div class="panel">
+
+<h2>📑 <span id="reportTypesTitle">
+Types de rapports / Report Types
+</span></h2>
+
+<p class="muted" id="reportTypesDesc">
+Sélectionnez le rapport à consulter / Select the report to view
+</p>
+
+<div class="report-buttons">
+
+<button class="btn alt reportBtn" data-report="customers"
+onclick="loadReport('customers')">
+👥 Clients / Customers
+</button>
+
+<button class="btn alt reportBtn" data-report="projects"
+onclick="loadReport('projects')">
+🏗️ Projets / Projects
+</button>
+
+<button class="btn alt reportBtn" data-report="finance"
+onclick="loadReport('finance')">
+💰 Finances / Finance
+</button>
+
+<button class="btn alt reportBtn" data-report="payments"
+onclick="loadReport('payments')">
+💳 Paiements / Payments
+</button>
+
+<button class="btn alt reportBtn" data-report="training"
+onclick="loadReport('training')">
+🎓 Formation / Training
+</button>
+
+<button class="btn alt reportBtn" data-report="inventory"
+onclick="loadReport('inventory')">
+📦 Stock / Inventory
+</button>
+
+<button class="btn alt reportBtn" data-report="sales"
+onclick="loadReport('sales')">
+🎯 Ventes / Sales
+</button>
+
+<button class="btn alt reportBtn" data-report="messages"
+onclick="loadReport('messages')">
+💬 Messages
+</button>
+
+</div>
+
+</div>
+
+
+<div class="panel">
+
+<h2 id="currentReportTitle">
+📋 Sélectionnez un rapport
+</h2>
+
+<p class="muted" id="currentReportDesc">
+Les données du rapport apparaîtront ici.
+</p>
+
+<div class="actions">
+
+<button class="btn" onclick="exportCSV()" id="exportBtn">
+⬇ Exporter CSV / Export CSV
+</button>
+
+<button class="btn alt" onclick="generateAIAnalysis()" id="aiBtn">
+🤖 Analyse IA / AI Analysis
+</button>
+
+</div>
+
+<div id="reportArea" class="report-area">
+
+<div class="empty" id="emptyState">
+📊
+<br><br>
+Sélectionnez un type de rapport pour commencer.
+<br>
+Select a report type to begin.
+</div>
+
+</div>
+
+</div>
+
+
+<div class="panel">
+
+<h2>
+🤖 <span id="aiTitle">
+Analyse intelligente / Intelligent Analysis
+</span>
+</h2>
+
+<p class="muted" id="aiDesc">
+L'IA peut analyser les données du rapport et proposer des recommandations.
+<br>
+AI can analyze report data and provide recommendations.
+</p>
+
+<div id="aiResult" class="ai-box">
+Aucune analyse générée.
+No analysis generated.
+</div>
+
+</div>
+
+</div>
+
+
+<div id="toast"></div>
+
+
+<script>
+
+let lang = localStorage.getItem("lang") || "fr";
+let currentReport = "";
+let currentRows = [];
+let currentReportData = null;
+
+
+/* ============================================================
+   TRANSLATIONS
+============================================================ */
+
+const T = {
+
+fr:{
+    title:"📋 Rapports",
+    subtitle:"Rapports de gestion et de performance / Management & performance reports",
+    dashboard:"🏠 Tableau de bord",
+    selected:"Rapport sélectionné",
+    records:"Enregistrements",
+    generated:"Généré le",
+    status:"Statut",
+    types:"Types de rapports / Report Types",
+    typesDesc:"Sélectionnez le rapport à consulter / Select the report to view",
+    select:"📋 Sélectionnez un rapport",
+    selectDesc:"Les données du rapport apparaîtront ici.",
+    export:"⬇ Exporter CSV / Export CSV",
+    ai:"🤖 Analyse IA / AI Analysis",
+    aiTitle:"Analyse intelligente / Intelligent Analysis",
+    aiDesc:"L'IA peut analyser les données du rapport et proposer des recommandations.",
+    empty:"📊\n\nSélectionnez un type de rapport pour commencer.\nSelect a report type to begin.",
+    loading:"Chargement du rapport...",
+    noData:"Aucune donnée disponible pour ce rapport.",
+    success:"Rapport chargé avec succès.",
+    error:"Impossible de charger le rapport.",
+    ready:"Prêt",
+    customer:"Clients / Customers",
+    project:"Projets / Projects",
+    finance:"Finances / Finance",
+    payment:"Paiements / Payments",
+    training:"Formation / Training",
+    inventory:"Stock / Inventory",
+    sales:"Ventes / Sales",
+    messages:"Messages",
+    analyzing:"Analyse IA en cours...",
+    noAnalysis:"Aucune analyse générée.",
+    aiError:"L'analyse IA n'est pas disponible actuellement."
+},
+
+en:{
+    title:"📋 Reports",
+    subtitle:"Management & performance reports",
+    dashboard:"🏠 Dashboard",
+    selected:"Selected report",
+    records:"Records",
+    generated:"Generated",
+    status:"Status",
+    types:"Report Types",
+    typesDesc:"Select the report to view",
+    select:"📋 Select a report",
+    selectDesc:"Report data will appear here.",
+    export:"⬇ Export CSV",
+    ai:"🤖 AI Analysis",
+    aiTitle:"Intelligent Analysis",
+    aiDesc:"AI can analyze report data and provide recommendations.",
+    empty:"📊\n\nSelect a report type to begin.",
+    loading:"Loading report...",
+    noData:"No data available for this report.",
+    success:"Report loaded successfully.",
+    error:"Unable to load the report.",
+    ready:"Ready",
+    customer:"Customers",
+    project:"Projects",
+    finance:"Finance",
+    payment:"Payments",
+    training:"Training",
+    inventory:"Inventory",
+    sales:"Sales",
+    messages:"Messages",
+    analyzing:"AI analysis in progress...",
+    noAnalysis:"No analysis generated.",
+    aiError:"AI analysis is currently unavailable."
+}
+
+};
+
+
+/* ============================================================
+   REPORT LABELS
+============================================================ */
+
+const reportNames = {
+
+customers:{
+fr:"👥 Clients",
+en:"👥 Customers"
+},
+
+projects:{
+fr:"🏗️ Projets",
+en:"🏗️ Projects"
+},
+
+finance:{
+fr:"💰 Finances",
+en:"💰 Finance"
+},
+
+payments:{
+fr:"💳 Paiements",
+en:"💳 Payments"
+},
+
+training:{
+fr:"🎓 Formation",
+en:"🎓 Training"
+},
+
+inventory:{
+fr:"📦 Stock",
+en:"📦 Inventory"
+},
+
+sales:{
+fr:"🎯 Ventes",
+en:"🎯 Sales"
+},
+
+messages:{
+fr:"💬 Messages",
+en:"💬 Messages"
+}
+
+};
+
+
+/* ============================================================
+   LANGUAGE
+============================================================ */
+
+function toggleLanguage(){
+
+    lang = lang === "fr" ? "en" : "fr";
+
+    localStorage.setItem("lang",lang);
+
+    applyLanguage();
+
+    if(currentReport){
+        renderReport();
+    }
+}
+
+
+function applyLanguage(){
+
+    const t = T[lang];
+
+    document.documentElement.lang = lang;
+
+    document.getElementById("pageTitle").textContent = t.title;
+    document.getElementById("pageSubtitle").textContent = t.subtitle;
+    document.getElementById("dashboardBtn").textContent = t.dashboard;
+
+    document.getElementById("kpiReportLabel").textContent = t.selected;
+    document.getElementById("kpiRecordsLabel").textContent = t.records;
+    document.getElementById("kpiDateLabel").textContent = t.generated;
+    document.getElementById("kpiStatusLabel").textContent = t.status;
+
+    document.getElementById("reportTypesTitle").textContent = t.types;
+    document.getElementById("reportTypesDesc").textContent = t.typesDesc;
+
+    document.getElementById("exportBtn").textContent = t.export;
+    document.getElementById("aiBtn").textContent = t.ai;
+
+    document.getElementById("aiTitle").textContent = t.aiTitle;
+    document.getElementById("aiDesc").textContent = t.aiDesc;
+
+    document.getElementById("langBtn").textContent =
+        lang === "fr" ? "EN" : "FR";
+
+    document.getElementById("search").placeholder =
+        lang === "fr"
+        ? "Rechercher dans le rapport / Search report..."
+        : "Search report...";
+
+    if(!currentReport){
+
+        document.getElementById("currentReportTitle").textContent = t.select;
+        document.getElementById("currentReportDesc").textContent = t.selectDesc;
+
+        document.getElementById("emptyState").textContent = t.empty;
+    }
+}
+
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+
+function goDashboard(){
+
+    window.location.href="/";
+}
+
+
+/* ============================================================
+   LOAD REPORT
+============================================================ */
+
+async function loadReport(type){
+
+    currentReport = type;
+
+    document.querySelectorAll(".reportBtn").forEach(btn=>{
+        btn.classList.toggle(
+            "active",
+            btn.dataset.report === type
+        );
+    });
+
+    document.getElementById("reportArea").innerHTML =
+        `<div class="loading">${T[lang].loading}</div>`;
+
+    document.getElementById("kpiStatus").textContent = "...";
+
+    try{
+
+        const response = await fetch(
+            "/api/reports/" + encodeURIComponent(type),
+            {
+                credentials:"include"
+            }
+        );
+
+        if(response.status === 401){
+
+            window.location.href="/login";
+
+            return;
+        }
+
+        const data = await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.error || T[lang].error
+            );
+        }
+
+        currentReportData = data;
+
+        currentRows = Array.isArray(data.rows)
+            ? data.rows
+            : [];
+
+        document.getElementById("kpiReport").textContent =
+            reportNames[type]?.[lang] || type;
+
+        document.getElementById("kpiRecords").textContent =
+            currentRows.length;
+
+        document.getElementById("kpiDate").textContent =
+            formatDate(data.generated_at);
+
+        document.getElementById("kpiStatus").textContent =
+            T[lang].ready;
+
+        document.getElementById("currentReportTitle").textContent =
+            reportNames[type]?.[lang] || type;
+
+        document.getElementById("currentReportDesc").textContent =
+            lang === "fr"
+            ? "Rapport généré à partir des données actuelles de l'entreprise."
+            : "Report generated from current business data.";
+
+        renderReport();
+
+        showToast(T[lang].success);
+
+        document.getElementById("aiResult").textContent =
+            T[lang].noAnalysis;
+
+    }catch(error){
+
+        console.error(error);
+
+        document.getElementById("reportArea").innerHTML =
+            `<div class="empty">${escapeHtml(error.message)}</div>`;
+
+        document.getElementById("kpiStatus").textContent =
+            T[lang].error;
+
+    }
+}
+
+
+/* ============================================================
+   RENDER REPORT
+============================================================ */
+
+function renderReport(){
+
+    const area = document.getElementById("reportArea");
+
+    if(!currentRows.length){
+
+        area.innerHTML =
+            `<div class="empty">${T[lang].noData}</div>`;
+
+        return;
+    }
+
+    const rows = getFilteredRows();
+
+    if(!rows.length){
+
+        area.innerHTML =
+            `<div class="empty">${
+                lang === "fr"
+                ? "Aucun résultat ne correspond à votre recherche."
+                : "No results match your search."
+            }</div>`;
+
+        return;
+    }
+
+    const keys = getColumns(rows);
+
+    let html = `
+    <div class="table-wrap">
+    <table>
+    <thead>
+    <tr>
+    `;
+
+    keys.forEach(key=>{
+
+        html += `<th>${escapeHtml(formatFieldName(key))}</th>`;
+
+    });
+
+    html += `
+    </tr>
+    </thead>
+    <tbody>
+    `;
+
+    rows.forEach(row=>{
+
+        html += "<tr>";
+
+        keys.forEach(key=>{
+
+            html += `
+            <td>
+                ${escapeHtml(formatValue(row[key]))}
+            </td>
+            `;
+
+        });
+
+        html += "</tr>";
+
+    });
+
+    html += `
+    </tbody>
+    </table>
+    </div>
+    `;
+
+    area.innerHTML = html;
+}
+
+
+/* ============================================================
+   FILTERING
+============================================================ */
+
+function getFilteredRows(){
+
+    const query =
+        (document.getElementById("search").value || "")
+        .toLowerCase()
+        .trim();
+
+    if(!query){
+
+        return currentRows;
+    }
+
+    return currentRows.filter(row=>{
+
+        return Object.values(row).some(value=>
+
+            String(value ?? "")
+            .toLowerCase()
+            .includes(query)
+
+        );
+
+    });
+}
+
+
+function filterRows(){
+
+    if(currentReport){
+
+        renderReport();
+    }
+}
+
+
+/* ============================================================
+   COLUMNS
+============================================================ */
+
+function getColumns(rows){
+
+    const keys = [];
+
+    rows.forEach(row=>{
+
+        Object.keys(row || {}).forEach(key=>{
+
+            if(!keys.includes(key)){
+
+                keys.push(key);
+            }
+
+        });
+
+    });
+
+    return keys.slice(0,15);
+}
+
+
+function formatFieldName(key){
+
+    const labels = {
+
+        id:"ID",
+
+        name:lang==="fr" ? "Nom" : "Name",
+
+        full_name:lang==="fr" ? "Nom complet" : "Full Name",
+
+        phone:lang==="fr" ? "Téléphone" : "Phone",
+
+        email:"Email",
+
+        company:lang==="fr" ? "Entreprise" : "Company",
+
+        location:lang==="fr" ? "Localisation" : "Location",
+
+        status:lang==="fr" ? "Statut" : "Status",
+
+        source:lang==="fr" ? "Source" : "Source",
+
+        amount:lang==="fr" ? "Montant" : "Amount",
+
+        budget:lang==="fr" ? "Budget" : "Budget",
+
+        progress:lang==="fr" ? "Progression" : "Progress",
+
+        category:lang==="fr" ? "Catégorie" : "Category",
+
+        method:lang==="fr" ? "Méthode" : "Method",
+
+        created_at:lang==="fr" ? "Créé le" : "Created",
+
+        updated_at:lang==="fr" ? "Modifié le" : "Updated",
+
+        message:lang==="fr" ? "Message" : "Message",
+
+        language:lang==="fr" ? "Langue" : "Language"
+
+    };
+
+    return labels[key] || key.replaceAll("_"," ");
+}
+
+
+/* ============================================================
+   VALUES
+============================================================ */
+
+function formatValue(value){
+
+    if(value === null || value === undefined){
+
+        return "";
+    }
+
+    if(typeof value === "object"){
+
+        return JSON.stringify(value);
+    }
+
+    return String(value);
+}
+
+
+function formatDate(value){
+
+    if(!value){
+
+        return "—";
+    }
+
+    try{
+
+        return new Date(value).toLocaleString(
+            lang === "fr" ? "fr-FR" : "en-US"
+        );
+
+    }catch(e){
+
+        return String(value);
+    }
+}
+
+
+/* ============================================================
+   CSV EXPORT
+============================================================ */
+
+function exportCSV(){
+
+    if(!currentRows.length){
+
+        showToast(T[lang].noData);
+
+        return;
+    }
+
+    const rows = getFilteredRows();
+
+    const keys = getColumns(rows);
+
+    const lines = [];
+
+    lines.push(
+        keys.map(csvEscape).join(",")
+    );
+
+    rows.forEach(row=>{
+
+        lines.push(
+
+            keys.map(key=>
+
+                csvEscape(
+                    formatValue(row[key])
+                )
+
+            ).join(",")
+
+        );
+
+    });
+
+    const blob = new Blob(
+        ["\ufeff" + lines.join("\n")],
+        {
+            type:"text/csv;charset=utf-8;"
+        }
+    );
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+        "TASSIMO_" +
+        currentReport +
+        "_report.csv";
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+    URL.revokeObjectURL(url);
+
+    showToast(
+        lang === "fr"
+        ? "Rapport exporté."
+        : "Report exported."
+    );
+}
+
+
+function csvEscape(value){
+
+    const text = String(value ?? "");
+
+    return '"' +
+        text.replaceAll('"','""') +
+        '"';
+}
+
+
+/* ============================================================
+   AI ANALYSIS
+============================================================ */
+
+async function generateAIAnalysis(){
+
+    if(!currentReport){
+
+        showToast(
+            lang === "fr"
+            ? "Sélectionnez d'abord un rapport."
+            : "Select a report first."
+        );
+
+        return;
+    }
+
+    const result =
+        document.getElementById("aiResult");
+
+    result.textContent =
+        T[lang].analyzing;
+
+    try{
+
+        const response = await fetch(
+            "/api/business-intelligence",
+            {
+                method:"POST",
+
+                credentials:"include",
+
+                headers:{
+                    "Content-Type":"application/json"
+                },
+
+                body:JSON.stringify({
+
+                    question:
+                        lang === "fr"
+
+                        ? `Analyse le rapport ${currentReport} de TASSIMO BTP CONSTRUCTION SARL. Identifie les tendances importantes, les risques, les opportunités et donne des recommandations pratiques au CEO.`
+
+                        : `Analyze the ${currentReport} report of TASSIMO BTP CONSTRUCTION SARL. Identify important trends, risks, opportunities and provide practical recommendations to the CEO.`
+
+                })
+            }
+        );
+
+        if(response.status === 401){
+
+            window.location.href="/login";
+
+            return;
+        }
+
+        const data = await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.error || T[lang].aiError
+            );
+        }
+
+        result.textContent =
+            data.insight ||
+            data.answer ||
+            T[lang].noAnalysis;
+
+    }catch(error){
+
+        console.error(error);
+
+        result.textContent =
+            error.message ||
+            T[lang].aiError;
+    }
+}
+
+
+/* ============================================================
+   REFRESH
+============================================================ */
+
+function refreshReport(){
+
+    if(currentReport){
+
+        loadReport(currentReport);
+
+    }else{
+
+        showToast(
+            lang === "fr"
+            ? "Sélectionnez un rapport."
+            : "Select a report."
+        );
+    }
+}
+
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+function showToast(message){
+
+    const toast =
+        document.getElementById("toast");
+
+    toast.textContent = message;
+
+    toast.style.display = "block";
+
+    clearTimeout(window.__toastTimer);
+
+    window.__toastTimer =
+        setTimeout(()=>{
+
+            toast.style.display = "none";
+
+        },2500);
+}
+
+
+/* ============================================================
+   SECURITY
+============================================================ */
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+
+/* ============================================================
+   INITIALIZE
+============================================================ */
+
+applyLanguage();
+
+</script>
+
+</body>
+</html>
