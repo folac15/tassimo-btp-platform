@@ -1812,6 +1812,36 @@ async function autoSaveSetting(settingKey, value) {
         );
     }
 }
+    function setupAutoSave() {
+
+    const settingIds = [
+        "ai_enabled",
+        "auto_reply_enabled",
+        "message_automation",
+        "task_automation",
+        "approval_required_for_quotes",
+        "approval_required_for_finance",
+        "approval_required_for_contracts",
+        "approval_required_for_technical_decisions",
+        "language_detection",
+        "customer_intent_detection",
+        "smart_prioritization"
+    ];
+
+    settingIds.forEach(function(id) {
+
+        const checkbox = document.getElementById(id);
+
+        if (!checkbox) {
+            return;
+        }
+
+        checkbox.onchange = function() {
+            autoSaveSetting(id, checkbox.checked);
+        };
+
+    });
+}
 
 
 /* =========================================================
@@ -2548,6 +2578,7 @@ loadSettings();
 renderWorkflows();
 
 renderLogs();
+setupAutoSave();
 
 </script>
 
