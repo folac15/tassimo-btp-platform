@@ -504,36 +504,7 @@ def settings_api():
         "smart_prioritization": True,
     }
 
-    SETTINGS_FIELDS = set(DEFAULT_SETTINGS.keys())
-
-    if request.method == "GET":
-
-        rows = sb_select(
-            "automation_settings",
-            {
-                "select": "*",
-                "limit": "1"
-            },
-        )
-
-        if rows:
-            settings = DEFAULT_SETTINGS.copy()
-            settings.update(rows[0])
-            return jsonify(settings)
-
-        return jsonify(DEFAULT_SETTINGS)
-
-    data = request.get_json(silent=True) or {}
-
-    # Only accept fields that belong to automation_settings
-    settings = {
-        key: data[key]
-        for key in SETTINGS_FIELDS
-        if key in data
-    }
-
-    # Make sure all switch values are stored as real booleans
-    boolean_fields = {
+    BOOLEAN_FIELDS = {
         "ai_enabled",
         "auto_reply_enabled",
         "message_automation",
@@ -547,28 +518,91 @@ def settings_api():
         "smart_prioritization",
     }
 
-    for field in boolean_fields:
-        if field in settings:
-            settings[field] = bool(settings[field])
-
-    # Normalize language
-    if "language" in settings:
-        settings["language"] = str(settings["language"]).lower()
-
-    settings["updated_at"] = utc_now()
-
     try:
 
-        # Find the existing automation settings row
+        # ------------------------------------------------
+        # GET SETTINGS
+        # ------------------------------------------------
+        if request.method == "GET":
+
+            rows = sb_select(
+                "automation_settings",
+                {
+                    "select": "*",
+                    "limit": "1"
+                }
+            )
+
+            if rows:
+                settings = DEFAULT_SETTINGS.copy()
+                settings.update(rows[0])
+
+                return jsonify({
+                    "success": True,
+                    "settings": settings
+                })
+
+            return jsonify({
+                "success": True,
+                "settings": DEFAULT_SETTINGS
+            })
+
+
+        # ------------------------------------------------
+        # SAVE SETTINGS
+        # ------------------------------------------------
+        data = request.get_json(silent=True) or {}
+
+        settings = DEFAULT_SETTINGS.copy()
+
+        for key in DEFAULT_SETTINGS:
+
+            if key in data:
+
+                value = data[key]
+
+                if key in BOOLEAN_FIELDS:
+
+                    if isinstance(value, bool):
+                        settings[key] = value
+
+                    elif isinstance(value, str):
+                        settings[key] = value.lower() in (
+                            "true",
+                            "1",
+                            "yes",
+                            "on"
+                        )
+
+                    elif isinstance(value, int):
+                        settings[key] = value == 1
+
+                elif key == "language":
+
+                    settings[key] = (
+                        str(value).lower()
+                        if str(value).lower() in ("fr", "en")
+                        else "fr"
+                    )
+
+        settings["updated_at"] = utc_now()
+
+
+        # ------------------------------------------------
+        # FIND EXISTING ROW
+        # ------------------------------------------------
         rows = sb_select(
             "automation_settings",
             {
                 "select": "id",
                 "limit": "1"
-            },
+            }
         )
 
-        # Update existing row
+
+        # ------------------------------------------------
+        # UPDATE EXISTING SETTINGS
+        # ------------------------------------------------
         if rows and rows[0].get("id"):
 
             saved = sb_update(
@@ -576,41 +610,59 @@ def settings_api():
                 {
                     "id": f"eq.{rows[0]['id']}"
                 },
-                settings,
+                settings
             )
 
-        # Create first row if none exists
+            if saved is None:
+
+                return jsonify({
+                    "success": False,
+                    "error": "Unable to update automation settings."
+                }), 500
+
+
+        # ------------------------------------------------
+        # CREATE SETTINGS ROW
+        # ------------------------------------------------
         else:
 
-            insert_data = DEFAULT_SETTINGS.copy()
-            insert_data.update(settings)
-            insert_data["created_at"] = utc_now()
+            settings["created_at"] = utc_now()
 
             saved = sb_insert(
                 "automation_settings",
-                insert_data,
+                settings
             )
 
-        # IMPORTANT:
-        # Read the database again to confirm that the values
-        # were actually saved.
+            if isinstance(saved, dict) and saved.get("_error"):
+
+                return jsonify({
+                    "success": False,
+                    "error": saved["_error"]
+                }), 500
+
+
+        # ------------------------------------------------
+        # VERIFY DATABASE
+        # ------------------------------------------------
         verify_rows = sb_select(
             "automation_settings",
             {
                 "select": "*",
                 "limit": "1"
-            },
+            }
         )
 
         if not verify_rows:
 
             return jsonify({
                 "success": False,
-                "error": "Automation settings could not be verified in the database."
+                "error": "Settings were not found after saving."
             }), 500
+
 
         verified = DEFAULT_SETTINGS.copy()
         verified.update(verify_rows[0])
+
 
         return jsonify({
             "success": True,
@@ -618,10 +670,11 @@ def settings_api():
             "message": t("saved")
         })
 
+
     except Exception as error:
 
         print(
-            "AUTOMATION SETTINGS SAVE ERROR:",
+            "AUTOMATION SETTINGS ERROR:",
             repr(error),
             flush=True
         )
@@ -632,6 +685,9 @@ def settings_api():
             "success": False,
             "error": str(error)
         }), 500
+
+
+
 
 
 # ------------------------------------------------------------
