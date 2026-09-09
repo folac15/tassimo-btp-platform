@@ -1756,92 +1756,68 @@ async function loadSettings(){
 /* =========================================================
    SAVE SETTINGS
 ========================================================= */
-
 async function autoSaveSetting(settingKey, value) {
 
     try {
 
-        const data = {};
-
-        /*
-         * Make sure the value is a real boolean.
-         * This is important because false must NOT be
-         * converted back to true.
-         */
-        data[settingKey] =
-            typeof value === "boolean"
-                ? value
-                : Boolean(value);
-
         const response = await fetch("/api/settings", {
-            method: "POST",
+            method: "PUT",
             headers: {
                 "Content-Type": "application/json"
             },
-            credentials: "include",
-            body: JSON.stringify(data)
+            credentials: "same-origin",
+            body: JSON.stringify({
+                [settingKey]: value
+            })
         });
 
         const result = await response.json();
 
-        if (!response.ok || result.success === false) {
+        if (!response.ok || result.success !== true) {
+
             throw new Error(
                 result.error ||
-                result.message ||
-                "Failed to save automation setting."
+                "Unable to save setting."
             );
         }
 
         console.log(
             "Automation setting saved:",
             settingKey,
-            data[settingKey]
+            value
         );
+
+        return true;
 
     } catch (error) {
 
         console.error(
-            "Automation auto-save error:",
+            "Automation setting save error:",
             error
         );
 
-        alert(
-            lang === "fr"
-                ? "Impossible d'enregistrer ce paramètre."
-                : "Unable to save this setting."
-        );
-    }
-}
-    function setupAutoSave() {
+        if (typeof toast === "function") {
 
-    const settingIds = [
-        "ai_enabled",
-        "auto_reply_enabled",
-        "message_automation",
-        "task_automation",
-        "approval_required_for_quotes",
-        "approval_required_for_finance",
-        "approval_required_for_contracts",
-        "approval_required_for_technical_decisions",
-        "language_detection",
-        "customer_intent_detection",
-        "smart_prioritization"
-    ];
+            toast(
+                lang === "fr"
+                    ? "Échec de l'enregistrement."
+                    : "Save failed."
+            );
 
-    settingIds.forEach(function(id) {
+        } else {
 
-        const checkbox = document.getElementById(id);
-
-        if (!checkbox) {
-            return;
+            alert(
+                lang === "fr"
+                    ? "Échec de l'enregistrement."
+                    : "Save failed."
+            );
         }
 
-        checkbox.onchange = function() {
-            autoSaveSetting(id, checkbox.checked);
-        };
-
-    });
+        return false;
+    }
 }
+
+            
 
 
 /* =========================================================
@@ -2579,7 +2555,37 @@ renderWorkflows();
 
 renderLogs();
 setupAutoSave();
+document.addEventListener("change", function(event) {
 
+    const settingIds = [
+        "ai_enabled",
+        "auto_reply_enabled",
+        "message_automation",
+        "task_automation",
+        "approval_required_for_quotes",
+        "approval_required_for_finance",
+        "approval_required_for_contracts",
+        "approval_required_for_technical_decisions",
+        "language_detection",
+        "customer_intent_detection",
+        "smart_prioritization"
+    ];
+
+    const element = event.target;
+
+    if (
+        element &&
+        element.type === "checkbox" &&
+        settingIds.includes(element.id)
+    ) {
+
+        autoSaveSetting(
+            element.id,
+            element.checked
+        );
+    }
+
+});
 </script>
 
 </body>
