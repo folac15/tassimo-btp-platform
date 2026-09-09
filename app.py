@@ -2118,10 +2118,15 @@ function openPage(p){
   window.location.href="/digital-courses.html";
   return;
 }
+  if(p==="reports"){
+    window.location.href="/reports.html";
+    return;
+  }
   if(p==="analytics"){
     window.location.href="/analytics.html";
     return;
   }
+  
 
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.getElementById('n-'+p)?.classList.add('active');
