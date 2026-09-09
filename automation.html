@@ -1757,72 +1757,60 @@ async function loadSettings(){
    SAVE SETTINGS
 ========================================================= */
 
-async function saveSettings(){
+async function autoSaveSetting(settingKey, value) {
 
-    const btn=document.getElementById("saveBtn");
+    try {
 
-    btn.classList.add("loading");
+        const data = {};
 
-    try{
+        /*
+         * Make sure the value is a real boolean.
+         * This is important because false must NOT be
+         * converted back to true.
+         */
+        data[settingKey] =
+            typeof value === "boolean"
+                ? value
+                : Boolean(value);
 
-        const payload={
-
-            language:lang,
-
-            ai_enabled:
-                document.getElementById("aiEnabled").checked,
-
-            auto_reply_enabled:
-                document.getElementById("autoReply").checked,
-
-            message_automation:
-                document.getElementById("messageAutomation").checked,
-
-            task_automation:
-                document.getElementById("taskAutomation").checked,
-
-            approval_required_for_quotes:
-                document.getElementById("quoteApproval").checked,
-
-            approval_required_for_finance:
-                document.getElementById("financeApproval").checked,
-
-            approval_required_for_contracts:
-                document.getElementById("contractApproval").checked,
-
-            approval_required_for_technical_decisions:
-                document.getElementById("technicalApproval").checked
-
-        };
-
-
-        await api("/api/settings",{
-
-            method:"POST",
-
-            body:JSON.stringify(payload)
-
+        const response = await fetch("/api/settings", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            body: JSON.stringify(data)
         });
 
+        const result = await response.json();
 
-        addLog(tr("saved"));
+        if (!response.ok || result.success === false) {
+            throw new Error(
+                result.error ||
+                result.message ||
+                "Failed to save automation setting."
+            );
+        }
 
-        alert(tr("saved"));
+        console.log(
+            "Automation setting saved:",
+            settingKey,
+            data[settingKey]
+        );
 
-        updateStatus();
+    } catch (error) {
 
-    }catch(error){
+        console.error(
+            "Automation auto-save error:",
+            error
+        );
 
-        console.error(error);
-
-        alert(error.message || tr("saveError"));
-
-    }finally{
-
-        btn.classList.remove("loading");
-
+        alert(
+            lang === "fr"
+                ? "Impossible d'enregistrer ce paramètre."
+                : "Unable to save this setting."
+        );
     }
-
 }
 
 
