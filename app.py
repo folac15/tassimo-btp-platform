@@ -2001,22 +2001,395 @@ def ai_learning_report(channel=None):
 @app.route("/api/messages", methods=["GET", "POST"])
 @protected
 def unified_messages_api():
+
+    # =========================================================
+    # GET MESSAGES
+    # =========================================================
     if request.method == "GET":
+
         channel = request.args.get("channel", "").strip().lower()
-        params = {"select": "*", "order": "created_at.desc", "limit": "500"}
+        conversation_id = request.args.get("conversation_id", "").strip()
+
+        # -----------------------------------------------------
+        # If a conversation is selected, return its messages
+        # -----------------------------------------------------
+        if conversation_id:
+
+            params = {
+                "select": "*",
+                "conversation_id": f"eq.{conversation_id}",
+                "order": "created_at.asc",
+                "limit": "500"
+            }
+
+            rows = sb_select("messages", params)
+
+            return jsonify({
+                "messages": rows,
+                "conversation_id": conversation_id,
+                "channels": SOCIAL_CHANNELS + ["ai"]
+            })
+
+        # -----------------------------------------------------
+        # Otherwise return the unified message history
+        # -----------------------------------------------------
+        params = {
+            "select": "*",
+            "order": "created_at.desc",
+            "limit": "500"
+        }
+
         if channel in SOCIAL_CHANNELS or channel == "ai":
             params["channel"] = f"eq.{channel}"
-        return jsonify({"messages": sb_select("messages", params), "channels": SOCIAL_CHANNELS + ["ai"]})
-    data = request.get_json(silent=True) or {}
-    channel = str(data.get("channel", "")).lower().strip()
-    text = str(data.get("message", "")).strip()
-    recipient = str(data.get("recipient", "")).strip()
-    if channel not in SOCIAL_CHANNELS or not text:
-        return jsonify({"error": "Channel and message are required."}), 400
-    result = social_send(channel, recipient, text, data) if recipient else {"ok": False, "error": "Recipient is required."}
-    sb_insert("messages", {"channel": channel, "direction": "outgoing", "sender": "TASSIMO AI", "message": text, "language": detect_language(text), "created_at": utc_now()})
-    return jsonify({"sent": result.get("ok", False), "result": result})
 
+        rows = sb_select("messages", params)
+
+        # -----------------------------------------------------
+        # Build conversation summaries from existing messages
+        #
+        # This allows the Messages page to show conversations
+        # even when the conversations table is still empty.
+        # -----------------------------------------------------
+        conversations = {}
+
+        for row in rows:
+
+            customer_id = str(
+                row.get("customer_id")
+                or row.get("recipient")
+                or row.get("sender")
+                or ""
+            ).strip()
+
+            customer_name = str(
+                row.get("customer_name")
+                or row.get("sender")
+                or row.get("recipient")
+                or "Client"
+            ).strip()
+
+            row_channel = str(
+                row.get("channel")
+                or "whatsapp"
+            ).lower()
+
+            conversation_key = (
+                f"{row_channel}:{customer_id}"
+                if customer_id
+                else f"{row_channel}:{customer_name}"
+            )
+
+            if conversation_key not in conversations:
+
+                conversations[conversation_key] = {
+                    "id": None,
+                    "customer_id": row.get("customer_id"),
+                    "customer_name": customer_name,
+                    "customer_phone": row.get("customer_phone"),
+                    "channel": row_channel,
+                    "last_message": row.get("message", ""),
+                    "last_message_at": row.get("created_at"),
+                    "unread_count": 0,
+                    "status": "open"
+                }
+
+        # -----------------------------------------------------
+        # Also load conversations from the new conversations
+        # table when they exist.
+        # -----------------------------------------------------
+        conversation_rows = sb_select(
+            "conversations",
+            {
+                "select": "*",
+                "order": "last_message_at.desc",
+                "limit": "500"
+            }
+        )
+
+        for conversation in conversation_rows:
+
+            key = (
+                f"{conversation.get('channel', 'whatsapp')}:{conversation.get('customer_id')}"
+                if conversation.get("customer_id")
+                else f"{conversation.get('channel', 'whatsapp')}:{conversation.get('customer_name', 'Client')}"
+            )
+
+            conversations[key] = conversation
+
+        return jsonify({
+            "messages": rows,
+            "conversations": list(conversations.values()),
+            "channels": SOCIAL_CHANNELS + ["ai"]
+        })
+
+    # =========================================================
+    # POST MESSAGE
+    # =========================================================
+
+    data = request.get_json(silent=True) or {}
+
+    channel = str(
+        data.get("channel", "")
+    ).lower().strip()
+
+    text = str(
+        data.get("message", "")
+    ).strip()
+
+    customer_id = str(
+        data.get("customer_id", "")
+    ).strip()
+
+    customer_name = str(
+        data.get("customer_name", "")
+    ).strip()
+
+    customer_phone = str(
+        data.get("customer_phone")
+        or data.get("recipient")
+        or ""
+    ).strip()
+
+    recipient = str(
+        data.get("recipient")
+        or customer_phone
+    ).strip()
+
+    direction = str(
+        data.get("direction", "outgoing")
+    ).lower().strip()
+
+    if channel not in SOCIAL_CHANNELS:
+
+        return jsonify({
+            "error": (
+                t("invalid_data")
+                if language() == "fr"
+                else "Unsupported messaging channel."
+            )
+        }), 400
+
+    if not text:
+
+        return jsonify({
+            "error": (
+                "Le message est requis."
+                if language() == "fr"
+                else "Message is required."
+            )
+        }), 400
+
+    # ---------------------------------------------------------
+    # Send through configured channel when this is outgoing
+    # ---------------------------------------------------------
+    send_result = {
+        "ok": True,
+        "status": "stored"
+    }
+
+    if direction == "outgoing":
+
+        if not recipient:
+
+            return jsonify({
+                "error": (
+                    "Le destinataire est requis."
+                    if language() == "fr"
+                    else "Recipient is required."
+                )
+            }), 400
+
+        send_result = social_send(
+            channel,
+            recipient,
+            text,
+            data
+        )
+
+    # ---------------------------------------------------------
+    # Find existing conversation
+    # ---------------------------------------------------------
+    conversation = None
+
+    if customer_id:
+
+        existing = sb_select(
+            "conversations",
+            {
+                "select": "*",
+                "customer_id": f"eq.{customer_id}",
+                "channel": f"eq.{channel}",
+                "limit": "1"
+            }
+        )
+
+        if existing:
+            conversation = existing[0]
+
+    elif customer_phone:
+
+        existing = sb_select(
+            "conversations",
+            {
+                "select": "*",
+                "customer_phone": f"eq.{customer_phone}",
+                "channel": f"eq.{channel}",
+                "limit": "1"
+            }
+        )
+
+        if existing:
+            conversation = existing[0]
+
+    # ---------------------------------------------------------
+    # Create conversation when none exists
+    # ---------------------------------------------------------
+    if not conversation:
+
+        conversation_payload = {
+            "customer_id": customer_id or None,
+            "customer_name": customer_name or "Client",
+            "customer_phone": customer_phone or None,
+            "channel": channel,
+            "last_message": text,
+            "last_message_at": utc_now(),
+            "unread_count": 1 if direction == "incoming" else 0,
+            "status": "open",
+            "created_at": utc_now(),
+            "updated_at": utc_now()
+        }
+
+        conversation = sb_insert(
+            "conversations",
+            conversation_payload
+        )
+
+    else:
+
+        unread_count = int(
+            conversation.get("unread_count") or 0
+        )
+
+        if direction == "incoming":
+            unread_count += 1
+
+        conversation = sb_update(
+            "conversations",
+            {
+                "id": f"eq.{conversation.get('id')}"
+            },
+            {
+                "last_message": text,
+                "last_message_at": utc_now(),
+                "unread_count": unread_count,
+                "updated_at": utc_now()
+            }
+        ) or conversation
+
+    # ---------------------------------------------------------
+    # Save message
+    #
+    # Existing messages table uses its existing UUID id.
+    # We therefore do not generate or force an id here.
+    # ---------------------------------------------------------
+    message_payload = {
+        "conversation_id": conversation.get("id")
+        if conversation else None,
+
+        "customer_id": customer_id or None,
+
+        "customer_name": customer_name or None,
+
+        "channel": channel,
+
+        "direction": direction,
+
+        "message": text,
+
+        "message_type": str(
+            data.get("message_type", "text")
+        ),
+
+        "external_message_id": data.get(
+            "external_message_id"
+        ),
+
+        "attachment_url": data.get(
+            "attachment_url"
+        ),
+
+        "attachment_name": data.get(
+            "attachment_name"
+        ),
+
+        "attachment_type": data.get(
+            "attachment_type"
+        ),
+
+        "ai_generated": bool(
+            data.get("ai_generated", False)
+        ),
+
+        "delivered": bool(
+            send_result.get("ok", False)
+        ),
+
+        "read_status": direction == "outgoing",
+
+        "created_at": utc_now()
+    }
+
+    saved_message = sb_insert(
+        "messages",
+        message_payload
+    )
+
+    if isinstance(saved_message, dict) and saved_message.get("_error"):
+
+        return jsonify({
+            "error": saved_message.get("_error")
+        }), 500
+
+    # ---------------------------------------------------------
+    # Also update the customer record when customer_id exists
+    # ---------------------------------------------------------
+    if customer_id:
+
+        try:
+
+            sb_update(
+                "customers",
+                {
+                    "id": f"eq.{customer_id}"
+                },
+                {
+                    "last_message": text,
+                    "updated_at": utc_now()
+                }
+            )
+
+        except Exception:
+
+            pass
+
+    # ---------------------------------------------------------
+    # Return complete result to frontend
+    # ---------------------------------------------------------
+    return jsonify({
+
+        "success": True,
+
+        "sent": bool(
+            send_result.get("ok", False)
+        ),
+
+        "message": saved_message,
+
+        "conversation": conversation,
+
+        "result": send_result
+
+    })
 @app.route("/api/messages/ai-draft", methods=["POST"])
 @protected
 def messages_ai_draft():
