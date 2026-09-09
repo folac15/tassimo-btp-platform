@@ -2296,6 +2296,10 @@ function openPage(p){
   window.location.href="/automation.html";
   return;
 } 
+  if(p==="messages"){
+    window.location.href="/messages.html";
+    return;
+}
   if(p==="reports"){
     window.location.href="/reports.html";
     return;
@@ -3664,6 +3668,10 @@ def reports_page():
 @protected
 def automation_page():
     return send_from_directory(".", "automation.html")
+@app.route("/messages.html")
+@protected
+def messages_page():
+    return send_from_directory(".", "messages.html")
 # ------------------------------------------------------------
 # Error handling
 # ------------------------------------------------------------
