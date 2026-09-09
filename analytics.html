@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TASSIMO BTP — Analyse</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#f4f7fb;
+    color:#172033;
+    min-height:100vh;
+}
+
+button,
+input,
+select{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.header{
+    background:#ffffff;
+    border-bottom:1px solid #e5eaf1;
+    padding:16px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo{
+    width:46px;
+    height:46px;
+    border-radius:12px;
+    background:#172033;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.brand h1{
+    font-size:20px;
+}
+
+.brand p{
+    font-size:12px;
+    color:#718096;
+    margin-top:3px;
+}
+
+.header-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    border:0;
+    border-radius:9px;
+    padding:10px 14px;
+    background:#172033;
+    color:white;
+    font-weight:bold;
+}
+
+.btn:hover{
+    opacity:.9;
+}
+
+.btn.secondary{
+    background:#eef2f7;
+    color:#172033;
+}
+
+.btn.ai{
+    background:#5b3cc4;
+}
+
+.btn.back{
+    background:#e9eef5;
+    color:#172033;
+}
+
+.container{
+    width:100%;
+    max-width:1500px;
+    margin:auto;
+    padding:22px;
+}
+
+.page-heading{
+    margin-bottom:20px;
+}
+
+.page-heading h2{
+    font-size:28px;
+    margin-bottom:7px;
+}
+
+.page-heading p{
+    color:#718096;
+    line-height:1.5;
+}
+
+.filters{
+    background:white;
+    border:1px solid #e5eaf1;
+    border-radius:14px;
+    padding:15px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.field label{
+    display:block;
+    font-size:12px;
+    font-weight:bold;
+    color:#718096;
+    margin-bottom:6px;
+}
+
+.field input,
+.field select{
+    width:100%;
+    padding:11px;
+    border:1px solid #dce3ec;
+    border-radius:9px;
+    background:#fff;
+    outline:none;
+}
+
+.field input:focus,
+.field select:focus{
+    border-color:#172033;
+}
+
+.filter-actions{
+    display:flex;
+    align-items:end;
+    gap:8px;
+}
+
+.kpis{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.kpi{
+    background:#fff;
+    border:1px solid #e5eaf1;
+    border-radius:14px;
+    padding:18px;
+    min-height:120px;
+}
+
+.kpi-icon{
+    font-size:22px;
+    margin-bottom:10px;
+}
+
+.kpi-title{
+    color:#718096;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.kpi-value{
+    font-size:24px;
+    font-weight:bold;
+    margin-top:7px;
+}
+
+.kpi-sub{
+    font-size:11px;
+    color:#8a96a8;
+    margin-top:6px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+    margin-bottom:18px;
+}
+
+.panel{
+    background:white;
+    border:1px solid #e5eaf1;
+    border-radius:14px;
+    padding:18px;
+    min-width:0;
+}
+
+.panel.full{
+    grid-column:1 / -1;
+}
+
+.panel-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+.panel-header h3{
+    font-size:17px;
+}
+
+.panel-header span{
+    font-size:12px;
+    color:#718096;
+}
+
+.chart-box{
+    position:relative;
+    height:300px;
+}
+
+.chart-box.small{
+    height:250px;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+}
+
+.summary{
+    padding:14px;
+    background:#f7f9fc;
+    border-radius:10px;
+}
+
+.summary strong{
+    display:block;
+    font-size:18px;
+    margin-top:4px;
+}
+
+.summary span{
+    color:#718096;
+    font-size:12px;
+}
+
+.table-wrap{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:650px;
+}
+
+th,
+td{
+    padding:11px;
+    border-bottom:1px solid #edf0f5;
+    text-align:left;
+    font-size:13px;
+}
+
+th{
+    color:#667085;
+    background:#fafbfd;
+    font-size:12px;
+}
+
+.status{
+    display:inline-block;
+    padding:5px 8px;
+    border-radius:20px;
+    background:#edf2f7;
+    font-size:11px;
+    font-weight:bold;
+}
+
+.ai-panel{
+    background:linear-gradient(135deg,#f5f1ff,#ffffff);
+    border:1px solid #ded4ff;
+}
+
+.ai-controls{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+}
+
+.ai-controls textarea{
+    flex:1;
+    min-height:100px;
+    resize:vertical;
+    border:1px solid #d8cff7;
+    border-radius:10px;
+    padding:12px;
+    outline:none;
+}
+
+.ai-result{
+    margin-top:15px;
+    padding:15px;
+    border-radius:10px;
+    background:white;
+    border:1px solid #e4ddff;
+    white-space:pre-wrap;
+    line-height:1.6;
+    min-height:80px;
+}
+
+.loading{
+    color:#718096;
+    text-align:center;
+    padding:30px;
+}
+
+.error{
+    background:#fff1f1;
+    color:#a52b2b;
+    border:1px solid #ffcaca;
+    padding:12px;
+    border-radius:9px;
+    margin-bottom:15px;
+}
+
+.empty{
+    color:#718096;
+    text-align:center;
+    padding:20px;
+}
+
+.footer{
+    text-align:center;
+    color:#8a96a8;
+    padding:25px;
+    font-size:12px;
+}
+
+@media(max-width:1200px){
+
+    .kpis{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .filters{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+@media(max-width:800px){
+
+    .header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .header-actions{
+        width:100%;
+    }
+
+    .header-actions .btn{
+        flex:1;
+    }
+
+    .container{
+        padding:14px;
+    }
+
+    .page-heading h2{
+        font-size:23px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .panel.full{
+        grid-column:auto;
+    }
+
+    .kpis{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .filters{
+        grid-template-columns:1fr;
+    }
+
+    .filter-actions{
+        align-items:stretch;
+    }
+
+    .summary-grid{
+        grid-template-columns:1fr;
+    }
+
+    .ai-controls{
+        flex-direction:column;
+    }
+
+}
+
+@media(max-width:480px){
+
+    .kpis{
+        grid-template-columns:1fr;
+    }
+
+    .kpi-value{
+        font-size:22px;
+    }
+
+    .brand h1{
+        font-size:17px;
+    }
+
+    .header-actions{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+    }
+
+    .btn{
+        width:100%;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="brand">
+
+        <div class="logo">TB</div>
+
+        <div>
+            <h1>TASSIMO BTP CONSTRUCTION SARL</h1>
+            <p id="slogan">
+                Ensemble, construisons l’excellence.
+            </p>
+        </div>
+
+    </div>
+
+    <div class="header-actions">
+
+        <button class="btn back" onclick="goDashboard()">
+            ← <span data-i18n="dashboard">Tableau de bord</span>
+        </button>
+
+        <button class="btn secondary" onclick="toggleLanguage()">
+            🌐 <span id="languageButton">EN</span>
+        </button>
+
+        <button class="btn" onclick="loadAnalytics()">
+            ↻ <span data-i18n="refresh">Actualiser</span>
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <section class="page-heading">
+
+        <h2>
+            📈 <span data-i18n="analytics">Analyse & Performance</span>
+        </h2>
+
+        <p data-i18n="analytics_description">
+            Analysez les performances commerciales, financières, clients,
+            projets et formations de TASSIMO BTP.
+        </p>
+
+    </section>
+
+
+    <!-- FILTERS -->
+
+    <section class="filters">
+
+        <div class="field">
+
+            <label data-i18n="period">
+                Période
+            </label>
+
+            <select id="period">
+
+                <option value="all" data-i18n="all_period">
+                    Toute la période
+                </option>
+
+                <option value="today" data-i18n="today">
+                    Aujourd’hui
+                </option>
+
+                <option value="7" data-i18n="last_7">
+                    7 derniers jours
+                </option>
+
+                <option value="30" data-i18n="last_30">
+                    30 derniers jours
+                </option>
+
+                <option value="90" data-i18n="last_90">
+                    90 derniers jours
+                </option>
+
+                <option value="365" data-i18n="last_365">
+                    12 derniers mois
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="field">
+
+            <label data-i18n="from">
+                Du
+            </label>
+
+            <input type="date" id="dateFrom">
+
+        </div>
+
+
+        <div class="field">
+
+            <label data-i18n="to">
+                Au
+            </label>
+
+            <input type="date" id="dateTo">
+
+        </div>
+
+
+        <div class="filter-actions">
+
+            <button class="btn" onclick="applyFilters()">
+                🔎 <span data-i18n="apply">Appliquer</span>
+            </button>
+
+            <button class="btn secondary" onclick="resetFilters()">
+                ✕ <span data-i18n="reset">Réinitialiser</span>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <div id="errorBox"></div>
+
+
+    <!-- KPI CARDS -->
+
+    <section class="kpis">
+
+        <div class="kpi">
+
+            <div class="kpi-icon">👥</div>
+
+            <div class="kpi-title" data-i18n="customers">
+                Clients
+            </div>
+
+            <div class="kpi-value" id="customersTotal">
+                0
+            </div>
+
+            <div class="kpi-sub" data-i18n="total_customers">
+                Total clients
+            </div>
+
+        </div>
+
+
+        <div class="kpi">
+
+            <div class="kpi-icon">🏗️</div>
+
+            <div class="kpi-title" data-i18n="projects">
+                Projets
+            </div>
+
+            <div class="kpi-value" id="projectsTotal">
+                0
+            </div>
+
+            <div class="kpi-sub" data-i18n="total_projects">
+                Total projets
+            </div>
+
+        </div>
+
+
+        <div class="kpi">
+
+            <div class="kpi-icon">📊</div>
+
+            <div class="kpi-title" data-i18n="progress">
+                Progression
+            </div>
+
+            <div class="kpi-value" id="averageProgress">
+                0%
+            </div>
+
+            <div class="kpi-sub" data-i18n="average_project_progress">
+                Progression moyenne des projets
+            </div>
+
+        </div>
+
+
+        <div class="kpi">
+
+            <div class="kpi-icon">💰</div>
+
+            <div class="kpi-title" data-i18n="payments">
+                Paiements
+            </div>
+
+            <div class="kpi-value" id="paymentsTotal">
+                0 FCFA
+            </div>
+
+            <div class="kpi-sub" data-i18n="total_payments">
+                Paiements enregistrés
+            </div>
+
+        </div>
+
+
+        <div class="kpi">
+
+            <div class="kpi-icon">💸</div>
+
+            <div class="kpi-title" data-i18n="expenses">
+                Dépenses
+            </div>
+
+            <div class="kpi-value" id="expensesTotal">
+                0 FCFA
+            </div>
+
+            <div class="kpi-sub" data-i18n="total_expenses">
+                Dépenses enregistrées
+            </div>
+
+        </div>
+
+
+        <div class="kpi">
+
+            <div class="kpi-icon">🎓</div>
+
+            <div class="kpi-title" data-i18n="students">
+                Étudiants
+            </div>
+
+            <div class="kpi-value" id="studentsTotal">
+                0
+            </div>
+
+            <div class="kpi-sub" data-i18n="total_students">
+                Étudiants en formation
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- CUSTOMER / PROJECT ANALYSIS -->
+
+    <section class="grid">
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3 data-i18n="customer_sources">
+                    Sources des clients
+                </h3>
+
+                <span data-i18n="customer_distribution">
+                    Répartition
+                </span>
+
+            </div>
+
+            <div class="chart-box">
+
+                <canvas id="customerSourceChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3 data-i18n="customer_languages">
+                    Langues des clients
+                </h3>
+
+                <span data-i18n="language_distribution">
+                    Répartition linguistique
+                </span>
+
+            </div>
+
+            <div class="chart-box">
+
+                <canvas id="customerLanguageChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3 data-i18n="project_status">
+                    Statut des projets
+                </h3>
+
+                <span data-i18n="project_distribution">
+                    Répartition
+                </span>
+
+            </div>
+
+            <div class="chart-box">
+
+                <canvas id="projectStatusChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3 data-i18n="project_budget">
+                    Budget des projets
+                </h3>
+
+                <span data-i18n="budget_overview">
+                    Vue globale
+                </span>
+
+            </div>
+
+            <div class="summary-grid">
+
+                <div class="summary">
+
+                    <span data-i18n="total_budget">
+                        Budget total
+                    </span>
+
+                    <strong id="projectBudget">
+                        0 FCFA
+                    </strong>
+
+                </div>
+
+
+                <div class="summary">
+
+                    <span data-i18n="average_progress">
+                        Progression moyenne
+                    </span>
+
+                    <strong id="projectProgressSummary">
+                        0%
+                    </strong>
+
+                </div>
+
+
+                <div class="summary">
+
+                    <span data-i18n="active_projects">
+                        Projets actifs
+                    </span>
+
+                    <strong id="activeProjects">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FINANCE -->
+
+    <section class="grid">
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3 data-i18n="expense_categories">
+                    Dépenses par catégorie
+                </h3>
+
+                <span>FCFA</span>
+
+            </div>
+
+            <div class="chart-box">
+
+                <canvas id="expenseChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3 data-i18n="financial_overview">
+                    Vue financière
+                </h3>
+
+                <span data-i18n="financial_summary">
+                    Résumé
+                </span>
+
+            </div>
+
+            <div class="chart-box">
+
+                <canvas id="financeChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- TRAINING -->
+
+    <section class="grid">
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3 data-i18n="training_status">
+                    Statut des étudiants
+                </h3>
+
+                <span data-i18n="training_distribution">
+                    Répartition
+                </span>
+
+            </div>
+
+            <div class="chart-box">
+
+                <canvas id="trainingChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="panel-header">
+
+                <h3 data-i18n="training_summary">
+                    Résumé formation
+                </h3>
+
+                <span>🎓</span>
+
+            </div>
+
+            <div class="summary-grid">
+
+                <div class="summary">
+
+                    <span data-i18n="students">
+                        Étudiants
+                    </span>
+
+                    <strong id="trainingStudents">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary">
+
+                    <span data-i18n="completed">
+                        Terminés
+                    </span>
+
+                    <strong id="trainingCompleted">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary">
+
+                    <span data-i18n="active">
+                        Actifs
+                    </span>
+
+                    <strong id="trainingActive">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- PERFORMANCE TABLE -->
+
+    <section class="panel full">
+
+        <div class="panel-header">
+
+            <h3 data-i18n="performance_overview">
+                Vue générale des performances
+            </h3>
+
+            <span data-i18n="key_indicators">
+                Indicateurs clés
+            </span>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th data-i18n="indicator">
+                            Indicateur
+                        </th>
+
+                        <th data-i18n="value">
+                            Valeur
+                        </th>
+
+                        <th data-i18n="status">
+                            Statut
+                        </th>
+
+                        <th data-i18n="comment">
+                            Commentaire
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="performanceTable">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- AI ANALYSIS -->
+
+    <section class="panel ai-panel full" style="margin-top:18px;">
+
+        <div class="panel-header">
+
+            <h3>
+                🤖 <span data-i18n="ai_analysis">
+                    Analyse intelligente IA
+                </span>
+            </h3>
+
+            <span data-i18n="ai_strategy">
+                Analyse stratégique
+            </span>
+
+        </div>
+
+
+        <p data-i18n="ai_description">
+            Demandez à l’IA d’interpréter les performances de l’entreprise
+            et de proposer des actions concrètes.
+        </p>
+
+
+        <div class="ai-controls">
+
+            <textarea
+                id="aiQuestion"
+                placeholder="Analysez les performances actuelles de TASSIMO BTP et donnez-moi les principales recommandations..."
+            ></textarea>
+
+            <button class="btn ai" onclick="askAI()">
+                🤖 <span data-i18n="analyze">
+                    Analyser
+                </span>
+            </button>
+
+        </div>
+
+
+        <div class="ai-result" id="aiResult">
+
+            <span class="loading" data-i18n="ai_waiting">
+                L’analyse IA apparaîtra ici.
+            </span>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer class="footer">
+
+    TASSIMO BTP CONSTRUCTION SARL —
+    <span data-i18n="analytics_footer">
+        Module Analyse & Performance
+    </span>
+
+</footer>
+
+
+<script>
+
+/* ============================================================
+   LANGUAGE
+============================================================ */
+
+let lang = localStorage.getItem("lang") || "fr";
+
+
+const translations = {
+
+    fr: {
+
+        dashboard:"Tableau de bord",
+        refresh:"Actualiser",
+        analytics:"Analyse & Performance",
+        analytics_description:
+            "Analysez les performances commerciales, financières, clients, projets et formations de TASSIMO BTP.",
+
+        period:"Période",
+        all_period:"Toute la période",
+        today:"Aujourd’hui",
+        last_7:"7 derniers jours",
+        last_30:"30 derniers jours",
+        last_90:"90 derniers jours",
+        last_365:"12 derniers mois",
+        from:"Du",
+        to:"Au",
+        apply:"Appliquer",
+        reset:"Réinitialiser",
+
+        customers:"Clients",
+        projects:"Projets",
+        progress:"Progression",
+        payments:"Paiements",
+        expenses:"Dépenses",
+        students:"Étudiants",
+
+        total_customers:"Total clients",
+        total_projects:"Total projets",
+        average_project_progress:"Progression moyenne des projets",
+        total_payments:"Paiements enregistrés",
+        total_expenses:"Dépenses enregistrées",
+        total_students:"Étudiants en formation",
+
+        customer_sources:"Sources des clients",
+        customer_distribution:"Répartition",
+        customer_languages:"Langues des clients",
+        language_distribution:"Répartition linguistique",
+
+        project_status:"Statut des projets",
+        project_distribution:"Répartition",
+        project_budget:"Budget des projets",
+        budget_overview:"Vue globale",
+        total_budget:"Budget total",
+        average_progress:"Progression moyenne",
+        active_projects:"Projets actifs",
+
+        expense_categories:"Dépenses par catégorie",
+        financial_overview:"Vue financière",
+        financial_summary:"Résumé",
+
+        training_status:"Statut des étudiants",
+        training_distribution:"Répartition",
+        training_summary:"Résumé formation",
+        completed:"Terminés",
+        active:"Actifs",
+
+        performance_overview:"Vue générale des performances",
+        key_indicators:"Indicateurs clés",
+        indicator:"Indicateur",
+        value:"Valeur",
+        status:"Statut",
+        comment:"Commentaire",
+
+        ai_analysis:"Analyse intelligente IA",
+        ai_strategy:"Analyse stratégique",
+        ai_description:
+            "Demandez à l’IA d’interpréter les performances de l’entreprise et de proposer des actions concrètes.",
+        analyze:"Analyser",
+        ai_waiting:"L’analyse IA apparaîtra ici.",
+
+        analytics_footer:"Module Analyse & Performance",
+
+        excellent:"Excellent",
+        attention:"Attention",
+        normal:"Normal",
+
+        customers_comment:"Base clients enregistrée.",
+        projects_comment:"Projets actuellement enregistrés.",
+        finance_comment:"Suivi financier disponible.",
+        training_comment:"Activité de formation enregistrée."
+    },
+
+    en: {
+
+        dashboard:"Dashboard",
+        refresh:"Refresh",
+        analytics:"Analytics & Performance",
+        analytics_description:
+            "Analyze TASSIMO BTP commercial, financial, customer, project and training performance.",
+
+        period:"Period",
+        all_period:"All time",
+        today:"Today",
+        last_7:"Last 7 days",
+        last_30:"Last 30 days",
+        last_90:"Last 90 days",
+        last_365:"Last 12 months",
+        from:"From",
+        to:"To",
+        apply:"Apply",
+        reset:"Reset",
+
+        customers:"Customers",
+        projects:"Projects",
+        progress:"Progress",
+        payments:"Payments",
+        expenses:"Expenses",
+        students:"Students",
+
+        total_customers:"Total customers",
+        total_projects:"Total projects",
+        average_project_progress:"Average project progress",
+        total_payments:"Recorded payments",
+        total_expenses:"Recorded expenses",
+        total_students:"Students in training",
+
+        customer_sources:"Customer sources",
+        customer_distribution:"Distribution",
+        customer_languages:"Customer languages",
+        language_distribution:"Language distribution",
+
+        project_status:"Project status",
+        project_distribution:"Distribution",
+        project_budget:"Project budget",
+        budget_overview:"Overview",
+        total_budget:"Total budget",
+        average_progress:"Average progress",
+        active_projects:"Active projects",
+
+        expense_categories:"Expenses by category",
+        financial_overview:"Financial overview",
+        financial_summary:"Summary",
+
+        training_status:"Student status",
+        training_distribution:"Distribution",
+        training_summary:"Training summary",
+        completed:"Completed",
+        active:"Active",
+
+        performance_overview:"Performance overview",
+        key_indicators:"Key indicators",
+        indicator:"Indicator",
+        value:"Value",
+        status:"Status",
+        comment:"Comment",
+
+        ai_analysis:"AI Intelligent Analysis",
+        ai_strategy:"Strategic analysis",
+        ai_description:
+            "Ask AI to interpret company performance and provide practical recommendations.",
+        analyze:"Analyze",
+        ai_waiting:"AI analysis will appear here.",
+
+        analytics_footer:"Analytics & Performance Module",
+
+        excellent:"Excellent",
+        attention:"Attention",
+        normal:"Normal",
+
+        customers_comment:"Registered customer base.",
+        projects_comment:"Currently registered projects.",
+        finance_comment:"Financial monitoring available.",
+        training_comment:"Registered training activity."
+    }
+
+};
+
+
+/* ============================================================
+   TRANSLATION
+============================================================ */
+
+function tr(key){
+
+    return translations[lang]?.[key]
+        || translations.fr[key]
+        || key;
+
+}
+
+
+function applyLanguage(){
+
+    document.documentElement.lang=lang;
+
+    document.querySelectorAll("[data-i18n]").forEach(el=>{
+
+        const key=el.getAttribute("data-i18n");
+
+        el.textContent=tr(key);
+
+    });
+
+
+    document.getElementById("languageButton").textContent =
+        lang==="fr" ? "EN" : "FR";
+
+
+    document.getElementById("slogan").textContent =
+        lang==="fr"
+        ? "Ensemble, construisons l’excellence."
+        : "Together, let us build excellence.";
+
+
+    document.getElementById("aiQuestion").placeholder =
+        lang==="fr"
+        ? "Analysez les performances actuelles de TASSIMO BTP et donnez-moi les principales recommandations..."
+        : "Analyze TASSIMO BTP's current performance and give me the main recommendations...";
+
+}
+
+
+function toggleLanguage(){
+
+    lang = lang==="fr" ? "en" : "fr";
+
+    localStorage.setItem("lang",lang);
+
+    applyLanguage();
+
+    renderAll();
+
+}
+
+
+/* ============================================================
+   AUTHENTICATION
+============================================================ */
+
+function handleAuthError(error){
+
+    if(
+        error?.status===401 ||
+        String(error?.message || "").includes("Authentication")
+    ){
+
+        window.location.href="/login";
+
+        return true;
+
+    }
+
+    return false;
+
+}
+
+
+/* ============================================================
+   API
+============================================================ */
+
+async function api(url,options={}){
+
+    const response = await fetch(
+        url,
+        {
+            credentials:"include",
+            ...options,
+            headers:{
+                "Content-Type":"application/json",
+                ...(options.headers || {})
+            }
+        }
+    );
+
+
+    let data={};
+
+    try{
+
+        data=await response.json();
+
+    }catch(e){
+
+        data={};
+
+    }
+
+
+    if(!response.ok){
+
+        const error=new Error(
+            data.error ||
+            data.message ||
+            `HTTP ${response.status}`
+        );
+
+        error.status=response.status;
+
+        throw error;
+
+    }
+
+
+    return data;
+
+}
+
+
+/* ============================================================
+   CHARTS
+============================================================ */
+
+let charts={};
+
+
+function destroyChart(name){
+
+    if(charts[name]){
+
+        charts[name].destroy();
+
+        charts[name]=null;
+
+    }
+
+}
+
+
+function createChart(
+    name,
+    canvasId,
+    type,
+    labels,
+    data,
+    options={}
+){
+
+    destroyChart(name);
+
+
+    const canvas=document.getElementById(canvasId);
+
+    if(!canvas) return;
+
+
+    charts[name]=new Chart(
+        canvas,
+        {
+            type:type,
+
+            data:{
+                labels:labels,
+                datasets:[
+                    {
+                        data:data,
+                        borderWidth:1
+                    }
+                ]
+            },
+
+            options:{
+                responsive:true,
+                maintainAspectRatio:false,
+
+                plugins:{
+                    legend:{
+                        display:type==="doughnut" ||
+                               type==="pie"
+                    }
+                },
+
+                ...options
+            }
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   GLOBAL ANALYTICS DATA
+============================================================ */
+
+let analyticsData={
+
+    customers:{
+        total:0,
+        by_source:{},
+        by_language:{}
+    },
+
+    projects:{
+        total:0,
+        by_status:{},
+        average_progress:0,
+        budget:0
+    },
+
+    finance:{
+        expenses:0,
+        payments:0,
+        expenses_by_category:{}
+    },
+
+    training:{
+        students:0,
+        by_status:{}
+    }
+
+};
+
+
+/* ============================================================
+   LOAD ANALYTICS
+============================================================ */
+
+async function loadAnalytics(){
+
+    clearError();
+
+
+    try{
+
+        const data=await api("/api/analytics");
+
+        analyticsData=data || analyticsData;
+
+        renderAll();
+
+    }catch(error){
+
+        if(handleAuthError(error)) return;
+
+        showError(error.message);
+
+    }
+
+}
+
+
+/* ============================================================
+   RENDER ALL
+============================================================ */
+
+function renderAll(){
+
+    renderKPIs();
+
+    renderCustomerCharts();
+
+    renderProjectCharts();
+
+    renderFinanceCharts();
+
+    renderTrainingCharts();
+
+    renderPerformanceTable();
+
+}
+
+
+/* ============================================================
+   KPI
+============================================================ */
+
+function renderKPIs(){
+
+    const c=analyticsData.customers || {};
+    const p=analyticsData.projects || {};
+    const f=analyticsData.finance || {};
+    const t=analyticsData.training || {};
+
+
+    document.getElementById("customersTotal").textContent =
+        formatNumber(c.total || 0);
+
+
+    document.getElementById("projectsTotal").textContent =
+        formatNumber(p.total || 0);
+
+
+    document.getElementById("averageProgress").textContent =
+        formatPercent(p.average_progress || 0);
+
+
+    document.getElementById("paymentsTotal").textContent =
+        money(f.payments || 0);
+
+
+    document.getElementById("expensesTotal").textContent =
+        money(f.expenses || 0);
+
+
+    document.getElementById("studentsTotal").textContent =
+        formatNumber(t.students || 0);
+
+
+    document.getElementById("projectBudget").textContent =
+        money(p.budget || 0);
+
+
+    document.getElementById("projectProgressSummary").textContent =
+        formatPercent(p.average_progress || 0);
+
+
+    const statuses=p.by_status || {};
+
+    const active=countActiveProjects(statuses);
+
+    document.getElementById("activeProjects").textContent =
+        formatNumber(active);
+
+
+    document.getElementById("trainingStudents").textContent =
+        formatNumber(t.students || 0);
+
+
+    const trainingStatuses=t.by_status || {};
+
+    document.getElementById("trainingCompleted").textContent =
+        findStatusCount(
+            trainingStatuses,
+            ["completed","complete","completed_training","terminé","termine"]
+        );
+
+
+    document.getElementById("trainingActive").textContent =
+        findStatusCount(
+            trainingStatuses,
+            ["active","enrolled","ongoing","actif","en cours"]
+        );
+
+}
+
+
+/* ============================================================
+   CUSTOMER CHARTS
+============================================================ */
+
+function renderCustomerCharts(){
+
+    const c=analyticsData.customers || {};
+
+
+    const source=c.by_source || {};
+
+    createChart(
+        "customerSource",
+        "customerSourceChart",
+        "doughnut",
+        Object.keys(source).length
+            ? Object.keys(source)
+            : [lang==="fr" ? "Aucune donnée" : "No data"],
+        Object.keys(source).length
+            ? Object.values(source)
+            : [1]
+    );
+
+
+    const languages=c.by_language || {};
+
+    createChart(
+        "customerLanguage",
+        "customerLanguageChart",
+        "pie",
+        Object.keys(languages).length
+            ? Object.keys(languages)
+            : [lang==="fr" ? "Aucune donnée" : "No data"],
+        Object.keys(languages).length
+            ? Object.values(languages)
+            : [1]
+    );
+
+}
+
+
+/* ============================================================
+   PROJECT CHARTS
+============================================================ */
+
+function renderProjectCharts(){
+
+    const p=analyticsData.projects || {};
+
+    const statuses=p.by_status || {};
+
+
+    createChart(
+        "projectStatus",
+        "projectStatusChart",
+        "doughnut",
+        Object.keys(statuses).length
+            ? Object.keys(statuses)
+            : [lang==="fr" ? "Aucun projet" : "No projects"],
+        Object.keys(statuses).length
+            ? Object.values(statuses)
+            : [1]
+    );
+
+}
+
+
+/* ============================================================
+   FINANCE CHARTS
+============================================================ */
+
+function renderFinanceCharts(){
+
+    const f=analyticsData.finance || {};
+
+
+    const categories=f.expenses_by_category || {};
+
+
+    createChart(
+        "expenses",
+        "expenseChart",
+        "bar",
+        Object.keys(categories).length
+            ? Object.keys(categories)
+            : [lang==="fr" ? "Aucune dépense" : "No expenses"],
+        Object.keys(categories).length
+            ? Object.values(categories)
+            : [0],
+        {
+            plugins:{
+                legend:{
+                    display:false
+                }
+            },
+
+            scales:{
+                y:{
+                    beginAtZero:true
+                }
+            }
+        }
+    );
+
+
+    createChart(
+        "finance",
+        "financeChart",
+        "bar",
+        [
+            lang==="fr" ? "Paiements" : "Payments",
+            lang==="fr" ? "Dépenses" : "Expenses"
+        ],
+        [
+            Number(f.payments || 0),
+            Number(f.expenses || 0)
+        ],
+        {
+            plugins:{
+                legend:{
+                    display:false
+                }
+            },
+
+            scales:{
+                y:{
+                    beginAtZero:true
+                }
+            }
+        }
+    );
+
+}
+
+
+/* ============================================================
+   TRAINING CHART
+============================================================ */
+
+function renderTrainingCharts(){
+
+    const t=analyticsData.training || {};
+
+    const statuses=t.by_status || {};
+
+
+    createChart(
+        "training",
+        "trainingChart",
+        "doughnut",
+        Object.keys(statuses).length
+            ? Object.keys(statuses)
+            : [lang==="fr" ? "Aucun étudiant" : "No students"],
+        Object.keys(statuses).length
+            ? Object.values(statuses)
+            : [1]
+    );
+
+}
+
+
+/* ============================================================
+   PERFORMANCE TABLE
+============================================================ */
+
+function renderPerformanceTable(){
+
+    const c=analyticsData.customers || {};
+    const p=analyticsData.projects || {};
+    const f=analyticsData.finance || {};
+    const t=analyticsData.training || {};
+
+
+    const customerTotal=Number(c.total || 0);
+    const projectTotal=Number(p.total || 0);
+    const progress=Number(p.average_progress || 0);
+    const payments=Number(f.payments || 0);
+    const expenses=Number(f.expenses || 0);
+    const students=Number(t.students || 0);
+
+
+    const rows=[
+
+        {
+            indicator:tr("customers"),
+            value:formatNumber(customerTotal),
+            status:customerTotal>0
+                ?tr("normal")
+                :tr("attention"),
+            comment:tr("customers_comment")
+        },
+
+        {
+            indicator:tr("projects"),
+            value:formatNumber(projectTotal),
+            status:projectTotal>0
+                ?tr("normal")
+                :tr("attention"),
+            comment:tr("projects_comment")
+        },
+
+        {
+            indicator:tr("progress"),
+            value:formatPercent(progress),
+            status:
+                progress>=75
+                ?tr("excellent")
+                :progress>=40
+                    ?tr("normal")
+                    :tr("attention"),
+            comment:
+                lang==="fr"
+                ?"Progression moyenne actuelle des projets."
+                :"Current average project progress."
+        },
+
+        {
+            indicator:tr("payments"),
+            value:money(payments),
+            status:payments>0
+                ?tr("normal")
+                :tr("attention"),
+            comment:tr("finance_comment")
+        },
+
+        {
+            indicator:tr("expenses"),
+            value:money(expenses),
+            status:expenses>0
+                ?tr("normal")
+                :tr("normal"),
+            comment:tr("finance_comment")
+        },
+
+        {
+            indicator:tr("students"),
+            value:formatNumber(students),
+            status:students>0
+                ?tr("normal")
+                :tr("attention"),
+            comment:tr("training_comment")
+        }
+
+    ];
+
+
+    document.getElementById("performanceTable").innerHTML =
+        rows.map(row=>`
+
+            <tr>
+
+                <td>
+                    <strong>${escapeHtml(row.indicator)}</strong>
+                </td>
+
+                <td>
+                    ${escapeHtml(row.value)}
+                </td>
+
+                <td>
+                    <span class="status">
+                        ${escapeHtml(row.status)}
+                    </span>
+                </td>
+
+                <td>
+                    ${escapeHtml(row.comment)}
+                </td>
+
+            </tr>
+
+        `).join("");
+
+}
+
+
+/* ============================================================
+   AI ANALYSIS
+============================================================ */
+
+async function askAI(){
+
+    const question=document.getElementById("aiQuestion").value.trim();
+
+    const result=document.getElementById("aiResult");
+
+
+    if(!question){
+
+        result.textContent =
+            lang==="fr"
+            ?"Veuillez saisir une question."
+            :"Please enter a question.";
+
+        return;
+
+    }
+
+
+    result.textContent =
+        lang==="fr"
+        ?"Analyse IA en cours..."
+        :"AI analysis in progress...";
+
+
+    try{
+
+        const context={
+
+            module:"analytics",
+
+            business:"TASSIMO BTP CONSTRUCTION SARL",
+
+            ceo:"TAGNE Simo Innocant",
+
+            language:lang,
+
+            analytics:analyticsData
+
+        };
+
+
+        const response=await api(
+            "/api/ai",
+            {
+                method:"POST",
+
+                body:JSON.stringify({
+
+                    question:question,
+
+                    context:context
+
+                })
+
+            }
+        );
+
+
+        result.textContent =
+            response.answer ||
+            response.message ||
+            (
+                lang==="fr"
+                ?"Aucune réponse IA reçue."
+                :"No AI response received."
+            );
+
+
+    }catch(error){
+
+        if(handleAuthError(error)) return;
+
+        result.textContent=error.message;
+
+    }
+
+}
+
+
+/* ============================================================
+   FILTERS
+============================================================ */
+
+function applyFilters(){
+
+    const period=document.getElementById("period").value;
+
+    if(period==="all"){
+
+        document.getElementById("dateFrom").value="";
+        document.getElementById("dateTo").value="";
+
+        loadAnalytics();
+
+        return;
+
+    }
+
+
+    const today=new Date();
+
+    const toDate=new Date(today);
+
+    const fromDate=new Date(today);
+
+
+    if(period==="today"){
+
+        fromDate.setHours(0,0,0,0);
+
+    }else{
+
+        const days=parseInt(period,10);
+
+        if(!isNaN(days)){
+
+            fromDate.setDate(
+                fromDate.getDate()-days
+            );
+
+        }
+
+    }
+
+
+    document.getElementById("dateFrom").value=
+        formatDateInput(fromDate);
+
+    document.getElementById("dateTo").value=
+        formatDateInput(toDate);
+
+
+    /*
+       The current backend analytics endpoint returns
+       aggregate data. The selected period is therefore
+       prepared here for future date-filtered analytics
+       expansion without breaking the existing endpoint.
+    */
+
+    loadAnalytics();
+
+}
+
+
+function resetFilters(){
+
+    document.getElementById("period").value="all";
+
+    document.getElementById("dateFrom").value="";
+
+    document.getElementById("dateTo").value="";
+
+    loadAnalytics();
+
+}
+
+
+/* ============================================================
+   HELPERS
+============================================================ */
+
+function money(value){
+
+    const number=Number(value || 0);
+
+    return number.toLocaleString(
+        "fr-FR"
+    )+" FCFA";
+
+}
+
+
+function formatNumber(value){
+
+    return Number(value || 0).toLocaleString(
+        lang==="fr" ? "fr-FR" : "en-US"
+    );
+
+}
+
+
+function formatPercent(value){
+
+    return Number(value || 0).toLocaleString(
+        lang==="fr" ? "fr-FR" : "en-US",
+        {
+            maximumFractionDigits:2
+        }
+    )+"%";
+
+}
+
+
+function formatDateInput(date){
+
+    const y=date.getFullYear();
+
+    const m=String(
+        date.getMonth()+1
+    ).padStart(2,"0");
+
+    const d=String(
+        date.getDate()
+    ).padStart(2,"0");
+
+    return `${y}-${m}-${d}`;
+
+}
+
+
+function countActiveProjects(statuses){
+
+    let total=0;
+
+    Object.entries(statuses || {}).forEach(
+        ([key,value])=>{
+
+            const normalized=
+                String(key).toLowerCase();
+
+            if(
+                normalized.includes("active") ||
+                normalized.includes("progress") ||
+                normalized.includes("ongoing") ||
+                normalized.includes("en cours") ||
+                normalized.includes("encours") ||
+                normalized.includes("actif")
+            ){
+
+                total+=Number(value || 0);
+
+            }
+
+        }
+    );
+
+
+    return total;
+
+}
+
+
+function findStatusCount(statuses,possibleKeys){
+
+    let total=0;
+
+
+    Object.entries(statuses || {}).forEach(
+        ([key,value])=>{
+
+            const normalized=
+                String(key)
+                .toLowerCase()
+                .trim();
+
+
+            if(
+                possibleKeys.includes(normalized)
+            ){
+
+                total+=Number(value || 0);
+
+            }
+
+        }
+    );
+
+
+    return total;
+
+}
+
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+function showError(message){
+
+    document.getElementById("errorBox").innerHTML=
+        `
+        <div class="error">
+            ⚠ ${escapeHtml(message)}
+        </div>
+        `;
+
+}
+
+
+function clearError(){
+
+    document.getElementById("errorBox").innerHTML="";
+
+}
+
+
+function goDashboard(){
+
+    window.location.href="/";
+
+}
+
+
+/* ============================================================
+   INITIALIZE
+============================================================ */
+
+applyLanguage();
+
+loadAnalytics();
+
+</script>
+
+</body>
+</html>
