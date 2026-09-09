@@ -2114,7 +2114,7 @@ function openPage(p){
   window.location.href="/professional-training.html";
   return;
 }
-  if(p==="digital"){
+  if(p==="digital-courses"){
   window.location.href="/digital-courses.html";
   return;
 }
