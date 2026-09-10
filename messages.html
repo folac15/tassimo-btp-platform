@@ -7,6 +7,7 @@
 <title>TASSIMO BTP — Messages</title>
 
 <style>
+
 *{
     margin:0;
     padding:0;
@@ -31,6 +32,10 @@ button{
     cursor:pointer;
 }
 
+/* =========================================================
+   HEADER
+========================================================= */
+
 .header{
     background:#ffffff;
     border-bottom:1px solid #e5e9f0;
@@ -41,7 +46,7 @@ button{
     padding:0 22px;
     position:sticky;
     top:0;
-    z-index:20;
+    z-index:30;
 }
 
 .brand{
@@ -91,19 +96,26 @@ button{
     background:#f4f7fb;
 }
 
+/* =========================================================
+   MAIN LAYOUT
+========================================================= */
+
 .layout{
     display:grid;
-    grid-template-columns:300px 1fr;
+    grid-template-columns:300px minmax(0,1fr) 290px;
     min-height:calc(100vh - 70px);
 }
 
-/* SIDEBAR */
+/* =========================================================
+   LEFT SIDEBAR
+========================================================= */
 
 .sidebar{
     background:#ffffff;
     border-right:1px solid #e5e9f0;
     display:flex;
     flex-direction:column;
+    min-width:0;
 }
 
 .sidebar-header{
@@ -149,7 +161,7 @@ button{
 .channel-filter{
     white-space:nowrap;
     border:1px solid #dce2ea;
-    background:#fff;
+    background:#ffffff;
     border-radius:20px;
     padding:7px 10px;
     font-size:12px;
@@ -157,7 +169,7 @@ button{
 
 .channel-filter.active{
     background:#172033;
-    color:#fff;
+    color:#ffffff;
     border-color:#172033;
 }
 
@@ -210,11 +222,15 @@ button{
 .conv-name{
     font-weight:bold;
     font-size:14px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
 .conv-time{
     color:#8a94a6;
     font-size:11px;
+    white-space:nowrap;
 }
 
 .conv-message{
@@ -236,20 +252,15 @@ button{
     color:#475467;
 }
 
-.unread{
-    width:8px;
-    height:8px;
-    border-radius:50%;
-    background:#5b6ee1;
-    margin-top:5px;
-}
-
-/* MAIN CHAT */
+/* =========================================================
+   MAIN CHAT
+========================================================= */
 
 .main{
     display:flex;
     flex-direction:column;
     min-width:0;
+    background:#f8fafc;
 }
 
 .chat-header{
@@ -267,10 +278,14 @@ button{
     display:flex;
     align-items:center;
     gap:12px;
+    min-width:0;
 }
 
 .chat-person h2{
     font-size:17px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
 .chat-person p{
@@ -285,6 +300,7 @@ button{
     gap:5px;
     font-size:11px;
     color:#15803d;
+    margin-top:3px;
 }
 
 .status-dot{
@@ -301,9 +317,13 @@ button{
 
 .icon-btn{
     border:1px solid #dce2ea;
-    background:#fff;
+    background:#ffffff;
     border-radius:8px;
     padding:8px 10px;
+}
+
+.icon-btn:hover{
+    background:#f4f7fb;
 }
 
 .chat-body{
@@ -339,6 +359,8 @@ button{
     border-radius:13px;
     line-height:1.45;
     font-size:13px;
+    word-wrap:break-word;
+    overflow-wrap:anywhere;
 }
 
 .customer .message-bubble{
@@ -360,7 +382,9 @@ button{
     text-align:right;
 }
 
-/* EMPTY */
+/* =========================================================
+   EMPTY STATES
+========================================================= */
 
 .empty{
     height:100%;
@@ -370,6 +394,7 @@ button{
     justify-content:center;
     text-align:center;
     color:#718096;
+    padding:30px;
 }
 
 .empty-icon{
@@ -382,7 +407,18 @@ button{
     margin-bottom:5px;
 }
 
-/* COMPOSER */
+.error-box{
+    margin:20px;
+    padding:15px;
+    background:#fff1f2;
+    border:1px solid #fecdd3;
+    border-radius:10px;
+    color:#9f1239;
+}
+
+/* =========================================================
+   COMPOSER
+========================================================= */
 
 .composer{
     background:#ffffff;
@@ -395,14 +431,19 @@ button{
     align-items:center;
     gap:8px;
     margin-bottom:9px;
+    flex-wrap:wrap;
 }
 
 .tool-btn{
     border:1px solid #dce2ea;
-    background:#fff;
+    background:#ffffff;
     border-radius:7px;
-    padding:6px 9px;
+    padding:7px 10px;
     font-size:12px;
+}
+
+.tool-btn:hover{
+    background:#f7f9fc;
 }
 
 .ai-btn{
@@ -435,7 +476,7 @@ button{
 
 .send-btn{
     background:#172033;
-    color:#fff;
+    color:#ffffff;
     border:none;
     border-radius:9px;
     padding:12px 18px;
@@ -446,10 +487,16 @@ button{
     opacity:.92;
 }
 
-/* RIGHT INFO */
+.send-btn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+/* =========================================================
+   RIGHT CUSTOMER PANEL
+========================================================= */
 
 .customer-panel{
-    width:290px;
     background:#ffffff;
     border-left:1px solid #e5e9f0;
     overflow-y:auto;
@@ -515,6 +562,7 @@ button{
 .info-value{
     font-size:13px;
     color:#344054;
+    word-break:break-word;
 }
 
 .action-list{
@@ -527,20 +575,31 @@ button{
     text-align:left;
     padding:9px 10px;
     border:1px solid #dce2ea;
-    background:#fff;
+    background:#ffffff;
     border-radius:7px;
     font-size:12px;
 }
 
-/* RESPONSIVE */
+.action-list button:hover{
+    background:#f7f9fc;
+}
+
+/* =========================================================
+   MOBILE CONVERSATION LIST
+========================================================= */
+
+.mobile-list{
+    display:none;
+}
 
 @media(max-width:1100px){
-    .customer-panel{
-        display:none;
-    }
 
     .layout{
-        grid-template-columns:280px 1fr;
+        grid-template-columns:280px minmax(0,1fr);
+    }
+
+    .customer-panel{
+        display:none;
     }
 }
 
@@ -599,22 +658,22 @@ button{
         padding:10px;
     }
 
+    .reply-tools{
+        gap:6px;
+    }
+
     .tool-btn{
         font-size:11px;
+        padding:6px 8px;
+    }
+
+    .ai-btn{
+        margin-left:0;
     }
 
     .send-btn{
         padding:11px 13px;
     }
-}
-
-/* MOBILE CONVERSATION LIST */
-
-.mobile-list{
-    display:none;
-}
-
-@media(max-width:760px){
 
     .mobile-list{
         display:flex;
@@ -644,6 +703,7 @@ button{
         text-overflow:ellipsis;
     }
 }
+
 </style>
 </head>
 
@@ -652,22 +712,47 @@ button{
 <header class="header">
 
     <div class="brand">
+
         <div class="logo">TB</div>
 
         <div class="brand-text">
-            <h1>Messages</h1>
-            <span>TASSIMO BTP CONSTRUCTION SARL</span>
+            <h1
+                data-fr="Messages"
+                data-en="Messages">
+                Messages
+            </h1>
+
+            <span>
+                TASSIMO BTP CONSTRUCTION SARL
+            </span>
         </div>
+
     </div>
 
     <div class="header-actions">
-        <button class="back-btn" onclick="goDashboard()">
-            ← <span data-fr="Tableau de bord" data-en="Dashboard">Tableau de bord</span>
+
+        <button
+            class="back-btn"
+            onclick="goDashboard()">
+
+            ←
+            <span
+                data-fr="Tableau de bord"
+                data-en="Dashboard">
+                Tableau de bord
+            </span>
+
         </button>
 
-        <button class="lang-btn" onclick="toggleLanguage()" id="languageBtn">
+        <button
+            class="lang-btn"
+            onclick="toggleLanguage()"
+            id="languageBtn">
+
             EN
+
         </button>
+
     </div>
 
 </header>
@@ -675,153 +760,112 @@ button{
 
 <div class="layout">
 
-    <!-- LEFT CONVERSATIONS -->
+    <!-- =====================================================
+         LEFT SIDEBAR
+    ====================================================== -->
 
     <aside class="sidebar">
 
         <div class="sidebar-header">
-            <h2 data-fr="Conversations" data-en="Conversations">Conversations</h2>
-            <p data-fr="Tous les canaux de communication"
-               data-en="All communication channels">
+
+            <h2
+                data-fr="Conversations"
+                data-en="Conversations">
+                Conversations
+            </h2>
+
+            <p
+                data-fr="Tous les canaux de communication"
+                data-en="All communication channels">
+
                 Tous les canaux de communication
+
             </p>
+
         </div>
 
+
         <div class="search">
+
             <input
                 id="searchInput"
                 type="text"
                 placeholder="Rechercher un client..."
                 data-placeholder-fr="Rechercher un client..."
                 data-placeholder-en="Search customer..."
-                oninput="filterConversations()"
-            >
+                oninput="filterConversations()">
+
         </div>
+
 
         <div class="channels">
 
-            <button class="channel-filter active"
-                    onclick="filterChannel('all',this)">
+            <button
+                class="channel-filter active"
+                onclick="filterChannel('all',this)"
+                data-fr="Tous"
+                data-en="All">
+
                 Tous
+
             </button>
 
-            <button class="channel-filter"
-                    onclick="filterChannel('whatsapp',this)">
+            <button
+                class="channel-filter"
+                onclick="filterChannel('whatsapp',this)">
+
                 WhatsApp
+
             </button>
 
-            <button class="channel-filter"
-                    onclick="filterChannel('facebook',this)">
+            <button
+                class="channel-filter"
+                onclick="filterChannel('facebook',this)"
+                data-fr="Messenger"
+                data-en="Messenger">
+
                 Messenger
+
             </button>
 
-            <button class="channel-filter"
-                    onclick="filterChannel('instagram',this)">
+            <button
+                class="channel-filter"
+                onclick="filterChannel('instagram',this)">
+
                 Instagram
+
             </button>
 
-            <button class="channel-filter"
-                    onclick="filterChannel('tiktok',this)">
+            <button
+                class="channel-filter"
+                onclick="filterChannel('tiktok',this)">
+
                 TikTok
+
             </button>
 
-            <button class="channel-filter"
-                    onclick="filterChannel('linkedin',this)">
+            <button
+                class="channel-filter"
+                onclick="filterChannel('linkedin',this)">
+
                 LinkedIn
+
             </button>
 
-            <button class="channel-filter"
-                    onclick="filterChannel('youtube',this)">
+            <button
+                class="channel-filter"
+                onclick="filterChannel('youtube',this)">
+
                 YouTube
+
             </button>
 
         </div>
 
-        <div class="conversations" id="conversationList">
 
-            <!-- Conversations will be loaded here -->
-
-            <div class="empty">
-                <div>
-                    <div class="empty-icon">💬</div>
-
-                    <h3 data-fr="Aucune conversation"
-                        data-en="No conversations">
-                        Aucune conversation
-                    </h3>
-
-                    <p data-fr="Les messages de vos clients apparaîtront ici."
-                       data-en="Your customer messages will appear here.">
-                        Les messages de vos clients apparaîtront ici.
-                    </p>
-                </div>
-            </div>
-
-        </div>
-
-    </aside>
-
-
-    <!-- MAIN -->
-
-    <main class="main">
-
-        <div class="mobile-list" id="mobileList">
-            <!-- Mobile conversations -->
-        </div>
-
-        <div class="chat-header">
-
-            <div class="chat-person">
-
-                <div class="avatar" id="chatAvatar">
-                    ?
-                </div>
-
-                <div>
-                    <h2 id="chatName"
-                        data-fr="Sélectionnez une conversation"
-                        data-en="Select a conversation">
-                        Sélectionnez une conversation
-                    </h2>
-
-                    <p id="chatChannel">
-                        —
-                    </p>
-
-                    <div class="status">
-                        <span class="status-dot"></span>
-
-                        <span data-fr="Canal connecté"
-                              data-en="Channel connected">
-                            Canal connecté
-                        </span>
-                    </div>
-                </div>
-
-            </div>
-
-
-            <div class="chat-actions">
-
-                <button class="icon-btn"
-                        title="Informations"
-                        onclick="showCustomerInfo()">
-                    ℹ️
-                </button>
-
-                <button class="icon-btn"
-                        title="Actualiser"
-                        onclick="loadMessages()">
-                    ↻
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <div class="chat-body" id="chatBody">
+        <div
+            class="conversations"
+            id="conversationList">
 
             <div class="empty">
 
@@ -831,14 +875,142 @@ button{
                         💬
                     </div>
 
-                    <h3 data-fr="Votre centre de messages"
-                        data-en="Your messaging center">
-                        Votre centre de messages
+                    <h3
+                        data-fr="Aucune conversation"
+                        data-en="No conversations">
+
+                        Aucune conversation
+
                     </h3>
 
-                    <p data-fr="Sélectionnez une conversation pour commencer."
-                       data-en="Select a conversation to start.">
+                    <p
+                        data-fr="Les messages de vos clients apparaîtront ici."
+                        data-en="Your customer messages will appear here.">
+
+                        Les messages de vos clients apparaîtront ici.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MAIN CHAT
+    ====================================================== -->
+
+    <main class="main">
+
+        <div
+            class="mobile-list"
+            id="mobileList">
+        </div>
+
+
+        <div class="chat-header">
+
+            <div class="chat-person">
+
+                <div
+                    class="avatar"
+                    id="chatAvatar">
+                    ?
+                </div>
+
+                <div>
+
+                    <h2
+                        id="chatName"
+                        data-fr="Sélectionnez une conversation"
+                        data-en="Select a conversation">
+
+                        Sélectionnez une conversation
+
+                    </h2>
+
+                    <p id="chatChannel">
+                        —
+                    </p>
+
+                    <div class="status">
+
+                        <span class="status-dot"></span>
+
+                        <span
+                            data-fr="Canal connecté"
+                            data-en="Channel connected">
+
+                            Canal connecté
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="chat-actions">
+
+                <button
+                    class="icon-btn"
+                    title="Informations"
+                    data-title-fr="Informations"
+                    data-title-en="Information"
+                    onclick="showCustomerInfo()">
+
+                    ℹ️
+
+                </button>
+
+                <button
+                    class="icon-btn"
+                    title="Actualiser"
+                    data-title-fr="Actualiser"
+                    data-title-en="Refresh"
+                    onclick="loadMessages()">
+
+                    ↻
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div
+            class="chat-body"
+            id="chatBody">
+
+            <div class="empty">
+
+                <div>
+
+                    <div class="empty-icon">
+                        💬
+                    </div>
+
+                    <h3
+                        data-fr="Votre centre de messages"
+                        data-en="Your messaging center">
+
+                        Votre centre de messages
+
+                    </h3>
+
+                    <p
+                        data-fr="Sélectionnez une conversation pour commencer."
+                        data-en="Select a conversation to start.">
+
                         Sélectionnez une conversation pour commencer.
+
                     </p>
 
                 </div>
@@ -848,26 +1020,56 @@ button{
         </div>
 
 
+        <!-- =================================================
+             COMPOSER
+        ================================================== -->
+
         <div class="composer">
 
             <div class="reply-tools">
 
-                <button class="tool-btn"
-                        onclick="attachFile()">
-                    📎 <span data-fr="Fichier"
-                            data-en="File">Fichier</span>
+                <button
+                    class="tool-btn"
+                    onclick="attachFile()">
+
+                    <span
+                        data-fr="📎 Fichier"
+                        data-en="📎 File">
+
+                        📎 Fichier
+
+                    </span>
+
                 </button>
 
-                <button class="tool-btn"
-                        onclick="insertTemplate()">
-                    📝 <span data-fr="Modèle"
-                            data-en="Template">Modèle</span>
+
+                <button
+                    class="tool-btn"
+                    onclick="insertTemplate()">
+
+                    <span
+                        data-fr="📝 Modèle"
+                        data-en="📝 Template">
+
+                        📝 Modèle
+
+                    </span>
+
                 </button>
 
-                <button class="tool-btn ai-btn"
-                        onclick="generateAIReply()">
-                    🤖 <span data-fr="Réponse IA"
-                            data-en="AI Reply">Réponse IA</span>
+
+                <button
+                    class="tool-btn ai-btn"
+                    onclick="generateAIReply()">
+
+                    <span
+                        data-fr="🤖 Réponse IA"
+                        data-en="🤖 AI Reply">
+
+                        🤖 Réponse IA
+
+                    </span>
+
                 </button>
 
             </div>
@@ -881,16 +1083,24 @@ button{
                     placeholder="Écrire un message..."
                     data-placeholder-fr="Écrire un message..."
                     data-placeholder-en="Write a message..."
-                    onkeydown="handleMessageKey(event)"
-                ></textarea>
+                    onkeydown="handleMessageKey(event)">
+                </textarea>
 
-                <button class="send-btn"
-                        onclick="sendMessage()">
-                    <span data-fr="Envoyer"
-                          data-en="Send">
+
+                <button
+                    class="send-btn"
+                    onclick="sendMessage()">
+
+                    <span
+                        data-fr="Envoyer"
+                        data-en="Send">
+
                         Envoyer
+
                     </span>
+
                     ➤
+
                 </button>
 
             </div>
@@ -900,15 +1110,20 @@ button{
     </main>
 
 
-    <!-- CUSTOMER INFORMATION -->
+    <!-- =====================================================
+         CUSTOMER PANEL
+    ====================================================== -->
 
     <aside class="customer-panel">
 
         <div class="customer-panel-header">
 
-            <strong data-fr="Informations client"
-                    data-en="Customer information">
+            <strong
+                data-fr="Informations client"
+                data-en="Customer information">
+
                 Informations client
+
             </strong>
 
         </div>
@@ -916,48 +1131,77 @@ button{
 
         <div class="customer-profile">
 
-            <div class="large-avatar" id="profileAvatar">
+            <div
+                class="large-avatar"
+                id="profileAvatar">
+
                 ?
+
             </div>
 
-            <h3 id="profileName">—</h3>
+            <h3 id="profileName">
+                —
+            </h3>
 
-            <p id="profileChannel">—</p>
+            <p id="profileChannel">
+                —
+            </p>
 
         </div>
 
 
         <div class="info-section">
 
-            <h4 data-fr="Coordonnées"
+            <h4
+                data-fr="Coordonnées"
                 data-en="Contact details">
+
                 Coordonnées
+
             </h4>
 
+
             <div class="info-item">
-                <span class="info-label"
-                      data-fr="Téléphone"
-                      data-en="Phone">
+
+                <span
+                    class="info-label"
+                    data-fr="Téléphone"
+                    data-en="Phone">
+
                     Téléphone
+
                 </span>
 
-                <span class="info-value"
-                      id="profilePhone">
+                <span
+                    class="info-value"
+                    id="profilePhone">
+
                     —
+
                 </span>
+
             </div>
 
+
             <div class="info-item">
-                <span class="info-label"
-                      data-fr="Dernier message"
-                      data-en="Last message">
+
+                <span
+                    class="info-label"
+                    data-fr="Dernier message"
+                    data-en="Last message">
+
                     Dernier message
+
                 </span>
 
-                <span class="info-value"
-                      id="profileLastMessage">
+                <span
+                    class="info-value"
+                    id="profileLastMessage">
+
                     —
+
                 </span>
+
             </div>
 
         </div>
@@ -965,32 +1209,53 @@ button{
 
         <div class="info-section">
 
-            <h4 data-fr="Actions"
+            <h4
+                data-fr="Actions"
                 data-en="Actions">
+
                 Actions
+
             </h4>
+
 
             <div class="action-list">
 
                 <button onclick="openCustomer()">
-                    👤 <span data-fr="Voir le client"
-                             data-en="View customer">
-                        Voir le client
+
+                    <span
+                        data-fr="👤 Voir le client"
+                        data-en="👤 View customer">
+
+                        👤 Voir le client
+
                     </span>
+
                 </button>
+
 
                 <button onclick="createLead()">
-                    🎯 <span data-fr="Créer un prospect"
-                             data-en="Create lead">
-                        Créer un prospect
+
+                    <span
+                        data-fr="🎯 Créer un prospect"
+                        data-en="🎯 Create lead">
+
+                        🎯 Créer un prospect
+
                     </span>
+
                 </button>
 
+
                 <button onclick="createProject()">
-                    🏗️ <span data-fr="Créer un projet"
-                             data-en="Create project">
-                        Créer un projet
+
+                    <span
+                        data-fr="🏗️ Créer un projet"
+                        data-en="🏗️ Create project">
+
+                        🏗️ Créer un projet
+
                     </span>
+
                 </button>
 
             </div>
@@ -1006,56 +1271,102 @@ button{
 
 /* =========================================================
    TASSIMO BTP — MESSAGES
-   ========================================================= */
+   Current backend:
+   GET/POST /api/messages
+   POST /api/messages/ai-draft
+========================================================= */
 
-let lang = localStorage.getItem("lang") || "fr";
+let lang =
+    localStorage.getItem("lang") || "fr";
 
 let conversations = [];
 
 let currentConversation = null;
 
-let currentChannel = "all";
 let currentConversationId = null;
+
 let currentCustomerId = null;
+
+/*
+ * IMPORTANT:
+ * currentChannel = the channel of the OPEN conversation.
+ *
+ * currentFilterChannel = the channel selected in
+ * the conversation filter.
+ *
+ * They must remain separate.
+ */
+
+let currentChannel = "whatsapp";
+
+let currentFilterChannel = "all";
 
 
 /* =========================================================
    LANGUAGE
-   ========================================================= */
+========================================================= */
 
 function applyLanguage(){
 
     document.documentElement.lang = lang;
 
-    document.querySelectorAll("[data-fr][data-en]").forEach(function(el){
+    document
+        .querySelectorAll("[data-fr][data-en]")
+        .forEach(function(el){
 
-        el.textContent =
-            lang === "fr"
+            el.textContent =
+                lang === "fr"
                 ? el.getAttribute("data-fr")
                 : el.getAttribute("data-en");
 
-    });
+        });
 
 
-    document.querySelectorAll("[data-placeholder-fr]").forEach(function(el){
+    document
+        .querySelectorAll("[data-placeholder-fr]")
+        .forEach(function(el){
 
-        el.placeholder =
-            lang === "fr"
+            el.placeholder =
+                lang === "fr"
                 ? el.getAttribute("data-placeholder-fr")
                 : el.getAttribute("data-placeholder-en");
 
-    });
+        });
 
 
-    document.getElementById("languageBtn").textContent =
-        lang === "fr" ? "EN" : "FR";
+    document
+        .querySelectorAll("[data-title-fr]")
+        .forEach(function(el){
+
+            el.title =
+                lang === "fr"
+                ? el.getAttribute("data-title-fr")
+                : el.getAttribute("data-title-en");
+
+        });
+
+
+    const languageButton =
+        document.getElementById("languageBtn");
+
+    if(languageButton){
+
+        languageButton.textContent =
+            lang === "fr"
+            ? "EN"
+            : "FR";
+
+    }
 
 }
 
 
 function toggleLanguage(){
 
-    lang = lang === "fr" ? "en" : "fr";
+    lang =
+        lang === "fr"
+        ? "en"
+        : "fr";
 
     localStorage.setItem("lang",lang);
 
@@ -1064,7 +1375,11 @@ function toggleLanguage(){
     renderConversations();
 
     if(currentConversation){
+
         renderMessages();
+
+        updateCustomerPanel();
+
     }
 
 }
@@ -1072,7 +1387,7 @@ function toggleLanguage(){
 
 /* =========================================================
    DASHBOARD
-   ========================================================= */
+========================================================= */
 
 function goDashboard(){
 
@@ -1082,152 +1397,296 @@ function goDashboard(){
 
 
 /* =========================================================
-   LOAD CONVERSATIONS
-   ========================================================= */
-async function loadMessages(channel = ""){
-    try {
+   LOAD MESSAGES / CONVERSATIONS
+========================================================= */
 
-        let url = "/api/messages";
+async function loadMessages(){
 
-        if(channel){
-            url += "?channel=" + encodeURIComponent(channel);
-        }
+    try{
 
-        const response = await fetch(url, {
-            credentials: "same-origin"
-        });
+        const response =
+            await fetch(
+                "/api/messages",
+                {
+                    credentials:"same-origin"
+                }
+            );
+
 
         if(response.status === 401){
+
             window.location.href = "/login";
+
             return;
+
         }
 
-        const data = await response.json();
+
+        let data = {};
+
+        try{
+
+            data =
+                await response.json();
+
+        }catch(error){
+
+            throw new Error(
+                lang === "fr"
+                ? "Réponse invalide du serveur."
+                : "Invalid server response."
+            );
+
+        }
+
 
         if(!response.ok){
+
             throw new Error(
-                data.error || "Unable to load messages."
+                data.error ||
+                (
+                    lang === "fr"
+                    ? "Impossible de charger les conversations."
+                    : "Unable to load conversations."
+                )
             );
+
         }
+
 
         conversations =
             data.conversations ||
             data.messages ||
             [];
 
+
         renderConversations();
 
-        // Automatically open the first conversation
-        // so the page does not remain on
-        // "Select a conversation".
-        if(
-            conversations.length > 0 &&
-            !currentConversation
-        ){
-            selectConversation(
-                conversations[0].id
-            );
+
+        /*
+         * Keep currently selected conversation
+         * if it still exists after refreshing.
+         */
+
+        if(currentConversationId){
+
+            const stillExists =
+                conversations.find(function(item){
+
+                    return String(
+                        item.conversation_id ||
+                        item.id ||
+                        ""
+                    ) === String(
+                        currentConversationId
+                    );
+
+                });
+
+
+            if(stillExists){
+
+                selectConversation(
+                    currentConversationId
+                );
+
+                return;
+
+            }
+
         }
 
-    } catch(error){
+
+        /*
+         * Automatically open first conversation.
+         */
+
+        if(conversations.length > 0){
+
+            selectConversation(
+                conversations[0].conversation_id ||
+                conversations[0].id
+            );
+
+        }else{
+
+            currentConversation = null;
+            currentConversationId = null;
+            currentCustomerId = null;
+
+            showEmptyChat();
+
+            updateCustomerPanel();
+
+        }
+
+    }catch(error){
 
         console.error(
             "Messages loading error:",
             error
         );
 
+
         const list =
-            document.getElementById("conversationList");
+            document.getElementById(
+                "conversationList"
+            );
+
 
         if(list){
 
             list.innerHTML = `
-                <div class="empty-state">
-                    <strong>Erreur / Error</strong>
-                    <p>
-                        ${
+                <div class="error-box">
+                    <strong>
+                        ${lang === "fr"
+                            ? "Erreur"
+                            : "Error"}
+                    </strong>
+
+                    <p style="margin-top:6px;">
+                        ${escapeHTML(
                             error.message ||
-                            "Impossible de charger les conversations."
-                        }
+                            (
+                                lang === "fr"
+                                ? "Impossible de charger les conversations."
+                                : "Unable to load conversations."
+                            )
+                        )}
                     </p>
                 </div>
             `;
-        }
-    }
-}
 
-        
+        }
+
+    }
+
+}
 
 
 /* =========================================================
    RENDER CONVERSATIONS
-   ========================================================= */
+========================================================= */
 
 function renderConversations(){
 
     const container =
-        document.getElementById("conversationList");
+        document.getElementById(
+            "conversationList"
+        );
 
     const mobile =
-        document.getElementById("mobileList");
+        document.getElementById(
+            "mobileList"
+        );
 
-    let filtered = conversations.filter(function(item){
 
-        const channel =
-            String(
-                item.channel ||
-                item.platform ||
-                item.source ||
-                ""
-            ).toLowerCase();
+    if(!container){
 
-        const name =
-            String(
-                item.name ||
-                item.full_name ||
-                item.customer_name ||
-                "Client"
-            ).toLowerCase();
+        return;
 
-        const search =
-            document.getElementById("searchInput")
-                ?.value
-                ?.toLowerCase() || "";
+    }
 
-        const channelMatch =
-            currentChannel === "all" ||
-            channel === currentChannel;
 
-        const searchMatch =
-            !search ||
-            name.includes(search);
+    const searchInput =
+        document.getElementById(
+            "searchInput"
+        );
 
-        return channelMatch && searchMatch;
 
-    });
+    const search =
+        searchInput &&
+        searchInput.value
+        ? searchInput.value
+            .toLowerCase()
+            .trim()
+        : "";
+
+
+    const filtered =
+        conversations.filter(function(item){
+
+            const channel =
+                normalizeChannel(
+                    item.channel ||
+                    item.platform ||
+                    item.source ||
+                    ""
+                );
+
+
+            const name =
+                String(
+                    item.name ||
+                    item.full_name ||
+                    item.customer_name ||
+                    "Client"
+                );
+
+
+            const message =
+                String(
+                    item.last_message ||
+                    item.message ||
+                    item.content ||
+                    ""
+                );
+
+
+            const channelMatch =
+                currentFilterChannel === "all" ||
+                channel === currentFilterChannel;
+
+
+            const searchMatch =
+                !search ||
+                name.toLowerCase().includes(search) ||
+                message.toLowerCase().includes(search);
+
+
+            return channelMatch && searchMatch;
+
+        });
 
 
     if(!filtered.length){
 
         container.innerHTML = `
             <div class="empty">
+
                 <div>
-                    <div class="empty-icon">💬</div>
+
+                    <div class="empty-icon">
+                        💬
+                    </div>
+
                     <h3>
-                        ${lang === "fr"
+                        ${
+                            lang === "fr"
                             ? "Aucune conversation"
-                            : "No conversations"}
+                            : "No conversations"
+                        }
                     </h3>
+
                     <p>
-                        ${lang === "fr"
+                        ${
+                            lang === "fr"
                             ? "Les messages de vos clients apparaîtront ici."
-                            : "Your customer messages will appear here."}
+                            : "Your customer messages will appear here."
+                        }
                     </p>
+
                 </div>
+
             </div>
         `;
 
-        mobile.innerHTML = "";
+
+        if(mobile){
+
+            mobile.innerHTML = "";
+
+        }
 
         return;
 
@@ -1236,10 +1695,14 @@ function renderConversations(){
 
     container.innerHTML = "";
 
-    mobile.innerHTML = "";
+    if(mobile){
+
+        mobile.innerHTML = "";
+
+    }
 
 
-    filtered.forEach(function(item,index){
+    filtered.forEach(function(item){
 
         const name =
             item.name ||
@@ -1247,57 +1710,75 @@ function renderConversations(){
             item.customer_name ||
             "Client";
 
+
         const message =
             item.last_message ||
             item.message ||
             item.content ||
             "";
 
+
         const channel =
-            item.channel ||
-            item.platform ||
-            item.source ||
-            "WhatsApp";
+            normalizeChannel(
+                item.channel ||
+                item.platform ||
+                item.source ||
+                "whatsapp"
+            );
+
 
         const time =
             item.time ||
             item.timestamp ||
+            item.created_at ||
             "";
 
 
         const initials =
-            name
-                .split(" ")
-                .map(x => x[0])
-                .join("")
-                .substring(0,2)
-                .toUpperCase();
+            getInitials(name);
+
+
+        const conversationId =
+            item.conversation_id ||
+            item.id ||
+            "";
 
 
         const div =
             document.createElement("div");
 
+
         div.className =
             "conversation" +
             (
-                currentConversation === item
-                    ? " active"
-                    : ""
+                currentConversationId &&
+                String(currentConversationId) ===
+                String(conversationId)
+                ? " active"
+                : ""
             );
 
+
         div.innerHTML = `
-            <div class="avatar">${initials}</div>
+
+            <div class="avatar">
+                ${escapeHTML(initials)}
+            </div>
 
             <div class="conv-info">
 
                 <div class="conv-top">
+
                     <span class="conv-name">
                         ${escapeHTML(name)}
                     </span>
 
                     <span class="conv-time">
-                        ${escapeHTML(String(time))}
+                        ${escapeHTML(
+                            formatTime(time)
+                        )}
                     </span>
+
                 </div>
 
                 <div class="conv-message">
@@ -1305,43 +1786,77 @@ function renderConversations(){
                 </div>
 
                 <span class="channel-tag">
-                    ${escapeHTML(channel)}
+                    ${escapeHTML(
+                        displayChannel(channel)
+                    )}
                 </span>
 
             </div>
+
         `;
 
 
-        div.onclick = function(){
+        /*
+         * IMPORTANT FIX:
+         * Pass the actual conversation ID,
+         * not the entire object.
+         */
 
-            selectConversation(item);
+        div.onclick =
+            function(){
 
-        };
+                selectConversation(
+                    conversationId
+                );
+
+            };
 
 
         container.appendChild(div);
 
 
-        const mobileItem =
-            document.createElement("div");
+        /*
+         * Mobile conversation item
+         */
 
-        mobileItem.className =
-            "mobile-person";
+        if(mobile){
 
-        mobileItem.innerHTML = `
-            <div class="avatar">
-                ${initials}
-            </div>
-            <span>${escapeHTML(name)}</span>
-        `;
+            const mobileItem =
+                document.createElement("div");
 
-        mobileItem.onclick = function(){
 
-            selectConversation(item);
+            mobileItem.className =
+                "mobile-person";
 
-        };
 
-        mobile.appendChild(mobileItem);
+            mobileItem.innerHTML = `
+
+                <div class="avatar">
+                    ${escapeHTML(initials)}
+                </div>
+
+                <span>
+                    ${escapeHTML(name)}
+                </span>
+
+            `;
+
+
+            mobileItem.onclick =
+                function(){
+
+                    selectConversation(
+                        conversationId
+                    );
+
+                };
+
+
+            mobile.appendChild(
+                mobileItem
+            );
+
+        }
 
     });
 
@@ -1350,236 +1865,529 @@ function renderConversations(){
 
 /* =========================================================
    SELECT CONVERSATION
-   ========================================================= */
+========================================================= */
 
 function selectConversation(conversationId){
 
+    /*
+     * Accept both an ID and, defensively,
+     * a conversation object.
+     */
+
+    if(
+        typeof conversationId === "object" &&
+        conversationId !== null
+    ){
+
+        conversationId =
+            conversationId.conversation_id ||
+            conversationId.id ||
+            "";
+
+    }
+
+
     const conversation =
         conversations.find(
-            c =>
-                String(
-                    c.conversation_id || c.id
-                ) === String(conversationId)
+            function(c){
+
+                return String(
+                    c.conversation_id ||
+                    c.id ||
+                    ""
+                ) === String(
+                    conversationId
+                );
+
+            }
         );
 
+
     if(!conversation){
+
+        console.warn(
+            "Conversation not found:",
+            conversationId
+        );
+
         return;
+
     }
 
-    currentConversation = conversation;
 
-    // Keep the actual conversation ID
-    // for sending messages.
+    currentConversation =
+        conversation;
+
+
     currentConversationId =
         conversation.conversation_id ||
-        conversation.id;
+        conversation.id ||
+        "";
+
 
     currentCustomerId =
-        conversation.customer_id || "";
+        conversation.customer_id ||
+        "";
+
 
     currentChannel =
-        conversation.channel ||
-        conversation.platform ||
-        "whatsapp";
+        normalizeChannel(
+            conversation.channel ||
+            conversation.platform ||
+            conversation.source ||
+            "whatsapp"
+        );
+
 
     renderConversations();
+
     renderMessages();
+
     updateCustomerPanel();
 
+
     const messageInput =
-        document.getElementById("messageInput");
+        document.getElementById(
+            "messageInput"
+        );
+
 
     if(messageInput){
+
         messageInput.focus();
+
     }
+
+}
+
+
+/* =========================================================
+   CUSTOMER PANEL
+========================================================= */
+
+function updateCustomerPanel(){
+
+    const conversation =
+        currentConversation || {};
+
+
+    const name =
+        conversation.customer_name ||
+        conversation.name ||
+        conversation.full_name ||
+        "Client";
+
+
+    const phone =
+        conversation.customer_phone ||
+        conversation.phone ||
+        "—";
+
+
+    const channel =
+        normalizeChannel(
+            conversation.channel ||
+            conversation.platform ||
+            conversation.source ||
+            "—"
+        );
+
+
+    const lastMessage =
+        conversation.last_message ||
+        conversation.message ||
+        conversation.content ||
+        "";
+
+
+    const initials =
+        getInitials(name);
+
+
+    setText(
+        "profileAvatar",
+        initials
+    );
+
+
+    setText(
+        "profileName",
+        name
+    );
+
+
+    setText(
+        "profileChannel",
+        displayChannel(channel)
+    );
+
+
+    setText(
+        "profilePhone",
+        phone
+    );
+
+
+    setText(
+        "profileLastMessage",
+        lastMessage || "—"
+    );
+
+
+    setText(
+        "chatAvatar",
+        initials
+    );
+
+
+    setText(
+        "chatName",
+        name
+    );
+
+
+    setText(
+        "chatChannel",
+        displayChannel(channel)
+    );
+
 }
 
 
 /* =========================================================
    RENDER MESSAGES
-   ========================================================= */
+========================================================= */
 
 function renderMessages(){
 
-    const body = document.getElementById("chatBody");
+    const body =
+        document.getElementById(
+            "chatBody"
+        );
 
-    if(!body || !currentConversation){
+
+    if(!body){
+
         return;
+
     }
+
+
+    if(!currentConversation){
+
+        showEmptyChat();
+
+        return;
+
+    }
+
 
     const messages =
         currentConversation.messages ||
         currentConversation.history ||
         [];
 
+
     body.innerHTML = "";
 
-    const divider = document.createElement("div");
 
-    divider.className = "date-divider";
+    const divider =
+        document.createElement("div");
+
+
+    divider.className =
+        "date-divider";
+
 
     divider.textContent =
         lang === "fr"
-            ? "Aujourd'hui"
-            : "Today";
+        ? "Aujourd'hui"
+        : "Today";
 
-    body.appendChild(divider);
+
+    body.appendChild(
+        divider
+    );
+
 
     if(!messages.length){
 
-        const empty = document.createElement("div");
+        const empty =
+            document.createElement("div");
 
-        empty.className = "empty";
+
+        empty.className =
+            "empty";
+
 
         empty.innerHTML = `
+
             <div>
-                <div class="empty-icon">💬</div>
+
+                <div class="empty-icon">
+                    💬
+                </div>
 
                 <h3>
                     ${
                         lang === "fr"
-                            ? "Aucun message"
-                            : "No messages"
+                        ? "Aucun message"
+                        : "No messages"
                     }
                 </h3>
 
                 <p>
                     ${
                         lang === "fr"
-                            ? "Commencez la conversation."
-                            : "Start the conversation."
+                        ? "Commencez la conversation."
+                        : "Start the conversation."
                     }
                 </p>
+
             </div>
+
         `;
 
-        body.appendChild(empty);
+
+        body.appendChild(
+            empty
+        );
 
         return;
+
     }
 
-    messages.forEach(function(message){
 
-        /*
-         * Supabase uses sender_type and message_text.
-         * We also support the older field names so that
-         * existing messages are not broken.
-         */
+    messages.forEach(
+        function(message){
 
-        const text =
-            message.message_text ||
-            message.message ||
-            message.content ||
-            message.text ||
-            "";
+            /*
+             * Actual Supabase field:
+             * message_text
+             */
 
-        const senderType =
-            String(
-                message.sender_type ||
-                message.sender ||
-                ""
-            ).toLowerCase();
+            const text =
+                message.message_text ||
+                message.message ||
+                message.content ||
+                message.text ||
+                "";
 
-        const incoming =
-            senderType === "customer" ||
-            senderType === "client" ||
-            senderType === "incoming" ||
-            message.direction === "incoming" ||
-            message.from_customer === true;
 
-        const row =
-            document.createElement("div");
+            /*
+             * Actual Supabase field:
+             * sender_type
+             */
 
-        row.className =
-            "message-row " +
-            (
-                incoming
+            const senderType =
+                String(
+                    message.sender_type ||
+                    message.sender ||
+                    ""
+                ).toLowerCase();
+
+
+            const incoming =
+                senderType === "customer" ||
+                senderType === "client" ||
+                senderType === "incoming" ||
+                message.direction === "incoming" ||
+                message.from_customer === true;
+
+
+            const row =
+                document.createElement("div");
+
+
+            row.className =
+                "message-row " +
+                (
+                    incoming
                     ? "customer"
                     : "business"
+                );
+
+
+            const bubble =
+                document.createElement("div");
+
+
+            bubble.className =
+                "message-bubble";
+
+
+            const messageText =
+                document.createElement("div");
+
+
+            messageText.textContent =
+                text;
+
+
+            const meta =
+                document.createElement("div");
+
+
+            meta.className =
+                "message-meta";
+
+
+            meta.textContent =
+                formatDateTime(
+                    message.created_at ||
+                    message.timestamp ||
+                    message.time ||
+                    ""
+                );
+
+
+            bubble.appendChild(
+                messageText
             );
 
-        const bubble =
-            document.createElement("div");
 
-        bubble.className =
-            "message-bubble";
+            /*
+             * Attachment display if backend
+             * eventually supplies one.
+             */
 
-        const messageText =
-            document.createElement("div");
+            if(
+                message.attachment_url
+            ){
 
-        messageText.textContent = text;
+                const attachment =
+                    document.createElement("a");
 
-        const meta =
-            document.createElement("div");
 
-        meta.className = "message-meta";
+                attachment.href =
+                    message.attachment_url;
 
-        meta.textContent =
-            message.created_at ||
-            message.timestamp ||
-            message.time ||
-            "";
 
-        bubble.appendChild(messageText);
-        bubble.appendChild(meta);
+                attachment.target =
+                    "_blank";
 
-        row.appendChild(bubble);
 
-        body.appendChild(row);
+                attachment.rel =
+                    "noopener noreferrer";
 
-    });
 
-    body.scrollTop = body.scrollHeight;
+                attachment.textContent =
+                    "📎 " +
+                    (
+                        message.attachment_name ||
+                        (
+                            lang === "fr"
+                            ? "Pièce jointe"
+                            : "Attachment"
+                        )
+                    );
+
+
+                attachment.style.display =
+                    "block";
+
+
+                attachment.style.marginTop =
+                    "8px";
+
+
+                attachment.style.color =
+                    incoming
+                    ? "#344054"
+                    : "#ffffff";
+
+
+                bubble.appendChild(
+                    attachment
+                );
+
+            }
+
+
+            bubble.appendChild(
+                meta
+            );
+
+
+            row.appendChild(
+                bubble
+            );
+
+
+            body.appendChild(
+                row
+            );
+
+        }
+    );
+
+
+    body.scrollTop =
+        body.scrollHeight;
+
 }
-
 
 
 /* =========================================================
    SEND MESSAGE
-   ========================================================= */
+========================================================= */
+
 async function sendMessage(){
 
     const input =
-        document.getElementById("messageInput");
+        document.getElementById(
+            "messageInput"
+        );
+
 
     if(!input){
+
         return;
+
     }
+
 
     const text =
         input.value.trim();
 
+
     if(!text){
+
         return;
+
     }
 
-    /*
-     * Prevent excessively long messages.
-     */
+
     if(text.length > 2000){
 
         alert(
             lang === "fr"
-                ? "Le message est trop long. Maximum : 2000 caractères."
-                : "The message is too long. Maximum: 2000 characters."
+            ? "Le message est trop long. Maximum : 2000 caractères."
+            : "The message is too long. Maximum: 2000 characters."
         );
 
         return;
+
     }
+
 
     if(!currentConversation){
 
         alert(
             lang === "fr"
-                ? "Veuillez sélectionner une conversation."
-                : "Please select a conversation."
+            ? "Veuillez sélectionner une conversation."
+            : "Please select a conversation."
         );
 
         return;
+
     }
 
+
     const customerId =
-        currentConversation.customer_id || "";
+        currentConversation.customer_id ||
+        "";
+
 
     const customerName =
         currentConversation.customer_name ||
@@ -1587,58 +2395,72 @@ async function sendMessage(){
         currentConversation.full_name ||
         "Client";
 
+
     const customerPhone =
         currentConversation.customer_phone ||
         currentConversation.phone ||
         "";
 
+
     const channel =
-        String(
+        normalizeChannel(
             currentConversation.channel ||
             currentConversation.platform ||
+            currentChannel ||
             "whatsapp"
-        ).toLowerCase();
+        );
+
 
     const conversationId =
         currentConversation.conversation_id ||
         currentConversation.id ||
         "";
 
+
     /*
-     * IMPORTANT:
-     * We do NOT send customerPhone as recipient for every
-     * social channel. That could trigger external delivery
-     * before the channel API is configured.
-     *
-     * WhatsApp can use the customer's phone.
+     * Only WhatsApp uses the customer phone
+     * as a recipient in the current system.
      */
+
     let recipient = "";
 
-    if(channel === "whatsapp" && customerPhone){
 
-        recipient = customerPhone;
+    if(
+        channel === "whatsapp" &&
+        customerPhone
+    ){
+
+        recipient =
+            customerPhone;
+
     }
 
-    /*
-     * Disable Send while saving.
-     */
+
     const sendButton =
-        document.querySelector(".send-btn");
+        document.querySelector(
+            ".send-btn"
+        );
+
 
     const originalButtonText =
         sendButton
-            ? sendButton.innerHTML
-            : "";
+        ? sendButton.innerHTML
+        : "";
+
 
     if(sendButton){
 
-        sendButton.disabled = true;
+        sendButton.disabled =
+            true;
+
 
         sendButton.innerHTML =
             lang === "fr"
-                ? "Enregistrement..."
-                : "Saving...";
+            ? "Enregistrement..."
+            : "Saving...";
+
     }
+
 
     try{
 
@@ -1646,16 +2468,16 @@ async function sendMessage(){
             await fetch(
                 "/api/messages",
                 {
-                    method: "POST",
+                    method:"POST",
 
-                    credentials: "same-origin",
+                    credentials:"same-origin",
 
-                    headers: {
+                    headers:{
                         "Content-Type":
                             "application/json"
                     },
 
-                    body: JSON.stringify({
+                    body:JSON.stringify({
 
                         conversation_id:
                             conversationId,
@@ -1676,10 +2498,9 @@ async function sendMessage(){
                             recipient,
 
                         /*
-                         * Backend accepts message/message_text.
-                         * Sending both makes the request compatible
-                         * with the current API.
+                         * Backend accepts both.
                          */
+
                         message:
                             text,
 
@@ -1688,9 +2509,12 @@ async function sendMessage(){
 
                         ai_generated:
                             false
+
                     })
+
                 }
             );
+
 
         if(response.status === 401){
 
@@ -1698,23 +2522,28 @@ async function sendMessage(){
                 "/login";
 
             return;
+
         }
 
+
         let data = {};
+
 
         try{
 
             data =
                 await response.json();
 
-        }catch(jsonError){
+        }catch(error){
 
             throw new Error(
                 lang === "fr"
-                    ? "Réponse invalide du serveur."
-                    : "Invalid server response."
+                ? "Réponse invalide du serveur."
+                : "Invalid server response."
             );
+
         }
+
 
         if(!response.ok){
 
@@ -1723,35 +2552,44 @@ async function sendMessage(){
                 data
             );
 
+
             throw new Error(
                 data.error ||
                 data.message ||
                 (
                     lang === "fr"
-                        ? "Le message n'a pas pu être enregistré."
-                        : "The message could not be saved."
+                    ? "Le message n'a pas pu être enregistré."
+                    : "The message could not be saved."
                 )
             );
+
         }
 
+
         /*
-         * Clear composer only after successful save.
+         * Clear only after successful save.
          */
+
         input.value = "";
 
-        /*
-         * Reload the authoritative data from Supabase.
-         */
-        await loadMessages();
 
         /*
-         * Re-open the conversation that was just used.
+         * Reload authoritative data.
          */
+
+        await loadMessages();
+
+
+        /*
+         * Reopen the conversation.
+         */
+
         if(conversationId){
 
             selectConversation(
                 conversationId
             );
+
         }
 
     }catch(error){
@@ -1761,53 +2599,78 @@ async function sendMessage(){
             error
         );
 
+
         alert(
-            lang === "fr"
+            error.message ||
+            (
+                lang === "fr"
                 ? "Le message n'a pas pu être enregistré."
                 : "The message could not be saved."
+            )
         );
 
     }finally{
 
         if(sendButton){
 
-            sendButton.disabled = false;
+            sendButton.disabled =
+                false;
+
 
             sendButton.innerHTML =
                 originalButtonText ||
                 (
                     lang === "fr"
-                        ? "Envoyer ➤"
-                        : "Send ➤"
+                    ? "Envoyer ➤"
+                    : "Send ➤"
                 );
+
         }
+
     }
+
 }
-
-
-
-
-
-       
 
 
 /* =========================================================
    AI REPLY
-   ========================================================= */
+========================================================= */
+
 async function generateAIReply(){
 
     const input =
-        document.getElementById("messageInput");
+        document.getElementById(
+            "messageInput"
+        );
+
 
     if(!input){
+
         return;
+
     }
+
+
+    if(!currentConversation){
+
+        alert(
+            lang === "fr"
+            ? "Veuillez sélectionner une conversation."
+            : "Please select a conversation."
+        );
+
+        return;
+
+    }
+
 
     const existingText =
         input.value.trim();
 
+
     const customer =
         currentConversation || {};
+
 
     const prompt =
         existingText ||
@@ -1817,47 +2680,55 @@ async function generateAIReply(){
             : "Write a professional reply to the customer."
         );
 
-    try {
 
-        const response = await fetch(
-            "/api/messages/ai-draft",
-            {
-                method: "POST",
+    try{
 
-                credentials: "same-origin",
+        const response =
+            await fetch(
+                "/api/messages/ai-draft",
+                {
+                    method:"POST",
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
+                    credentials:"same-origin",
 
-                body: JSON.stringify({
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
 
-                    message:
-                        prompt,
+                    body:JSON.stringify({
 
-                    channel:
-                        currentChannel ||
-                        "whatsapp",
+                        message:
+                            prompt,
 
-                    customer: {
-                        id:
-                            customer.customer_id ||
-                            "",
+                        channel:
+                            currentChannel ||
+                            "whatsapp",
 
-                        name:
-                            customer.customer_name ||
-                            customer.name ||
-                            "",
+                        customer:{
 
-                        phone:
-                            customer.customer_phone ||
-                            customer.phone ||
-                            ""
-                    }
-                })
-            }
-        );
+                            id:
+                                customer.customer_id ||
+                                "",
+
+                            name:
+                                customer.customer_name ||
+                                customer.name ||
+                                customer.full_name ||
+                                "",
+
+                            phone:
+                                customer.customer_phone ||
+                                customer.phone ||
+                                ""
+
+                        }
+
+                    })
+
+                }
+            );
+
 
         if(response.status === 401){
 
@@ -1865,10 +2736,28 @@ async function generateAIReply(){
                 "/login";
 
             return;
+
         }
 
-        const data =
-            await response.json();
+
+        let data = {};
+
+
+        try{
+
+            data =
+                await response.json();
+
+        }catch(error){
+
+            throw new Error(
+                lang === "fr"
+                ? "Réponse invalide du service IA."
+                : "Invalid AI service response."
+            );
+
+        }
+
 
         if(!response.ok){
 
@@ -1880,7 +2769,9 @@ async function generateAIReply(){
                     : "AI could not generate a reply."
                 )
             );
+
         }
+
 
         if(data.draft){
 
@@ -1888,14 +2779,16 @@ async function generateAIReply(){
                 data.draft;
 
             input.focus();
+
         }
 
-    } catch(error){
+    }catch(error){
 
         console.error(
             "AI reply error:",
             error
         );
+
 
         alert(
             error.message ||
@@ -1905,30 +2798,47 @@ async function generateAIReply(){
                 : "AI service error."
             )
         );
-    }
-}
 
+    }
+
+}
 
 
 /* =========================================================
    CHANNEL FILTER
-   ========================================================= */
+========================================================= */
 
-function filterChannel(channel,button){
+function filterChannel(
+    channel,
+    button
+){
 
-    currentChannel = channel;
+    currentFilterChannel =
+        normalizeChannel(channel);
 
 
     document
-        .querySelectorAll(".channel-filter")
-        .forEach(function(btn){
+        .querySelectorAll(
+            ".channel-filter"
+        )
+        .forEach(
+            function(btn){
 
-            btn.classList.remove("active");
+                btn.classList.remove(
+                    "active"
+                );
 
-        });
+            }
+        );
 
 
-    button.classList.add("active");
+    if(button){
+
+        button.classList.add(
+            "active"
+        );
+
+    }
 
 
     renderConversations();
@@ -1938,7 +2848,7 @@ function filterChannel(channel,button){
 
 /* =========================================================
    SEARCH
-   ========================================================= */
+========================================================= */
 
 function filterConversations(){
 
@@ -1949,16 +2859,251 @@ function filterConversations(){
 
 /* =========================================================
    HELPERS
-   ========================================================= */
+========================================================= */
+
+function normalizeChannel(channel){
+
+    let value =
+        String(
+            channel || ""
+        )
+        .toLowerCase()
+        .trim();
+
+
+    if(value === "messenger"){
+
+        value = "facebook";
+
+    }
+
+
+    if(value === "fb"){
+
+        value = "facebook";
+
+    }
+
+
+    if(value === "ig"){
+
+        value = "instagram";
+
+    }
+
+
+    return value || "whatsapp";
+
+}
+
+
+function displayChannel(channel){
+
+    const value =
+        normalizeChannel(channel);
+
+
+    const names = {
+
+        whatsapp:"WhatsApp",
+
+        facebook:"Messenger",
+
+        instagram:"Instagram",
+
+        tiktok:"TikTok",
+
+        linkedin:"LinkedIn",
+
+        youtube:"YouTube"
+
+    };
+
+
+    return names[value] ||
+        value ||
+        "—";
+
+}
+
+
+function getInitials(name){
+
+    const clean =
+        String(
+            name || "CL"
+        )
+        .trim();
+
+
+    if(!clean){
+
+        return "CL";
+
+    }
+
+
+    const parts =
+        clean
+        .split(/\s+/)
+        .filter(Boolean);
+
+
+    return parts
+        .map(
+            function(part){
+
+                return part
+                    .charAt(0);
+
+            }
+        )
+        .join("")
+        .substring(0,2)
+        .toUpperCase();
+
+}
+
 
 function escapeHTML(value){
 
-    return String(value)
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+function setText(
+    id,
+    value
+){
+
+    const element =
+        document.getElementById(
+            id
+        );
+
+
+    if(element){
+
+        element.textContent =
+            value ?? "—";
+
+    }
+
+}
+
+
+function formatTime(value){
+
+    if(!value){
+
+        return "";
+
+    }
+
+
+    try{
+
+        const date =
+            new Date(value);
+
+
+        if(
+            Number.isNaN(
+                date.getTime()
+            )
+        ){
+
+            return String(value);
+
+        }
+
+
+        return date.toLocaleTimeString(
+            lang === "fr"
+            ? "fr-FR"
+            : "en-US",
+            {
+                hour:"2-digit",
+                minute:"2-digit"
+            }
+        );
+
+    }catch(error){
+
+        return String(value);
+
+    }
+
+}
+
+
+function formatDateTime(value){
+
+    if(!value){
+
+        return "";
+
+    }
+
+
+    try{
+
+        const date =
+            new Date(value);
+
+
+        if(
+            Number.isNaN(
+                date.getTime()
+            )
+        ){
+
+            return String(value);
+
+        }
+
+
+        return date.toLocaleString(
+            lang === "fr"
+            ? "fr-FR"
+            : "en-US",
+            {
+                day:"2-digit",
+                month:"2-digit",
+                year:"numeric",
+                hour:"2-digit",
+                minute:"2-digit"
+            }
+        );
+
+    }catch(error){
+
+        return String(value);
+
+    }
 
 }
 
@@ -1981,14 +3126,14 @@ function handleMessageKey(event){
 
 /* =========================================================
    OTHER ACTIONS
-   ========================================================= */
+========================================================= */
 
 function attachFile(){
 
     alert(
         lang === "fr"
-            ? "La pièce jointe sera activée avec le système de stockage."
-            : "Attachments will be enabled with the storage system."
+        ? "La gestion des pièces jointes sera connectée au stockage et au module Documents."
+        : "Attachment management will be connected to storage and the Documents module."
     );
 
 }
@@ -1997,23 +3142,44 @@ function attachFile(){
 function insertTemplate(){
 
     const input =
-        document.getElementById("messageInput");
+        document.getElementById(
+            "messageInput"
+        );
+
+
+    if(!input){
+
+        return;
+
+    }
 
 
     input.value =
         lang === "fr"
-            ? "Bonjour, merci d'avoir contacté TASSIMO BTP CONSTRUCTION SARL. Comment pouvons-nous vous aider ?"
-            : "Hello, thank you for contacting TASSIMO BTP CONSTRUCTION SARL. How can we help you?";
+        ? "Bonjour, merci d'avoir contacté TASSIMO BTP CONSTRUCTION SARL. Comment pouvons-nous vous aider ?"
+        : "Hello, thank you for contacting TASSIMO BTP CONSTRUCTION SARL. How can we help you?";
+
+
+    input.focus();
 
 }
 
 
 function showCustomerInfo(){
 
-    document.querySelector(".customer-panel")
-        ?.scrollIntoView({
+    const panel =
+        document.querySelector(
+            ".customer-panel"
+        );
+
+
+    if(panel){
+
+        panel.scrollIntoView({
             behavior:"smooth"
         });
+
+    }
 
 }
 
@@ -2029,7 +3195,8 @@ function openCustomer(){
 
     const id =
         currentConversation.customer_id ||
-        currentConversation.id;
+        currentConversation.customerId ||
+        "";
 
 
     if(id){
@@ -2064,9 +3231,59 @@ function createProject(){
 }
 
 
+function showEmptyChat(){
+
+    const body =
+        document.getElementById(
+            "chatBody"
+        );
+
+
+    if(!body){
+
+        return;
+
+    }
+
+
+    body.innerHTML = `
+
+        <div class="empty">
+
+            <div>
+
+                <div class="empty-icon">
+                    💬
+                </div>
+
+                <h3>
+                    ${
+                        lang === "fr"
+                        ? "Votre centre de messages"
+                        : "Your messaging center"
+                    }
+                </h3>
+
+                <p>
+                    ${
+                        lang === "fr"
+                        ? "Sélectionnez une conversation pour commencer."
+                        : "Select a conversation to start."
+                    }
+                </p>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
 /* =========================================================
    START
-   ========================================================= */
+========================================================= */
 
 applyLanguage();
 
