@@ -1081,62 +1081,79 @@ function goDashboard(){
 /* =========================================================
    LOAD CONVERSATIONS
    ========================================================= */
+async function loadMessages(channel = ""){
+    try {
 
-async function loadMessages(){
+        let url = "/api/messages";
 
-    try{
+        if(channel){
+            url += "?channel=" + encodeURIComponent(channel);
+        }
 
-        const response = await fetch("/api/messages",{
-            method:"GET",
-            credentials:"same-origin"
+        const response = await fetch(url, {
+            credentials: "same-origin"
         });
 
         if(response.status === 401){
-
-            window.location.href = "/";
-
+            window.location.href = "/login";
             return;
-        }
-
-        if(!response.ok){
-
-            throw new Error("Unable to load messages");
-
         }
 
         const data = await response.json();
 
-        if(Array.isArray(data)){
-
-            conversations = data;
-
-        }else if(Array.isArray(data.messages)){
-
-            conversations = data.messages;
-
-        }else if(Array.isArray(data.conversations)){
-
-            conversations = data.conversations;
-
-        }else{
-
-            conversations = [];
-
+        if(!response.ok){
+            throw new Error(
+                data.error || "Unable to load messages."
+            );
         }
 
-        renderConversations();
-
-    }catch(error){
-
-        console.error("Messages loading error:",error);
-
-        conversations = [];
+        conversations =
+            data.conversations ||
+            data.messages ||
+            [];
 
         renderConversations();
 
+        // Automatically open the first conversation
+        // so the page does not remain on
+        // "Select a conversation".
+        if(
+            conversations.length > 0 &&
+            !currentConversation
+        ){
+            selectConversation(
+                conversations[0].id
+            );
+        }
+
+    } catch(error){
+
+        console.error(
+            "Messages loading error:",
+            error
+        );
+
+        const list =
+            document.getElementById("conversationList");
+
+        if(list){
+
+            list.innerHTML = `
+                <div class="empty-state">
+                    <strong>Erreur / Error</strong>
+                    <p>
+                        ${
+                            error.message ||
+                            "Impossible de charger les conversations."
+                        }
+                    </p>
+                </div>
+            `;
+        }
     }
-
 }
+
+        
 
 
 /* =========================================================
