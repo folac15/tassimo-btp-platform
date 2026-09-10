@@ -2545,25 +2545,40 @@ async function sendMessage(){
         }
 
 
-        if(!response.ok){
+  if(!response.ok){
 
-            console.error(
-                "MESSAGE API ERROR:",
-                data
-            );
+    console.error(
+        "MESSAGE API ERROR:",
+        data
+    );
 
+    const details =
+        data.details
+        ? (
+            typeof data.details === "string"
+            ? data.details
+            : JSON.stringify(data.details)
+          )
+        : "";
 
-            throw new Error(
-                data.error ||
-                data.message ||
-                (
-                    lang === "fr"
-                    ? "Le message n'a pas pu être enregistré."
-                    : "The message could not be saved."
-                )
-            );
+    throw new Error(
+        (
+            data.error ||
+            data.message ||
+            (
+                lang === "fr"
+                ? "Le message n'a pas pu être enregistré."
+                : "The message could not be saved."
+            )
+        ) +
+        (
+            details
+            ? "\n\n" + details
+            : ""
+        )
+    );
 
-        }
+}
 
 
         /*
