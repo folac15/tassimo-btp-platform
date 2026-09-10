@@ -1014,6 +1014,8 @@ let conversations = [];
 let currentConversation = null;
 
 let currentChannel = "all";
+let currentConversationId = null;
+let currentCustomerId = null;
 
 
 /* =========================================================
@@ -1398,27 +1400,20 @@ function selectConversation(conversationId){
 
 function renderMessages(){
 
-    const body =
-        document.getElementById("chatBody");
+    const body = document.getElementById("chatBody");
 
-    if(!currentConversation){
-
+    if(!body || !currentConversation){
         return;
-
     }
-
 
     const messages =
         currentConversation.messages ||
         currentConversation.history ||
         [];
 
-
     body.innerHTML = "";
 
-
-    const divider =
-        document.createElement("div");
+    const divider = document.createElement("div");
 
     divider.className = "date-divider";
 
@@ -1429,11 +1424,9 @@ function renderMessages(){
 
     body.appendChild(divider);
 
-
     if(!messages.length){
 
-        const empty =
-            document.createElement("div");
+        const empty = document.createElement("div");
 
         empty.className = "empty";
 
@@ -1442,15 +1435,19 @@ function renderMessages(){
                 <div class="empty-icon">💬</div>
 
                 <h3>
-                    ${lang === "fr"
-                        ? "Aucun message"
-                        : "No messages"}
+                    ${
+                        lang === "fr"
+                            ? "Aucun message"
+                            : "No messages"
+                    }
                 </h3>
 
                 <p>
-                    ${lang === "fr"
-                        ? "Commencez la conversation."
-                        : "Start the conversation."}
+                    ${
+                        lang === "fr"
+                            ? "Commencez la conversation."
+                            : "Start the conversation."
+                    }
                 </p>
             </div>
         `;
@@ -1458,17 +1455,36 @@ function renderMessages(){
         body.appendChild(empty);
 
         return;
-
     }
-
 
     messages.forEach(function(message){
 
-        const incoming =
-            message.direction === "incoming" ||
-            message.sender === "customer" ||
-            message.from_customer === true;
+        /*
+         * Supabase uses sender_type and message_text.
+         * We also support the older field names so that
+         * existing messages are not broken.
+         */
 
+        const text =
+            message.message_text ||
+            message.message ||
+            message.content ||
+            message.text ||
+            "";
+
+        const senderType =
+            String(
+                message.sender_type ||
+                message.sender ||
+                ""
+            ).toLowerCase();
+
+        const incoming =
+            senderType === "customer" ||
+            senderType === "client" ||
+            senderType === "incoming" ||
+            message.direction === "incoming" ||
+            message.from_customer === true;
 
         const row =
             document.createElement("div");
@@ -1481,32 +1497,30 @@ function renderMessages(){
                     : "business"
             );
 
-
         const bubble =
             document.createElement("div");
 
-        bubble.className = "message-bubble";
+        bubble.className =
+            "message-bubble";
 
+        const messageText =
+            document.createElement("div");
 
-        bubble.innerHTML = `
-            ${escapeHTML(
-                message.content ||
-                message.message ||
-                message.text ||
-                ""
-            )}
+        messageText.textContent = text;
 
-            <div class="message-meta">
-                ${escapeHTML(
-                    String(
-                        message.time ||
-                        message.timestamp ||
-                        ""
-                    )
-                )}
-            </div>
-        `;
+        const meta =
+            document.createElement("div");
 
+        meta.className = "message-meta";
+
+        meta.textContent =
+            message.created_at ||
+            message.timestamp ||
+            message.time ||
+            "";
+
+        bubble.appendChild(messageText);
+        bubble.appendChild(meta);
 
         row.appendChild(bubble);
 
@@ -1514,10 +1528,9 @@ function renderMessages(){
 
     });
 
-
     body.scrollTop = body.scrollHeight;
-
 }
+
 
 
 /* =========================================================
@@ -1539,12 +1552,26 @@ async function sendMessage(){
         return;
     }
 
+    /*
+     * Prevent excessively long messages.
+     */
+    if(text.length > 2000){
+
+        alert(
+            lang === "fr"
+                ? "Le message est trop long. Maximum : 2000 caractères."
+                : "The message is too long. Maximum: 2000 characters."
+        );
+
+        return;
+    }
+
     if(!currentConversation){
 
         alert(
             lang === "fr"
-            ? "Veuillez sélectionner une conversation."
-            : "Please select a conversation."
+                ? "Veuillez sélectionner une conversation."
+                : "Please select a conversation."
         );
 
         return;
@@ -1565,55 +1592,104 @@ async function sendMessage(){
         "";
 
     const channel =
-        currentConversation.channel ||
-        "whatsapp";
+        String(
+            currentConversation.channel ||
+            currentConversation.platform ||
+            "whatsapp"
+        ).toLowerCase();
 
     const conversationId =
         currentConversation.conversation_id ||
-        currentConversation.id;
+        currentConversation.id ||
+        "";
 
-    try {
+    /*
+     * IMPORTANT:
+     * We do NOT send customerPhone as recipient for every
+     * social channel. That could trigger external delivery
+     * before the channel API is configured.
+     *
+     * WhatsApp can use the customer's phone.
+     */
+    let recipient = "";
 
-        const response = await fetch(
-            "/api/messages",
-            {
-                method: "POST",
+    if(channel === "whatsapp" && customerPhone){
 
-                credentials: "same-origin",
+        recipient = customerPhone;
+    }
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
+    /*
+     * Disable Send while saving.
+     */
+    const sendButton =
+        document.querySelector(".send-btn");
 
-                body: JSON.stringify({
+    const originalButtonText =
+        sendButton
+            ? sendButton.innerHTML
+            : "";
 
-                    conversation_id:
-                        conversationId,
+    if(sendButton){
 
-                    customer_id:
-                        customerId,
+        sendButton.disabled = true;
 
-                    customer_name:
-                        customerName,
+        sendButton.innerHTML =
+            lang === "fr"
+                ? "Enregistrement..."
+                : "Saving...";
+    }
 
-                    customer_phone:
-                        customerPhone,
+    try{
 
-                    channel:
-                        channel,
+        const response =
+            await fetch(
+                "/api/messages",
+                {
+                    method: "POST",
 
-                    recipient:
-                        customerPhone,
+                    credentials: "same-origin",
 
-                    message:
-                        text,
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-                    direction:
-                        "outgoing"
-                })
-            }
-        );
+                    body: JSON.stringify({
+
+                        conversation_id:
+                            conversationId,
+
+                        customer_id:
+                            customerId,
+
+                        customer_name:
+                            customerName,
+
+                        customer_phone:
+                            customerPhone,
+
+                        channel:
+                            channel,
+
+                        recipient:
+                            recipient,
+
+                        /*
+                         * Backend accepts message/message_text.
+                         * Sending both makes the request compatible
+                         * with the current API.
+                         */
+                        message:
+                            text,
+
+                        message_text:
+                            text,
+
+                        ai_generated:
+                            false
+                    })
+                }
+            );
 
         if(response.status === 401){
 
@@ -1623,28 +1699,53 @@ async function sendMessage(){
             return;
         }
 
-        const data =
-            await response.json();
+        let data = {};
+
+        try{
+
+            data =
+                await response.json();
+
+        }catch(jsonError){
+
+            throw new Error(
+                lang === "fr"
+                    ? "Réponse invalide du serveur."
+                    : "Invalid server response."
+            );
+        }
 
         if(!response.ok){
 
+            console.error(
+                "MESSAGE API ERROR:",
+                data
+            );
+
             throw new Error(
                 data.error ||
+                data.message ||
                 (
                     lang === "fr"
-                    ? "Impossible d'envoyer le message."
-                    : "Unable to send message."
+                        ? "Le message n'a pas pu être enregistré."
+                        : "The message could not be saved."
                 )
             );
         }
 
+        /*
+         * Clear composer only after successful save.
+         */
         input.value = "";
 
-        // Reload from Supabase so the
-        // conversation/history is authoritative.
-        await loadMessages(channel);
+        /*
+         * Reload the authoritative data from Supabase.
+         */
+        await loadMessages();
 
-        // Re-select the same conversation.
+        /*
+         * Re-open the conversation that was just used.
+         */
         if(conversationId){
 
             selectConversation(
@@ -1652,34 +1753,37 @@ async function sendMessage(){
             );
         }
 
-        const sent =
-            data.sent === true;
-
-        if(!sent){
-
-            console.info(
-                "Message saved locally:",
-                data.result
-            );
-        }
-
-    } catch(error){
+    }catch(error){
 
         console.error(
-            "Message sending error:",
+            "MESSAGE SEND ERROR:",
             error
         );
 
         alert(
-            error.message ||
-            (
-                lang === "fr"
-                ? "Erreur lors de l'envoi."
-                : "Error while sending."
-            )
+            lang === "fr"
+                ? "Le message n'a pas pu être enregistré."
+                : "The message could not be saved."
         );
+
+    }finally{
+
+        if(sendButton){
+
+            sendButton.disabled = false;
+
+            sendButton.innerHTML =
+                originalButtonText ||
+                (
+                    lang === "fr"
+                        ? "Envoyer ➤"
+                        : "Send ➤"
+                );
+        }
     }
 }
+
+
 
 
 
