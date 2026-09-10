@@ -1349,62 +1349,46 @@ function renderConversations(){
    SELECT CONVERSATION
    ========================================================= */
 
-function selectConversation(item){
+function selectConversation(conversationId){
 
-    currentConversation = item;
+    const conversation =
+        conversations.find(
+            c =>
+                String(
+                    c.conversation_id || c.id
+                ) === String(conversationId)
+        );
 
-    const name =
-        item.name ||
-        item.full_name ||
-        item.customer_name ||
-        "Client";
+    if(!conversation){
+        return;
+    }
 
-    const channel =
-        item.channel ||
-        item.platform ||
-        item.source ||
-        "WhatsApp";
+    currentConversation = conversation;
 
-    const phone =
-        item.phone ||
-        item.phone_number ||
-        "";
+    // Keep the actual conversation ID
+    // for sending messages.
+    currentConversationId =
+        conversation.conversation_id ||
+        conversation.id;
 
+    currentCustomerId =
+        conversation.customer_id || "";
 
-    const initials =
-        name
-            .split(" ")
-            .map(x => x[0])
-            .join("")
-            .substring(0,2)
-            .toUpperCase();
-
-
-    document.getElementById("chatName").textContent = name;
-
-    document.getElementById("chatChannel").textContent = channel;
-
-    document.getElementById("chatAvatar").textContent = initials;
-
-    document.getElementById("profileAvatar").textContent = initials;
-
-    document.getElementById("profileName").textContent = name;
-
-    document.getElementById("profileChannel").textContent = channel;
-
-    document.getElementById("profilePhone").textContent =
-        phone || "—";
-
-    document.getElementById("profileLastMessage").textContent =
-        item.last_message ||
-        item.message ||
-        "—";
-
-
-    renderMessages();
+    currentChannel =
+        conversation.channel ||
+        conversation.platform ||
+        "whatsapp";
 
     renderConversations();
+    renderMessages();
+    updateCustomerPanel();
 
+    const messageInput =
+        document.getElementById("messageInput");
+
+    if(messageInput){
+        messageInput.focus();
+    }
 }
 
 
