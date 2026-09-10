@@ -2001,584 +2001,410 @@ def ai_learning_report(channel=None):
 @protected
 def unified_messages_api():
 
-    # =========================================================
-    # GET
-    # =========================================================
+    # ============================================================
+    # GET — LOAD CONVERSATIONS WITH CUSTOMERS + MESSAGE HISTORY
+    # ============================================================
     if request.method == "GET":
 
-        channel = request.args.get(
-            "channel", ""
-        ).strip().lower()
+        channel = request.args.get("channel", "").strip().lower()
 
-        conversation_id = request.args.get(
-            "conversation_id", ""
-        ).strip()
-
-        customer_id = request.args.get(
-            "customer_id", ""
-        ).strip()
-
-        # -----------------------------------------------------
-        # A specific conversation was selected
-        # -----------------------------------------------------
-        if conversation_id:
-
-            rows = sb_select(
-                "messages",
-                {
-                    "select": "*",
-                    "conversation_id":
-                        f"eq.{conversation_id}",
-                    "order":
-                        "created_at.asc",
-                    "limit":
-                        "500"
-                }
-            )
-
-            return jsonify({
-                "success": True,
-                "messages": rows,
-                "conversation_id":
-                    conversation_id,
-                "channels":
-                    SOCIAL_CHANNELS + ["ai"]
-            })
-
-        # -----------------------------------------------------
-        # A customer was selected
-        # -----------------------------------------------------
-        if customer_id:
-
-            params = {
-                "select": "*",
-                "customer_id":
-                    f"eq.{customer_id}",
-                "order":
-                    "created_at.asc",
-                "limit":
-                    "500"
-            }
-
-            if channel in SOCIAL_CHANNELS:
-                params["channel"] = (
-                    f"eq.{channel}"
-                )
-
-            rows = sb_select(
-                "messages",
-                params
-            )
-
-            return jsonify({
-                "success": True,
-                "messages": rows,
-                "customer_id": customer_id,
-                "channels":
-                    SOCIAL_CHANNELS + ["ai"]
-            })
-
-        # -----------------------------------------------------
-        # Load all existing messages
-        # -----------------------------------------------------
-        message_params = {
-            "select": "*",
-            "order": "created_at.desc",
-            "limit": "500"
-        }
-
-        if channel in SOCIAL_CHANNELS:
-            message_params["channel"] = (
-                f"eq.{channel}"
-            )
-
-        message_rows = sb_select(
-            "messages",
-            message_params
-        )
-
-        # -----------------------------------------------------
-        # Load existing conversations
-        # -----------------------------------------------------
-        conversation_rows = sb_select(
-            "conversations",
-            {
-                "select": "*",
-                "order":
-                    "last_message_at.desc",
-                "limit":
-                    "500"
-            }
-        )
-
-        conversations = {}
-
-        for conversation in conversation_rows:
-
-            key = (
-                str(
-                    conversation.get(
-                        "customer_id"
-                    ) or ""
-                )
-                + ":"
-                + str(
-                    conversation.get(
-                        "channel"
-                    ) or "whatsapp"
-                )
-            )
-
-            conversations[key] = conversation
-
-        # -----------------------------------------------------
-        # Load existing customers
-        #
-        # This is important:
-        # even customers who have never sent a message
-        # will appear in the Messages center.
-        # -----------------------------------------------------
+        # Load customers
         customers = sb_select(
             "customers",
             {
                 "select": "*",
-                "order":
-                    "created_at.desc",
-                "limit":
-                    "500"
-            }
+                "order": "created_at.desc",
+                "limit": "1000",
+            },
         )
 
-        # -----------------------------------------------------
-        # Create a conversation record for customers
-        # who don't already have one.
-        # -----------------------------------------------------
-        for customer in customers:
+        customer_map = {
+            str(c.get("id")): c
+            for c in customers
+            if c.get("id")
+        }
 
-            cid = str(
-                customer.get("id") or ""
-            ).strip()
+        # Load conversations
+        conversation_params = {
+            "select": "*",
+            "order": "last_message_at.desc",
+            "limit": "500",
+        }
 
-            if not cid:
-                continue
+        if channel in SOCIAL_CHANNELS:
+            conversation_params["channel"] = f"eq.{channel}"
 
-            name = str(
+        conversations = sb_select(
+            "conversations",
+            conversation_params,
+        )
+
+        # Load messages once
+        message_params = {
+            "select": "*",
+            "order": "created_at.asc",
+            "limit": "2000",
+        }
+
+        if channel in SOCIAL_CHANNELS:
+            message_params["channel"] = f"eq.{channel}"
+
+        all_messages = sb_select(
+            "messages",
+            message_params,
+        )
+
+        # Group messages by conversation_id
+        messages_by_conversation = {}
+
+        for message in all_messages:
+
+            conversation_id = message.get("conversation_id")
+
+            if conversation_id:
+                key = str(conversation_id)
+
+                messages_by_conversation.setdefault(
+                    key,
+                    []
+                ).append(message)
+
+        result = []
+
+        for conversation in conversations:
+
+            conversation_id = conversation.get("id")
+            customer_id = conversation.get("customer_id")
+
+            customer = customer_map.get(
+                str(customer_id)
+            )
+
+            customer = customer or {}
+
+            history = messages_by_conversation.get(
+                str(conversation_id),
+                []
+            )
+
+            # Get latest message
+            latest_message = history[-1] if history else {}
+
+            customer_name = (
                 customer.get("full_name")
                 or customer.get("name")
                 or "Client"
-            ).strip()
+            )
 
-            phone = str(
+            customer_phone = (
                 customer.get("phone")
                 or ""
-            ).strip()
+            )
 
-            key = cid + ":whatsapp"
+            result.append({
+                "id": conversation_id,
+                "conversation_id": conversation_id,
 
-            if key not in conversations:
+                "customer_id": customer_id,
+                "customer_name": customer_name,
+                "name": customer_name,
+                "full_name": customer_name,
 
-                new_conversation = {
-                    "customer_id": cid,
-                    "customer_name": name,
-                    "customer_phone": phone or None,
-                    "channel": "whatsapp",
-                    "last_message": (
-                        customer.get(
-                            "last_message"
-                        ) or ""
-                    ),
-                    "last_message_at":
-                        customer.get(
-                            "last_contact_at"
-                        )
-                        or customer.get(
-                            "updated_at"
-                        )
-                        or customer.get(
-                            "created_at"
-                        )
-                        or utc_now(),
-                    "unread_count": 0,
-                    "status": "open",
-                    "created_at": utc_now(),
-                    "updated_at": utc_now()
-                }
+                "customer_phone": customer_phone,
+                "phone": customer_phone,
 
-                saved_conversation = sb_insert(
-                    "conversations",
-                    new_conversation
-                )
+                "channel": conversation.get("channel"),
+                "platform": conversation.get("channel"),
 
-                if isinstance(
-                    saved_conversation,
-                    dict
-                ) and not saved_conversation.get(
-                    "_error"
-                ):
-                    conversation = (
-                        saved_conversation
-                    )
-                else:
-                    conversation = (
-                        new_conversation
-                    )
+                "status": conversation.get("status") or "open",
+                "language": conversation.get("language") or "fr",
+                "ai_enabled": conversation.get("ai_enabled", True),
 
-                conversations[key] = conversation
+                "last_message_at": (
+                    conversation.get("last_message_at")
+                    or latest_message.get("created_at")
+                ),
 
-        # -----------------------------------------------------
-        # Add customers with messages that may not yet have
-        # a conversation record.
-        # -----------------------------------------------------
-        for message in message_rows:
+                "last_message": (
+                    latest_message.get("message")
+                    or latest_message.get("content")
+                    or ""
+                ),
 
-            cid = str(
-                message.get(
-                    "customer_id"
-                ) or ""
-            ).strip()
+                "message": (
+                    latest_message.get("message")
+                    or latest_message.get("content")
+                    or ""
+                ),
 
-            if not cid:
-                continue
+                "timestamp": (
+                    latest_message.get("created_at")
+                    or conversation.get("last_message_at")
+                ),
 
-            msg_channel = str(
-                message.get(
-                    "channel"
-                )
-                or message.get(
-                    "platform"
-                )
-                or "whatsapp"
-            ).lower()
-
-            key = cid + ":" + msg_channel
-
-            if key not in conversations:
-
-                conversations[key] = {
-                    "id":
-                        message.get(
-                            "conversation_id"
-                        ),
-                    "customer_id": cid,
-                    "customer_name":
-                        message.get(
-                            "customer_name"
-                        )
-                        or message.get(
-                            "sender_name"
-                        )
-                        or "Client",
-                    "customer_phone":
-                        message.get(
-                            "customer_phone"
-                        )
-                        or message.get(
-                            "sender_phone"
-                        ),
-                    "channel":
-                        msg_channel,
-                    "last_message":
-                        message.get(
-                            "message"
-                        ) or "",
-                    "last_message_at":
-                        message.get(
-                            "created_at"
-                        ),
-                    "unread_count": 0,
-                    "status": "open"
-                }
-
-        # -----------------------------------------------------
-        # Apply channel filter to conversations
-        # -----------------------------------------------------
-        conversation_list = list(
-            conversations.values()
-        )
-
-        if channel in SOCIAL_CHANNELS:
-
-            conversation_list = [
-                c for c in conversation_list
-                if str(
-                    c.get("channel", "")
-                ).lower() == channel
-            ]
+                "messages": history,
+                "history": history,
+            })
 
         return jsonify({
-            "success": True,
-            "messages": message_rows,
-            "conversations":
-                conversation_list,
-            "channels":
-                SOCIAL_CHANNELS + ["ai"]
+            "conversations": result,
+            "messages": result,
+            "channels": SOCIAL_CHANNELS + ["ai"],
         })
 
-    # =========================================================
-    # POST
-    # =========================================================
+    # ============================================================
+    # POST — SAVE + SEND A MESSAGE
+    # ============================================================
 
-    data = request.get_json(
-        silent=True
-    ) or {}
+    data = request.get_json(silent=True) or {}
 
     channel = str(
         data.get("channel", "")
     ).lower().strip()
 
+    # The HTML currently uses "messenger".
+    # Internally we use "facebook".
+    if channel == "messenger":
+        channel = "facebook"
+
     text = str(
         data.get("message", "")
     ).strip()
 
-    recipient = str(
-        data.get("recipient")
-        or data.get("customer_phone")
-        or ""
-    ).strip()
-
-    customer_id = str(
-        data.get("customer_id")
-        or ""
-    ).strip()
-
-    customer_name = str(
-        data.get("customer_name")
-        or ""
-    ).strip()
-
-    customer_phone = str(
-        data.get("customer_phone")
-        or recipient
-        or ""
-    ).strip()
-
-    if channel not in SOCIAL_CHANNELS:
-
-        return jsonify({
-            "success": False,
-            "error":
-                "Canal de messagerie non pris en charge."
-                if language() == "fr"
-                else
-                "Unsupported messaging channel."
-        }), 400
-
-    if not text:
-
-        return jsonify({
-            "success": False,
-            "error":
-                "Le message est requis."
-                if language() == "fr"
-                else
-                "Message is required."
-        }), 400
-
-    if not recipient:
-
-        return jsonify({
-            "success": False,
-            "error":
-                "Le destinataire est requis."
-                if language() == "fr"
-                else
-                "Recipient is required."
-        }), 400
-
-    # ---------------------------------------------------------
-    # Send through the selected channel
-    # ---------------------------------------------------------
-    result = social_send(
-        channel,
-        recipient,
-        text,
-        data
+    conversation_id = data.get(
+        "conversation_id"
     )
 
-    # ---------------------------------------------------------
-    # Find or create conversation
-    # ---------------------------------------------------------
-    conversation = None
+    customer_id = data.get(
+        "customer_id"
+    )
+
+    recipient = str(
+        data.get("recipient", "")
+    ).strip()
+
+    if not text:
+        return jsonify({
+            "error": (
+                "Message is required."
+                if language() == "en"
+                else "Le message est obligatoire."
+            )
+        }), 400
+
+    if channel not in SOCIAL_CHANNELS:
+        return jsonify({
+            "error": (
+                "Invalid messaging channel."
+                if language() == "en"
+                else "Canal de messagerie invalide."
+            )
+        }), 400
+
+    # ------------------------------------------------------------
+    # Find customer
+    # ------------------------------------------------------------
+
+    customer = None
 
     if customer_id:
 
-        existing = sb_select(
+        rows = sb_select(
+            "customers",
+            {
+                "select": "*",
+                "id": f"eq.{customer_id}",
+                "limit": "1",
+            },
+        )
+
+        if rows:
+            customer = rows[0]
+
+    customer = customer or {}
+
+    customer_name = (
+        customer.get("full_name")
+        or customer.get("name")
+        or str(data.get("customer_name", "")).strip()
+        or "Client"
+    )
+
+    customer_phone = (
+        customer.get("phone")
+        or str(data.get("customer_phone", "")).strip()
+        or ""
+    )
+
+    # For WhatsApp, customer's phone can be used
+    # automatically when recipient was not supplied.
+    if not recipient and channel == "whatsapp":
+        recipient = customer_phone
+
+    # ------------------------------------------------------------
+    # Find/create conversation
+    # ------------------------------------------------------------
+
+    conversation = None
+
+    if conversation_id:
+
+        rows = sb_select(
             "conversations",
             {
                 "select": "*",
-                "customer_id":
-                    f"eq.{customer_id}",
-                "channel":
-                    f"eq.{channel}",
-                "limit": "1"
-            }
+                "id": f"eq.{conversation_id}",
+                "limit": "1",
+            },
         )
 
-        if existing:
-            conversation = existing[0]
+        if rows:
+            conversation = rows[0]
 
+    # If no conversation ID was supplied,
+    # find one using customer + channel.
+    if not conversation and customer_id:
+
+        rows = sb_select(
+            "conversations",
+            {
+                "select": "*",
+                "customer_id": f"eq.{customer_id}",
+                "channel": f"eq.{channel}",
+                "limit": "1",
+            },
+        )
+
+        if rows:
+            conversation = rows[0]
+
+    # Create conversation when necessary
     if not conversation:
 
         conversation = sb_insert(
             "conversations",
             {
-                "customer_id":
-                    customer_id or None,
-                "customer_name":
-                    customer_name or "Client",
-                "customer_phone":
-                    customer_phone or None,
-                "channel":
-                    channel,
-                "last_message":
-                    text,
-                "last_message_at":
-                    utc_now(),
-                "unread_count":
-                    0,
-                "status":
-                    "open",
-                "created_at":
-                    utc_now(),
-                "updated_at":
-                    utc_now()
-            }
+                "customer_id": customer_id,
+                "channel": channel,
+                "status": "open",
+                "language": detect_language(text),
+                "ai_enabled": True,
+                "last_message_at": utc_now(),
+                "created_at": utc_now(),
+                "updated_at": utc_now(),
+            },
         )
 
-    # ---------------------------------------------------------
-    # Save message
-    # ---------------------------------------------------------
-    message_data = {
-        "conversation_id":
-            conversation.get("id")
-            if isinstance(
-                conversation,
-                dict
-            )
-            else None,
+        if isinstance(conversation, dict) and conversation.get("_error"):
+            return jsonify({
+                "error": conversation["_error"]
+            }), 400
 
-        "customer_id":
-            customer_id or None,
+    conversation_id = conversation.get("id")
 
-        "customer_name":
-            customer_name or None,
+    # ------------------------------------------------------------
+    # Try external channel delivery
+    # ------------------------------------------------------------
 
-        "customer_phone":
-            customer_phone or None,
+    send_result = {
+        "ok": False,
+        "status": "local_only",
+        "message": (
+            "Message saved locally. External channel delivery "
+            "is not configured."
+        ),
+    }
 
-        "channel":
+    if recipient:
+
+        send_result = social_send(
             channel,
-
-        "direction":
-            "outgoing",
-
-        "sender":
-            "TASSIMO AI",
-
-        "message":
+            recipient,
             text,
+            data,
+        )
 
-        "language":
-            detect_language(text),
+    # ------------------------------------------------------------
+    # Save message in database
+    # ------------------------------------------------------------
 
-        "message_type":
-            "text",
+    message_payload = {
+        "conversation_id": conversation_id,
+        "customer_id": customer_id,
+        "customer_name": customer_name,
+        "customer_phone": customer_phone,
 
-        "ai_generated":
-            bool(
-                data.get(
-                    "ai_generated",
-                    False
-                )
-            ),
+        "channel": channel,
+        "direction": "outgoing",
 
-        "delivered":
-            bool(
-                result.get(
-                    "ok",
-                    False
-                )
-            ),
+        "sender": "TASSIMO BTP",
+        "message": text,
 
-        "read_status":
-            True,
+        "message_type": "text",
+        "language": detect_language(text),
 
-        "external_message_id":
-            data.get(
-                "external_message_id"
-            ),
+        "ai_generated": bool(
+            data.get("ai_generated", False)
+        ),
 
-        "created_at":
-            utc_now()
+        "delivered": bool(
+            send_result.get("ok", False)
+        ),
+
+        "read_status": False,
+
+        "created_at": utc_now(),
     }
 
     saved_message = sb_insert(
         "messages",
-        message_data
+        message_payload,
     )
 
-    if isinstance(
-        saved_message,
-        dict
-    ) and saved_message.get(
-        "_error"
-    ):
+    if isinstance(saved_message, dict) and saved_message.get("_error"):
 
         return jsonify({
-            "success": False,
-            "sent":
-                bool(
-                    result.get(
-                        "ok",
-                        False
-                    )
-                ),
-            "error":
-                saved_message.get(
-                    "_error"
-                )
-        }), 500
+            "error": saved_message["_error"]
+        }), 400
 
-    # ---------------------------------------------------------
+    # ------------------------------------------------------------
     # Update conversation
-    # ---------------------------------------------------------
-    if isinstance(
-        conversation,
-        dict
-    ) and conversation.get("id"):
+    # ------------------------------------------------------------
+
+    if conversation_id:
 
         sb_update(
             "conversations",
             {
-                "id":
-                    f"eq.{conversation.get('id')}"
+                "id": f"eq.{conversation_id}"
             },
             {
-                "last_message":
-                    text,
-                "last_message_at":
-                    utc_now(),
-                "updated_at":
-                    utc_now()
-            }
+                "last_message_at": utc_now(),
+                "updated_at": utc_now(),
+            },
         )
 
     return jsonify({
         "success": True,
-        "sent":
-            bool(
-                result.get(
-                    "ok",
-                    False
-                )
-            ),
-        "message":
-            saved_message,
-        "conversation":
-            conversation,
-        "result":
-            result
-    })
+        "saved": True,
+        "sent": bool(
+            send_result.get("ok", False)
+        ),
+
+        "message": saved_message,
+
+        "conversation": {
+            "id": conversation_id,
+            "customer_id": customer_id,
+            "customer_name": customer_name,
+            "channel": channel,
+        },
+
+        "result": send_result,
+    }), 201
+
+
+
 
 
 
