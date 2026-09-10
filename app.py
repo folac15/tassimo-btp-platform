@@ -2002,13 +2002,19 @@ def ai_learning_report(channel=None):
 def unified_messages_api():
 
     # ============================================================
-    # GET — LOAD CONVERSATIONS WITH CUSTOMERS + MESSAGE HISTORY
+    # GET — LOAD CONVERSATIONS AND THEIR MESSAGE HISTORY
     # ============================================================
     if request.method == "GET":
 
         channel = request.args.get("channel", "").strip().lower()
 
+        # Facebook UI uses "messenger", while the database uses "facebook"
+        if channel == "messenger":
+            channel = "facebook"
+
+        # --------------------------------------------------------
         # Load customers
+        # --------------------------------------------------------
         customers = sb_select(
             "customers",
             {
@@ -2024,7 +2030,9 @@ def unified_messages_api():
             if c.get("id")
         }
 
+        # --------------------------------------------------------
         # Load conversations
+        # --------------------------------------------------------
         conversation_params = {
             "select": "*",
             "order": "last_message_at.desc",
@@ -2039,36 +2047,52 @@ def unified_messages_api():
             conversation_params,
         )
 
-        # Load messages once
-        message_params = {
-            "select": "*",
-            "order": "created_at.asc",
-            "limit": "2000",
-        }
-
-        if channel in SOCIAL_CHANNELS:
-            message_params["channel"] = f"eq.{channel}"
-
+        # --------------------------------------------------------
+        # Load messages
+        #
+        # IMPORTANT:
+        # The real messages table uses:
+        #   message_text
+        #   sender_type
+        #   conversation_id
+        #
+        # It does NOT use:
+        #   message
+        #   sender
+        #   channel
+        #   direction
+        # --------------------------------------------------------
         all_messages = sb_select(
             "messages",
-            message_params,
+            {
+                "select": "*",
+                "order": "created_at.asc",
+                "limit": "5000",
+            },
         )
 
+        # --------------------------------------------------------
         # Group messages by conversation_id
+        # --------------------------------------------------------
         messages_by_conversation = {}
 
         for message in all_messages:
 
             conversation_id = message.get("conversation_id")
 
-            if conversation_id:
-                key = str(conversation_id)
+            if not conversation_id:
+                continue
 
-                messages_by_conversation.setdefault(
-                    key,
-                    []
-                ).append(message)
+            key = str(conversation_id)
 
+            messages_by_conversation.setdefault(
+                key,
+                []
+            ).append(message)
+
+        # --------------------------------------------------------
+        # Build frontend-friendly conversation objects
+        # --------------------------------------------------------
         result = []
 
         for conversation in conversations:
@@ -2076,19 +2100,22 @@ def unified_messages_api():
             conversation_id = conversation.get("id")
             customer_id = conversation.get("customer_id")
 
-            customer = customer_map.get(
-                str(customer_id)
-            )
-
-            customer = customer or {}
+            customer = (
+                customer_map.get(str(customer_id))
+                if customer_id
+                else None
+            ) or {}
 
             history = messages_by_conversation.get(
                 str(conversation_id),
                 []
             )
 
-            # Get latest message
-            latest_message = history[-1] if history else {}
+            latest_message = (
+                history[-1]
+                if history
+                else {}
+            )
 
             customer_name = (
                 customer.get("full_name")
@@ -2101,48 +2128,66 @@ def unified_messages_api():
                 or ""
             )
 
+            latest_text = (
+                latest_message.get("message_text")
+                or ""
+            )
+
+            latest_time = (
+                latest_message.get("created_at")
+                or conversation.get("last_message_at")
+            )
+
             result.append({
                 "id": conversation_id,
+
                 "conversation_id": conversation_id,
 
                 "customer_id": customer_id,
+
                 "customer_name": customer_name,
+
                 "name": customer_name,
+
                 "full_name": customer_name,
 
                 "customer_phone": customer_phone,
+
                 "phone": customer_phone,
 
                 "channel": conversation.get("channel"),
+
                 "platform": conversation.get("channel"),
 
-                "status": conversation.get("status") or "open",
-                "language": conversation.get("language") or "fr",
-                "ai_enabled": conversation.get("ai_enabled", True),
-
-                "last_message_at": (
-                    conversation.get("last_message_at")
-                    or latest_message.get("created_at")
+                "status": (
+                    conversation.get("status")
+                    or "open"
                 ),
 
-                "last_message": (
-                    latest_message.get("message")
-                    or latest_message.get("content")
-                    or ""
+                "language": (
+                    conversation.get("language")
+                    or "fr"
                 ),
 
-                "message": (
-                    latest_message.get("message")
-                    or latest_message.get("content")
-                    or ""
+                "ai_enabled": conversation.get(
+                    "ai_enabled",
+                    True
                 ),
 
-                "timestamp": (
-                    latest_message.get("created_at")
-                    or conversation.get("last_message_at")
-                ),
+                "last_message_at": latest_time,
+
+                "last_message": latest_text,
+
+                "message": latest_text,
+
+                "content": latest_text,
+
+                "timestamp": latest_time,
+
+                "time": latest_time,
 
                 "messages": history,
+
                 "history": history,
             })
 
@@ -2152,25 +2197,35 @@ def unified_messages_api():
             "channels": SOCIAL_CHANNELS + ["ai"],
         })
 
+
     # ============================================================
-    # POST — SAVE + SEND A MESSAGE
+    # POST — SEND / SAVE A MESSAGE
     # ============================================================
 
     data = request.get_json(silent=True) or {}
 
+    # ------------------------------------------------------------
+    # Channel
+    # ------------------------------------------------------------
     channel = str(
         data.get("channel", "")
     ).lower().strip()
 
-    # The HTML currently uses "messenger".
-    # Internally we use "facebook".
     if channel == "messenger":
         channel = "facebook"
 
+    # ------------------------------------------------------------
+    # Message text
+    # ------------------------------------------------------------
     text = str(
-        data.get("message", "")
+        data.get("message")
+        or data.get("message_text")
+        or ""
     ).strip()
 
+    # ------------------------------------------------------------
+    # IDs
+    # ------------------------------------------------------------
     conversation_id = data.get(
         "conversation_id"
     )
@@ -2180,30 +2235,34 @@ def unified_messages_api():
     )
 
     recipient = str(
-        data.get("recipient", "")
+        data.get("recipient")
+        or ""
     ).strip()
 
+    # ------------------------------------------------------------
+    # Validation
+    # ------------------------------------------------------------
     if not text:
+
         return jsonify({
             "error": (
-                "Message is required."
-                if language() == "en"
-                else "Le message est obligatoire."
+                "Le message est obligatoire. "
+                "/ Message is required."
             )
         }), 400
 
     if channel not in SOCIAL_CHANNELS:
+
         return jsonify({
             "error": (
-                "Invalid messaging channel."
-                if language() == "en"
-                else "Canal de messagerie invalide."
+                "Canal de messagerie invalide. "
+                "/ Invalid messaging channel."
             )
         }), 400
 
-    # ------------------------------------------------------------
-    # Find customer
-    # ------------------------------------------------------------
+    # ============================================================
+    # LOAD CUSTOMER
+    # ============================================================
 
     customer = None
 
@@ -2226,27 +2285,39 @@ def unified_messages_api():
     customer_name = (
         customer.get("full_name")
         or customer.get("name")
-        or str(data.get("customer_name", "")).strip()
+        or str(
+            data.get("customer_name")
+            or ""
+        ).strip()
         or "Client"
     )
 
     customer_phone = (
         customer.get("phone")
-        or str(data.get("customer_phone", "")).strip()
+        or str(
+            data.get("customer_phone")
+            or ""
+        ).strip()
         or ""
     )
 
-    # For WhatsApp, customer's phone can be used
-    # automatically when recipient was not supplied.
+    # ============================================================
+    # WHATSAPP RECIPIENT
+    # ============================================================
+
+    # The Messages frontend does not currently send "recipient".
+    # For WhatsApp we can safely use the customer's phone.
     if not recipient and channel == "whatsapp":
+
         recipient = customer_phone
 
-    # ------------------------------------------------------------
-    # Find/create conversation
-    # ------------------------------------------------------------
+    # ============================================================
+    # FIND EXISTING CONVERSATION
+    # ============================================================
 
     conversation = None
 
+    # First preference: explicit conversation ID
     if conversation_id:
 
         rows = sb_select(
@@ -2261,8 +2332,7 @@ def unified_messages_api():
         if rows:
             conversation = rows[0]
 
-    # If no conversation ID was supplied,
-    # find one using customer + channel.
+    # Second preference: customer + channel
     if not conversation and customer_id:
 
         rows = sb_select(
@@ -2278,8 +2348,13 @@ def unified_messages_api():
         if rows:
             conversation = rows[0]
 
-    # Create conversation when necessary
+    # ============================================================
+    # CREATE CONVERSATION IF NECESSARY
+    # ============================================================
+
     if not conversation:
+
+        now = utc_now()
 
         conversation = sb_insert(
             "conversations",
@@ -2289,62 +2364,157 @@ def unified_messages_api():
                 "status": "open",
                 "language": detect_language(text),
                 "ai_enabled": True,
-                "last_message_at": utc_now(),
-                "created_at": utc_now(),
-                "updated_at": utc_now(),
+                "last_message_at": now,
+                "created_at": now,
+                "updated_at": now,
             },
         )
 
-        if isinstance(conversation, dict) and conversation.get("_error"):
+        if (
+            isinstance(conversation, dict)
+            and conversation.get("_error")
+        ):
+
             return jsonify({
-                "error": conversation["_error"]
+                "error": (
+                    "Impossible de créer la conversation. "
+                    "/ Unable to create conversation."
+                ),
+                "details": conversation,
             }), 400
 
     conversation_id = conversation.get("id")
 
-    # ------------------------------------------------------------
-    # Try external channel delivery
-    # ------------------------------------------------------------
+    if not conversation_id:
+
+        return jsonify({
+            "error": (
+                "Conversation ID manquant. "
+                "/ Missing conversation ID."
+            )
+        }), 400
+
+    # ============================================================
+    # EXTERNAL DELIVERY
+    # ============================================================
 
     send_result = {
         "ok": False,
         "status": "local_only",
         "message": (
-            "Message saved locally. External channel delivery "
-            "is not configured."
+            "Message enregistré localement. "
+            "La livraison externe n'est pas configurée. "
+            "/ Message saved locally. "
+            "External channel delivery is not configured."
         ),
     }
 
     if recipient:
 
-        send_result = social_send(
-            channel,
-            recipient,
-            text,
-            data,
-        )
+        try:
 
-    # ------------------------------------------------------------
-    # Save message in database
-    # ------------------------------------------------------------
+            send_result = social_send(
+                channel,
+                recipient,
+                text,
+                data,
+            )
+
+        except Exception as exc:
+
+            send_result = {
+                "ok": False,
+                "status": "delivery_error",
+                "error": str(exc),
+            }
+
+    # ============================================================
+    # CEO APPROVAL
+    # ============================================================
+
+    approval_required = bool(
+        requires_ceo_approval(text)
+    )
+
+    approved = not approval_required
+
+    # ============================================================
+    # SAVE MESSAGE
+    #
+    # IMPORTANT:
+    # These are the REAL columns in Supabase:
+    #
+    # conversation_id
+    # sender_type
+    # message_text
+    # language
+    # ai_generated
+    # requires_approval
+    # approved
+    # created_at
+    # customer_name
+    # customer_phone
+    # message_type
+    # attachment_url
+    # attachment_name
+    # attachment_type
+    # delivered
+    # read_status
+    # external_message_id
+    #
+    # DO NOT use "message", "sender", "channel",
+    # "direction", or "customer_id" here.
+    # ============================================================
+
+    now = utc_now()
 
     message_payload = {
         "conversation_id": conversation_id,
-        "customer_id": customer_id,
-        "customer_name": customer_name,
-        "customer_phone": customer_phone,
 
-        "channel": channel,
-        "direction": "outgoing",
+        "sender_type": (
+            "ai"
+            if data.get("ai_generated")
+            else "business"
+        ),
 
-        "sender": "TASSIMO BTP",
-        "message": text,
+        "message_text": text,
 
-        "message_type": "text",
         "language": detect_language(text),
 
         "ai_generated": bool(
-            data.get("ai_generated", False)
+            data.get(
+                "ai_generated",
+                False
+            )
+        ),
+
+        "requires_approval": approval_required,
+
+        "approved": approved,
+
+        "created_at": now,
+
+        "customer_name": customer_name,
+
+        "customer_phone": customer_phone,
+
+        "message_type": (
+            str(
+                data.get("message_type")
+                or "text"
+            ).strip()
+        ),
+
+        "attachment_url": (
+            data.get("attachment_url")
+        ),
+
+        "attachment_name": (
+            data.get("attachment_name")
+        ),
+
+        "attachment_type": (
+            data.get("attachment_type")
         ),
 
         "delivered": bool(
@@ -2353,7 +2523,9 @@ def unified_messages_api():
 
         "read_status": False,
 
-        "created_at": utc_now(),
+        "external_message_id": (
+            data.get("external_message_id")
+        ),
     }
 
     saved_message = sb_insert(
@@ -2361,52 +2533,61 @@ def unified_messages_api():
         message_payload,
     )
 
-    if isinstance(saved_message, dict) and saved_message.get("_error"):
+    # ============================================================
+    # HANDLE DATABASE ERROR
+    # ============================================================
+
+    if (
+        isinstance(saved_message, dict)
+        and saved_message.get("_error")
+    ):
 
         return jsonify({
-            "error": saved_message["_error"]
+            "error": (
+                "Le message n'a pas pu être enregistré. "
+                "/ The message could not be saved."
+            ),
+            "details": saved_message,
         }), 400
 
-    # ------------------------------------------------------------
-    # Update conversation
-    # ------------------------------------------------------------
+    # ============================================================
+    # UPDATE CONVERSATION
+    # ============================================================
 
-    if conversation_id:
+    sb_update(
+        "conversations",
+        {
+            "id": f"eq.{conversation_id}"
+        },
+        {
+            "last_message_at": now,
+            "updated_at": now,
+        },
+    )
 
-        sb_update(
-            "conversations",
-            {
-                "id": f"eq.{conversation_id}"
-            },
-            {
-                "last_message_at": utc_now(),
-                "updated_at": utc_now(),
-            },
-        )
+    # ============================================================
+    # RESPONSE
+    # ============================================================
 
     return jsonify({
         "success": True,
+
         "saved": True,
+
         "sent": bool(
             send_result.get("ok", False)
         ),
 
+        "conversation_id": conversation_id,
+
         "message": saved_message,
 
-        "conversation": {
-            "id": conversation_id,
-            "customer_id": customer_id,
-            "customer_name": customer_name,
-            "channel": channel,
-        },
-
         "result": send_result,
+
+        "approval_required": approval_required,
+
+        "approved": approved,
     }), 201
-
-
-
-
-
 
 
 @app.route("/api/messages/ai-draft", methods=["POST"])
