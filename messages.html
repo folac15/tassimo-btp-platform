@@ -1689,109 +1689,120 @@ async function sendMessage(){
 /* =========================================================
    AI REPLY
    ========================================================= */
-
 async function generateAIReply(){
-
-    if(!currentConversation){
-
-        alert(
-            lang === "fr"
-                ? "Sélectionnez une conversation."
-                : "Select a conversation."
-        );
-
-        return;
-
-    }
-
 
     const input =
         document.getElementById("messageInput");
 
-
-    const customerMessage =
-        currentConversation.last_message ||
-        currentConversation.message ||
-        "";
-
-
-    if(!customerMessage){
-
-        alert(
-            lang === "fr"
-                ? "Aucun message client disponible pour générer une réponse."
-                : "No customer message is available to generate a reply."
-        );
-
+    if(!input){
         return;
-
     }
 
+    const existingText =
+        input.value.trim();
 
-    const oldText = input.value;
+    const customer =
+        currentConversation || {};
 
-    input.value =
-        lang === "fr"
-            ? "Génération de la réponse IA..."
-            : "Generating AI reply...";
+    const prompt =
+        existingText ||
+        (
+            lang === "fr"
+            ? "Rédige une réponse professionnelle au client."
+            : "Write a professional reply to the customer."
+        );
 
+    try {
 
-    try{
+        const response = await fetch(
+            "/api/messages/ai-draft",
+            {
+                method: "POST",
 
-        const response =
-            await fetch("/api/ai",{
+                credentials: "same-origin",
 
-                method:"POST",
-
-                headers:{
-                    "Content-Type":"application/json"
+                headers: {
+                    "Content-Type":
+                        "application/json"
                 },
 
-                credentials:"same-origin",
+                body: JSON.stringify({
 
-                body:JSON.stringify({
+                    message:
+                        prompt,
 
-                    prompt:
-                        lang === "fr"
-                            ? `Réponds professionnellement à ce client de TASSIMO BTP : ${customerMessage}`
-                            : `Reply professionally to this TASSIMO BTP customer: ${customerMessage}`
+                    channel:
+                        currentChannel ||
+                        "whatsapp",
 
+                    customer: {
+                        id:
+                            customer.customer_id ||
+                            "",
+
+                        name:
+                            customer.customer_name ||
+                            customer.name ||
+                            "",
+
+                        phone:
+                            customer.customer_phone ||
+                            customer.phone ||
+                            ""
+                    }
                 })
-
-            });
-
-
-        const result =
-            await response.json();
-
-
-        const reply =
-            result.reply ||
-            result.response ||
-            result.message ||
-            result.text;
-
-
-        input.value =
-            reply ||
-            oldText;
-
-
-    }catch(error){
-
-        console.error(error);
-
-        input.value = oldText;
-
-        alert(
-            lang === "fr"
-                ? "Impossible de générer la réponse IA."
-                : "Unable to generate AI reply."
+            }
         );
 
-    }
+        if(response.status === 401){
 
+            window.location.href =
+                "/login";
+
+            return;
+        }
+
+        const data =
+            await response.json();
+
+        if(!response.ok){
+
+            throw new Error(
+                data.error ||
+                (
+                    lang === "fr"
+                    ? "L'IA n'a pas pu générer une réponse."
+                    : "AI could not generate a reply."
+                )
+            );
+        }
+
+        if(data.draft){
+
+            input.value =
+                data.draft;
+
+            input.focus();
+        }
+
+    } catch(error){
+
+        console.error(
+            "AI reply error:",
+            error
+        );
+
+        alert(
+            error.message ||
+            (
+                lang === "fr"
+                ? "Erreur du service IA."
+                : "AI service error."
+            )
+        );
+    }
 }
+
 
 
 /* =========================================================
