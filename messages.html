@@ -1523,141 +1523,167 @@ function renderMessages(){
 /* =========================================================
    SEND MESSAGE
    ========================================================= */
-
 async function sendMessage(){
+
+    const input =
+        document.getElementById("messageInput");
+
+    if(!input){
+        return;
+    }
+
+    const text =
+        input.value.trim();
+
+    if(!text){
+        return;
+    }
 
     if(!currentConversation){
 
         alert(
             lang === "fr"
-                ? "Sélectionnez d'abord une conversation."
-                : "Select a conversation first."
+            ? "Veuillez sélectionner une conversation."
+            : "Please select a conversation."
         );
 
         return;
-
     }
 
+    const customerId =
+        currentConversation.customer_id || "";
 
-    const input =
-        document.getElementById("messageInput");
+    const customerName =
+        currentConversation.customer_name ||
+        currentConversation.name ||
+        currentConversation.full_name ||
+        "Client";
 
-    const text =
-        input.value.trim();
-
-
-    if(!text){
-
-        return;
-
-    }
-
+    const customerPhone =
+        currentConversation.customer_phone ||
+        currentConversation.phone ||
+        "";
 
     const channel =
         currentConversation.channel ||
-        currentConversation.platform ||
-        currentConversation.source ||
         "whatsapp";
 
+    const conversationId =
+        currentConversation.conversation_id ||
+        currentConversation.id;
 
-    const customerId =
-        currentConversation.customer_id ||
-        currentConversation.id ||
-        null;
+    try {
 
+        const response = await fetch(
+            "/api/messages",
+            {
+                method: "POST",
 
-    try{
+                credentials: "same-origin",
 
-        const response =
-            await fetch("/api/messages",{
-
-                method:"POST",
-
-                headers:{
-                    "Content-Type":"application/json"
+                headers: {
+                    "Content-Type":
+                        "application/json"
                 },
 
-                credentials:"same-origin",
+                body: JSON.stringify({
 
-                body:JSON.stringify({
+                    conversation_id:
+                        conversationId,
 
-                    customer_id:customerId,
+                    customer_id:
+                        customerId,
 
                     customer_name:
-                        currentConversation.name ||
-                        currentConversation.full_name ||
-                        currentConversation.customer_name ||
-                        "Client",
+                        customerName,
 
-                    channel:channel,
+                    customer_phone:
+                        customerPhone,
 
-                    message:text,
+                    channel:
+                        channel,
 
-                    direction:"outgoing"
+                    recipient:
+                        customerPhone,
 
+                    message:
+                        text,
+
+                    direction:
+                        "outgoing"
                 })
+            }
+        );
 
-            });
+        if(response.status === 401){
 
+            window.location.href =
+                "/login";
+
+            return;
+        }
+
+        const data =
+            await response.json();
 
         if(!response.ok){
 
             throw new Error(
-                "Message could not be sent"
+                data.error ||
+                (
+                    lang === "fr"
+                    ? "Impossible d'envoyer le message."
+                    : "Unable to send message."
+                )
             );
-
         }
-
-
-        const result =
-            await response.json();
-
-
-        if(!currentConversation.messages){
-
-            currentConversation.messages = [];
-
-        }
-
-
-        currentConversation.messages.push({
-
-            content:text,
-
-            direction:"outgoing",
-
-            timestamp:
-                new Date().toLocaleTimeString([],{
-                    hour:"2-digit",
-                    minute:"2-digit"
-                })
-
-        });
-
-
-        currentConversation.last_message = text;
-
 
         input.value = "";
 
-        renderMessages();
+        // Reload from Supabase so the
+        // conversation/history is authoritative.
+        await loadMessages(channel);
 
-        renderConversations();
+        // Re-select the same conversation.
+        if(conversationId){
 
+            selectConversation(
+                conversationId
+            );
+        }
 
-    }catch(error){
+        const sent =
+            data.sent === true;
 
-        console.error(error);
+        if(!sent){
 
-        alert(
-            lang === "fr"
-                ? "Impossible d'envoyer le message."
-                : "Unable to send the message."
+            console.info(
+                "Message saved locally:",
+                data.result
+            );
+        }
+
+    } catch(error){
+
+        console.error(
+            "Message sending error:",
+            error
         );
 
+        alert(
+            error.message ||
+            (
+                lang === "fr"
+                ? "Erreur lors de l'envoi."
+                : "Error while sending."
+            )
+        );
     }
-
 }
+
+
+
+       
 
 
 /* =========================================================
