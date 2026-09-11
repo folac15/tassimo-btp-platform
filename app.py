@@ -2474,7 +2474,7 @@ def unified_messages_api():
         "sender_type": (
             "ai"
             if data.get("ai_generated")
-            else "business"
+            else "staff"
         ),
 
         "message_text": text,
