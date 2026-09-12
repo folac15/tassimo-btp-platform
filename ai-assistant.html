@@ -1,40 +1,54 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>TASSIMO BTP — Assistant IA</title>
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>TASSIMO AI - Assistant IA</title>
 
 <style>
-:root{
-    --nav:#102a43;
-    --nav2:#183b56;
-    --accent:#e0a72e;
-    --bg:#f4f7fb;
-    --card:#ffffff;
-    --text:#172b4d;
-    --muted:#667085;
-    --line:#e4e7ec;
-    --success:#027a48;
-    --danger:#b42318;
-}
 
 *{
     box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --primary:#0f172a;
+    --primary2:#1e293b;
+    --accent:#f59e0b;
+    --accent2:#fbbf24;
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --border:#e2e8f0;
+    --text:#0f172a;
+    --muted:#64748b;
+    --success:#16a34a;
+    --danger:#dc2626;
+    --info:#2563eb;
+    --shadow:0 8px 30px rgba(15,23,42,.08);
 }
 
 body{
-    margin:0;
-    font-family:Arial,sans-serif;
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
     background:var(--bg);
     color:var(--text);
+    min-height:100vh;
 }
 
 button,
 input,
-textarea,
-select{
+textarea{
     font:inherit;
 }
 
@@ -52,110 +66,130 @@ button{
 ========================= */
 
 .sidebar{
-    width:290px;
-    background:var(--nav);
+    width:280px;
+    background:var(--primary);
     color:white;
-    position:fixed;
-    left:0;
-    top:0;
-    bottom:0;
-    overflow:auto;
-    padding:18px;
+    display:flex;
+    flex-direction:column;
+    flex-shrink:0;
+    position:relative;
     z-index:20;
 }
 
-.brand{
-    padding:10px 5px 20px;
-    border-bottom:1px solid rgba(255,255,255,.12);
-    margin-bottom:15px;
+.logo-area{
+    padding:22px 20px;
+    border-bottom:1px solid rgba(255,255,255,.1);
 }
 
-.brand-title{
-    font-size:20px;
+.logo{
+    font-size:23px;
     font-weight:800;
+    letter-spacing:.4px;
 }
 
-.brand-sub{
+.logo span{
+    color:var(--accent);
+}
+
+.logo-subtitle{
     margin-top:5px;
     font-size:12px;
-    opacity:.7;
-}
-
-.new-chat{
-    width:100%;
-    border:0;
-    background:var(--accent);
-    color:#172b4d;
-    padding:13px;
-    border-radius:12px;
-    font-weight:800;
-    margin-bottom:14px;
-}
-
-.search{
-    width:100%;
-    padding:11px;
-    border-radius:10px;
-    border:1px solid rgba(255,255,255,.15);
-    background:rgba(255,255,255,.08);
-    color:white;
-    outline:none;
-    margin-bottom:12px;
-}
-
-.search::placeholder{
     color:#cbd5e1;
 }
 
+.sidebar-actions{
+    padding:16px;
+}
+
+.new-chat-btn{
+    width:100%;
+    border:none;
+    background:var(--accent);
+    color:#111827;
+    padding:13px;
+    border-radius:10px;
+    font-weight:800;
+    transition:.2s;
+}
+
+.new-chat-btn:hover{
+    background:var(--accent2);
+    transform:translateY(-1px);
+}
+
+.search-box{
+    padding:0 16px 14px;
+}
+
+.search-box input{
+    width:100%;
+    padding:11px 12px;
+    border-radius:9px;
+    border:1px solid rgba(255,255,255,.15);
+    background:#1e293b;
+    color:white;
+    outline:none;
+}
+
+.search-box input::placeholder{
+    color:#94a3b8;
+}
+
 .chat-list{
-    display:flex;
-    flex-direction:column;
-    gap:7px;
+    flex:1;
+    overflow-y:auto;
+    padding:0 10px 15px;
 }
 
 .chat-item{
-    padding:11px;
-    border-radius:10px;
-    background:rgba(255,255,255,.05);
+    padding:12px;
+    margin-bottom:6px;
+    border-radius:9px;
     cursor:pointer;
+    transition:.15s;
+    border:1px solid transparent;
 }
 
 .chat-item:hover{
-    background:rgba(255,255,255,.12);
+    background:#1e293b;
 }
 
 .chat-item.active{
-    background:rgba(224,167,46,.2);
-    border-left:3px solid var(--accent);
+    background:#334155;
+    border-color:#475569;
 }
 
 .chat-title{
-    font-weight:700;
     font-size:14px;
+    font-weight:700;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
 }
 
-.chat-meta{
+.chat-date{
+    margin-top:4px;
+    color:#94a3b8;
     font-size:11px;
-    opacity:.65;
-    margin-top:5px;
 }
 
 .sidebar-bottom{
-    margin-top:20px;
-    padding-top:15px;
-    border-top:1px solid rgba(255,255,255,.12);
+    padding:15px;
+    border-top:1px solid rgba(255,255,255,.1);
 }
 
-.back-dashboard{
+.sidebar-bottom button{
     width:100%;
+    margin-top:7px;
     padding:10px;
-    border:1px solid rgba(255,255,255,.15);
-    border-radius:10px;
-    background:transparent;
+    border-radius:8px;
+    border:1px solid #334155;
+    background:#1e293b;
     color:white;
+}
+
+.sidebar-bottom button:hover{
+    background:#334155;
 }
 
 /* =========================
@@ -163,143 +197,225 @@ button{
 ========================= */
 
 .main{
-    margin-left:290px;
     flex:1;
     min-width:0;
     display:flex;
     flex-direction:column;
-    min-height:100vh;
 }
 
 .topbar{
-    height:70px;
+    min-height:70px;
     background:white;
-    border-bottom:1px solid var(--line);
+    border-bottom:1px solid var(--border);
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0 20px;
-    position:sticky;
-    top:0;
+    padding:12px 20px;
+    position:relative;
     z-index:10;
 }
 
-.top-title{
-    font-size:19px;
+.topbar-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.mobile-menu{
+    display:none;
+    border:none;
+    background:#f1f5f9;
+    border-radius:8px;
+    width:40px;
+    height:40px;
+    font-size:20px;
+}
+
+.page-title{
+    font-size:20px;
     font-weight:800;
 }
 
-.top-actions{
+.page-subtitle{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:3px;
+}
+
+.topbar-actions{
     display:flex;
-    gap:8px;
     align-items:center;
+    gap:8px;
 }
 
 .top-btn{
-    border:1px solid var(--line);
+    border:1px solid var(--border);
     background:white;
-    border-radius:9px;
-    padding:8px 11px;
-}
-
-.lang-btn{
+    padding:9px 12px;
+    border-radius:8px;
     font-weight:700;
 }
 
+.top-btn:hover{
+    background:#f8fafc;
+}
+
+.lang-btn{
+    background:var(--primary);
+    color:white;
+    border:none;
+}
+
 /* =========================
-   CHAT
+   CONTENT
 ========================= */
 
-.chat-area{
+.content{
     flex:1;
-    overflow:auto;
-    padding:25px 15px 180px;
-}
-
-.chat-container{
-    max-width:950px;
-    margin:auto;
-}
-
-.welcome{
-    text-align:center;
-    padding:70px 20px 40px;
-}
-
-.ai-icon{
-    width:70px;
-    height:70px;
-    margin:auto;
-    border-radius:22px;
-    background:var(--nav2);
-    color:white;
     display:grid;
-    place-items:center;
-    font-size:32px;
-    box-shadow:0 10px 30px rgba(0,0,0,.12);
+    grid-template-columns:minmax(0,1fr) 300px;
+    min-height:0;
 }
 
-.welcome h1{
+.chat-area{
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    min-height:calc(100vh - 70px);
+}
+
+.chat-header{
+    background:white;
+    border-bottom:1px solid var(--border);
+    padding:15px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+}
+
+.chat-header-title{
+    font-weight:800;
+}
+
+.chat-header-meta{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:3px;
+}
+
+.delete-chat-btn{
+    border:1px solid #fecaca;
+    background:#fff;
+    color:var(--danger);
+    padding:8px 11px;
+    border-radius:8px;
+}
+
+.messages{
+    flex:1;
+    overflow-y:auto;
+    padding:22px;
+}
+
+.empty-state{
+    min-height:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:30px;
+}
+
+.empty-card{
+    max-width:650px;
+}
+
+.empty-icon{
+    font-size:55px;
+    margin-bottom:12px;
+}
+
+.empty-title{
+    font-size:24px;
+    font-weight:800;
     margin-bottom:8px;
 }
 
-.welcome p{
+.empty-text{
     color:var(--muted);
+    line-height:1.6;
 }
 
-.suggestions{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:10px;
-    margin-top:25px;
+.quick-actions{
+    margin-top:20px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:9px;
 }
 
-.suggestion{
-    border:1px solid var(--line);
+.quick-btn{
+    border:1px solid var(--border);
     background:white;
-    padding:15px;
-    border-radius:13px;
-    text-align:left;
+    padding:10px 13px;
+    border-radius:9px;
+    color:var(--text);
 }
 
-.suggestion:hover{
+.quick-btn:hover{
     border-color:var(--accent);
 }
 
-.message{
+/* =========================
+   MESSAGE BUBBLES
+========================= */
+
+.message-row{
     display:flex;
-    margin:18px 0;
+    margin-bottom:18px;
 }
 
-.message.user{
+.message-row.user{
     justify-content:flex-end;
 }
 
-.bubble{
-    max-width:80%;
-    padding:14px 16px;
-    border-radius:17px;
+.message-row.assistant{
+    justify-content:flex-start;
+}
+
+.message-bubble{
+    max-width:78%;
+    padding:13px 15px;
+    border-radius:14px;
     line-height:1.55;
+    font-size:14px;
     white-space:pre-wrap;
-    word-wrap:break-word;
+    word-break:break-word;
+    box-shadow:0 2px 8px rgba(15,23,42,.05);
 }
 
-.message.user .bubble{
-    background:var(--nav2);
+.message-row.user .message-bubble{
+    background:var(--primary);
     color:white;
-    border-bottom-right-radius:5px;
+    border-bottom-right-radius:4px;
 }
 
-.message.assistant .bubble{
+.message-row.assistant .message-bubble{
     background:white;
-    border:1px solid var(--line);
-    border-bottom-left-radius:5px;
+    border:1px solid var(--border);
+    border-bottom-left-radius:4px;
 }
 
-.message-meta{
+.message-time{
     font-size:10px;
-    color:var(--muted);
     margin-top:5px;
+    color:var(--muted);
+}
+
+.message-row.user .message-time{
+    text-align:right;
+    color:#cbd5e1;
 }
 
 /* =========================
@@ -308,18 +424,31 @@ button{
 
 .thinking{
     display:none;
+    padding:0 22px 12px;
+}
+
+.thinking.show{
+    display:block;
+}
+
+.thinking-box{
+    display:inline-flex;
     align-items:center;
     gap:8px;
-    padding:10px 15px;
+    background:white;
+    border:1px solid var(--border);
+    padding:9px 13px;
+    border-radius:10px;
     color:var(--muted);
+    font-size:12px;
 }
 
 .dot{
-    width:7px;
-    height:7px;
+    width:6px;
+    height:6px;
     border-radius:50%;
-    background:var(--muted);
-    animation:pulse 1.2s infinite;
+    background:var(--accent);
+    animation:pulse 1s infinite;
 }
 
 .dot:nth-child(2){
@@ -331,162 +460,287 @@ button{
 }
 
 @keyframes pulse{
-    0%,100%{opacity:.25}
-    50%{opacity:1}
+    0%,100%{
+        opacity:.25;
+    }
+    50%{
+        opacity:1;
+    }
 }
 
 /* =========================
    COMPOSER
 ========================= */
 
-.composer-wrap{
-    position:fixed;
-    left:290px;
-    right:0;
-    bottom:0;
-    background:linear-gradient(
-        transparent,
-        rgba(244,247,251,.95) 20%
-    );
-    padding:35px 15px 15px;
-}
-
 .composer{
-    max-width:950px;
-    margin:auto;
     background:white;
-    border:1px solid var(--line);
-    border-radius:17px;
-    box-shadow:0 10px 35px rgba(0,0,0,.08);
-    padding:10px;
+    border-top:1px solid var(--border);
+    padding:14px 18px;
 }
 
-textarea{
-    width:100%;
-    min-height:70px;
-    max-height:220px;
+.composer-box{
+    max-width:1100px;
+    margin:auto;
+    display:flex;
+    align-items:flex-end;
+    gap:9px;
+}
+
+.message-input{
+    flex:1;
+    min-height:48px;
+    max-height:160px;
     resize:none;
-    border:0;
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:13px;
     outline:none;
-    padding:10px;
-    color:var(--text);
+    background:#f8fafc;
 }
 
-.composer-bottom{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    padding:5px;
+.message-input:focus{
+    border-color:var(--accent);
+    background:white;
 }
 
-.composer-tools{
-    display:flex;
-    gap:5px;
-    flex-wrap:wrap;
-}
-
-.tool{
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:8px;
-    padding:7px 10px;
-}
-
-.send{
-    background:var(--nav2);
-    color:white;
-    border:0;
-    border-radius:9px;
-    padding:9px 17px;
+.send-btn{
+    min-width:105px;
+    min-height:48px;
+    border:none;
+    border-radius:10px;
+    background:var(--accent);
+    color:#111827;
     font-weight:800;
 }
 
-.send:disabled{
-    opacity:.5;
+.send-btn:hover{
+    background:var(--accent2);
+}
+
+.send-btn:disabled{
+    opacity:.55;
     cursor:not-allowed;
 }
 
+.composer-hint{
+    max-width:1100px;
+    margin:7px auto 0;
+    color:var(--muted);
+    font-size:10px;
+}
+
 /* =========================
-   CONTEXT PANEL
+   RIGHT PANEL
 ========================= */
 
-.context-panel{
-    position:fixed;
-    right:18px;
-    top:82px;
-    width:270px;
+.right-panel{
     background:white;
-    border:1px solid var(--line);
-    border-radius:15px;
-    box-shadow:0 15px 45px rgba(0,0,0,.12);
-    padding:15px;
-    display:none;
-    z-index:30;
+    border-left:1px solid var(--border);
+    padding:17px;
+    overflow-y:auto;
 }
 
-.context-panel.show{
-    display:block;
-}
-
-.context-title{
+.panel-title{
+    font-size:15px;
     font-weight:800;
     margin-bottom:12px;
 }
 
-.context-item{
-    display:flex;
-    justify-content:space-between;
-    padding:9px 0;
-    border-bottom:1px solid var(--line);
-    font-size:13px;
+.context-card{
+    border:1px solid var(--border);
+    border-radius:11px;
+    padding:13px;
+    margin-bottom:12px;
 }
 
-.context-item:last-child{
-    border-bottom:0;
+.context-label{
+    font-size:11px;
+    color:var(--muted);
+    margin-bottom:5px;
+}
+
+.context-value{
+    font-size:14px;
+    font-weight:700;
+}
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.stat{
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:11px;
+    background:#f8fafc;
+}
+
+.stat-number{
+    font-size:20px;
+    font-weight:800;
+}
+
+.stat-label{
+    font-size:10px;
+    color:var(--muted);
+    margin-top:3px;
+}
+
+.memory-list{
+    max-height:260px;
+    overflow-y:auto;
+}
+
+.memory-item{
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:10px;
+    margin-bottom:7px;
+    font-size:12px;
+    line-height:1.4;
+}
+
+.memory-meta{
+    color:var(--muted);
+    font-size:10px;
+    margin-top:5px;
+}
+
+.save-memory{
+    width:100%;
+    border:1px solid var(--border);
+    background:white;
+    border-radius:8px;
+    padding:9px;
+    margin-top:9px;
+}
+
+.save-memory:hover{
+    background:#f8fafc;
 }
 
 /* =========================
-   MEMORY
+   V2 ACTION RESULT
 ========================= */
 
-.memory-panel{
-    position:fixed;
-    right:18px;
-    top:82px;
-    width:320px;
-    max-height:75vh;
-    overflow:auto;
-    background:white;
-    border:1px solid var(--line);
-    border-radius:15px;
-    box-shadow:0 15px 45px rgba(0,0,0,.12);
-    padding:15px;
-    display:none;
-    z-index:30;
+.v2-result{
+    margin-top:14px;
+    border:1px solid #fde68a;
+    background:#fffbeb;
+    border-radius:13px;
+    overflow:hidden;
 }
 
-.memory-panel.show{
-    display:block;
+.v2-header{
+    padding:14px;
+    background:#fef3c7;
+    border-bottom:1px solid #fde68a;
 }
 
-.memory-card{
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:10px;
-    margin:8px 0;
-}
-
-.memory-type{
-    font-size:10px;
+.v2-title{
     font-weight:800;
-    color:var(--accent);
-    text-transform:uppercase;
 }
 
-.memory-text{
+.v2-subtitle{
+    margin-top:4px;
+    font-size:12px;
+    color:#92400e;
+    line-height:1.5;
+}
+
+.v2-summary{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    padding:12px;
+}
+
+.v2-stat{
+    background:white;
+    border:1px solid #fde68a;
+    border-radius:9px;
+    padding:10px;
+    text-align:center;
+}
+
+.v2-stat strong{
+    display:block;
+    font-size:19px;
+}
+
+.v2-stat span{
+    display:block;
+    margin-top:3px;
+    font-size:10px;
+    color:#92400e;
+}
+
+.v2-customers{
+    padding:0 12px 12px;
+}
+
+.v2-customer{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:13px;
+    margin-top:9px;
+}
+
+.v2-customer-top{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.v2-customer-name{
+    font-weight:800;
+}
+
+.v2-channel{
+    font-size:10px;
+    background:#eff6ff;
+    color:#1d4ed8;
+    border-radius:20px;
+    padding:4px 8px;
+    white-space:nowrap;
+}
+
+.v2-customer-info{
+    color:var(--muted);
+    font-size:11px;
     margin-top:5px;
-    line-height:1.4;
+}
+
+.v2-draft{
+    margin-top:10px;
+    background:#f8fafc;
+    border-radius:8px;
+    padding:11px;
+    font-size:13px;
+    line-height:1.5;
+    white-space:pre-wrap;
+}
+
+.v2-copy{
+    margin-top:8px;
+    border:1px solid var(--border);
+    background:white;
+    border-radius:7px;
+    padding:7px 10px;
+    font-size:11px;
+}
+
+.v2-approval{
+    margin-top:12px;
+    padding:10px 12px;
+    background:#fef2f2;
+    color:#991b1b;
+    border-radius:8px;
+    font-size:11px;
+    line-height:1.5;
 }
 
 /* =========================
@@ -496,504 +750,665 @@ textarea{
 .toast{
     position:fixed;
     right:20px;
-    bottom:100px;
-    background:#172b4d;
+    bottom:20px;
+    background:#0f172a;
     color:white;
     padding:12px 15px;
-    border-radius:10px;
-    display:none;
+    border-radius:9px;
+    box-shadow:var(--shadow);
     z-index:100;
+    opacity:0;
+    pointer-events:none;
+    transform:translateY(15px);
+    transition:.25s;
+    max-width:320px;
+    font-size:13px;
 }
 
 .toast.show{
-    display:block;
+    opacity:1;
+    transform:translateY(0);
 }
 
 /* =========================
    MOBILE
 ========================= */
 
-@media(max-width:850px){
+@media(max-width:1000px){
 
-    .sidebar{
-        width:250px;
-        transform:translateX(-100%);
-        transition:.25s;
-    }
-
-    .sidebar.open{
-        transform:translateX(0);
-    }
-
-    .main{
-        margin-left:0;
-    }
-
-    .composer-wrap{
-        left:0;
-    }
-
-    .menu-btn{
-        display:block !important;
-    }
-
-    .suggestions{
+    .content{
         grid-template-columns:1fr;
     }
 
-    .context-panel,
-    .memory-panel{
-        right:10px;
-        left:10px;
-        width:auto;
+    .right-panel{
+        display:none;
     }
+
 }
 
-.menu-btn{
-    display:none;
-}
+@media(max-width:700px){
 
-@media(max-width:500px){
+    .sidebar{
+        position:fixed;
+        left:-290px;
+        top:0;
+        bottom:0;
+        transition:.25s;
+        box-shadow:10px 0 30px rgba(0,0,0,.2);
+    }
+
+    .sidebar.open{
+        left:0;
+    }
+
+    .mobile-menu{
+        display:block;
+    }
 
     .topbar{
-        padding:0 10px;
+        padding:10px 12px;
     }
 
-    .top-title{
-        font-size:15px;
+    .page-title{
+        font-size:16px;
     }
 
-    .top-btn{
-        padding:7px 8px;
+    .page-subtitle{
+        font-size:10px;
     }
 
-    .bubble{
-        max-width:90%;
+    .topbar-actions .top-btn{
+        padding:8px 9px;
+        font-size:11px;
     }
 
-    .chat-area{
-        padding:15px 10px 175px;
+    .chat-header{
+        padding:12px;
     }
 
-    .welcome{
-        padding-top:40px;
+    .messages{
+        padding:14px 10px;
+    }
+
+    .message-bubble{
+        max-width:88%;
+        font-size:13px;
+    }
+
+    .composer{
+        padding:10px;
+    }
+
+    .composer-box{
+        gap:6px;
+    }
+
+    .send-btn{
+        min-width:72px;
+        padding:8px;
+        font-size:12px;
+    }
+
+    .v2-summary{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .v2-stat:last-child{
+        grid-column:1 / -1;
     }
 
 }
+
 </style>
+
 </head>
 
 <body>
 
 <div class="app">
 
-<!-- =========================
-     SIDEBAR
-========================= -->
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
 
-<aside class="sidebar" id="sidebar">
-
-    <div class="brand">
-        <div class="brand-title">🤖 TASSIMO AI</div>
-        <div class="brand-sub">
-            Assistant intelligent de l’entreprise
-        </div>
-    </div>
-
-    <button class="new-chat" onclick="newChat()">
-        ＋ <span data-fr="Nouvelle conversation" data-en="New conversation">
-        Nouvelle conversation
-        </span>
-    </button>
-
-    <input
-        id="chatSearch"
-        class="search"
-        type="search"
-        placeholder="Rechercher..."
-        data-fr-placeholder="Rechercher..."
-        data-en-placeholder="Search..."
-        oninput="filterChats()"
+    <aside
+        class="sidebar"
+        id="sidebar"
     >
 
-    <div id="chatList" class="chat-list"></div>
+        <div class="logo-area">
 
-    <div class="sidebar-bottom">
-        <button
-            class="back-dashboard"
-            onclick="location.href='/'"
-        >
-            ← <span data-fr="Tableau de bord" data-en="Dashboard">
-            Tableau de bord
-            </span>
-        </button>
-    </div>
+            <div class="logo">
+                TASSIMO <span>AI</span>
+            </div>
 
-</aside>
-
-<!-- =========================
-     MAIN
-========================= -->
-
-<main class="main">
-
-    <header class="topbar">
-
-        <div style="display:flex;align-items:center;gap:10px">
-
-            <button
-                class="top-btn menu-btn"
-                onclick="toggleSidebar()"
-            >
-                ☰
-            </button>
-
-            <div class="top-title">
-                🤖 <span
-                    data-fr="Assistant IA TASSIMO"
-                    data-en="TASSIMO AI Assistant"
-                >
-                    Assistant IA TASSIMO
-                </span>
+            <div class="logo-subtitle">
+                Assistant IA • Business Operating System
             </div>
 
         </div>
 
-        <div class="top-actions">
+
+        <div class="sidebar-actions">
 
             <button
-                class="top-btn"
-                onclick="toggleContext()"
-                title="Business context"
+                class="new-chat-btn"
+                onclick="newChat()"
             >
-                📊
-            </button>
-
-            <button
-                class="top-btn"
-                onclick="toggleMemory()"
-                title="Memory"
-            >
-                🧠
-            </button>
-
-            <button
-                class="top-btn lang-btn"
-                onclick="toggleLanguage()"
-                id="langButton"
-            >
-                EN
+                ＋ Nouvelle conversation
             </button>
 
         </div>
 
-    </header>
 
-    <section class="chat-area" id="chatArea">
+        <div class="search-box">
 
-        <div class="chat-container" id="chatContainer">
+            <input
+                id="chatSearch"
+                type="text"
+                placeholder="Rechercher une conversation..."
+                oninput="filterChats()"
+            >
 
-            <div class="welcome" id="welcome">
+        </div>
 
-                <div class="ai-icon">🤖</div>
 
-                <h1
-                    data-fr="Bonjour, je suis TASSIMO AI"
-                    data-en="Hello, I am TASSIMO AI"
+        <div
+            class="chat-list"
+            id="chatList"
+        >
+
+        </div>
+
+
+        <div class="sidebar-bottom">
+
+            <button onclick="goDashboard()">
+                📊 Tableau de bord
+            </button>
+
+            <button onclick="toggleLanguage()">
+                🌐 Français / English
+            </button>
+
+            <button onclick="logout()">
+                🚪 Déconnexion / Logout
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+
+                <button
+                    class="mobile-menu"
+                    onclick="toggleSidebar()"
                 >
-                    Bonjour, je suis TASSIMO AI
-                </h1>
+                    ☰
+                </button>
 
-                <p
-                    data-fr="Votre assistant intelligent pour gérer, analyser et développer TASSIMO BTP."
-                    data-en="Your intelligent assistant for managing, analysing and growing TASSIMO BTP."
-                >
-                    Votre assistant intelligent pour gérer, analyser et développer TASSIMO BTP.
-                </p>
+                <div>
 
-                <div class="suggestions">
+                    <div class="page-title">
+                        TASSIMO AI
+                    </div>
 
-                    <button
-                        class="suggestion"
-                        onclick="useSuggestion(this)"
-                        data-fr="Analyse la situation actuelle de notre entreprise."
-                        data-en="Analyse the current situation of our business."
-                    >
-                        📊 Analyse la situation actuelle de notre entreprise.
-                    </button>
-
-                    <button
-                        class="suggestion"
-                        onclick="useSuggestion(this)"
-                        data-fr="Quels sont nos clients et prospects prioritaires ?"
-                        data-en="Which customers and leads should we prioritize?"
-                    >
-                        👥 Quels sont nos clients et prospects prioritaires ?
-                    </button>
-
-                    <button
-                        class="suggestion"
-                        onclick="useSuggestion(this)"
-                        data-fr="Analyse nos projets et indique les risques."
-                        data-en="Analyse our projects and identify the risks."
-                    >
-                        🏗️ Analyse nos projets et indique les risques.
-                    </button>
-
-                    <button
-                        class="suggestion"
-                        onclick="useSuggestion(this)"
-                        data-fr="Aide-moi à améliorer notre stratégie commerciale."
-                        data-en="Help me improve our sales strategy."
-                    >
-                        🎯 Aide-moi à améliorer notre stratégie commerciale.
-                    </button>
+                    <div class="page-subtitle">
+                        Assistant IA intelligent pour TASSIMO BTP CONSTRUCTION SARL
+                    </div>
 
                 </div>
 
             </div>
 
-            <div id="messages"></div>
 
-            <div class="thinking" id="thinking">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <span
-                    data-fr="TASSIMO AI réfléchit..."
-                    data-en="TASSIMO AI is thinking..."
-                >
-                    TASSIMO AI réfléchit...
-                </span>
-            </div>
-
-        </div>
-
-    </section>
-
-</main>
-
-<!-- =========================
-     CONTEXT PANEL
-========================= -->
-
-<div class="context-panel" id="contextPanel">
-
-    <div class="context-title">
-        📊 <span
-            data-fr="Contexte de l’entreprise"
-            data-en="Business context"
-        >
-            Contexte de l’entreprise
-        </span>
-    </div>
-
-    <div id="contextContent">
-        Chargement...
-    </div>
-
-</div>
-
-<!-- =========================
-     MEMORY PANEL
-========================= -->
-
-<div class="memory-panel" id="memoryPanel">
-
-    <div class="context-title">
-        🧠 <span
-            data-fr="Mémoire de TASSIMO AI"
-            data-en="TASSIMO AI Memory"
-        >
-            Mémoire de TASSIMO AI
-        </span>
-    </div>
-
-    <div id="memoryContent">
-        Chargement...
-    </div>
-
-</div>
-
-<!-- =========================
-     COMPOSER
-========================= -->
-
-<div class="composer-wrap">
-
-    <div class="composer">
-
-        <textarea
-            id="messageInput"
-            placeholder="Posez votre question à TASSIMO AI..."
-            data-fr-placeholder="Posez votre question à TASSIMO AI..."
-            data-en-placeholder="Ask TASSIMO AI anything..."
-            onkeydown="handleKey(event)"
-        ></textarea>
-
-        <div class="composer-bottom">
-
-            <div class="composer-tools">
+            <div class="topbar-actions">
 
                 <button
-                    class="tool"
-                    onclick="rememberCurrent()"
-                    title="Remember"
+                    class="top-btn"
+                    onclick="refreshAll()"
                 >
-                    🧠
+                    ↻ Actualiser
                 </button>
 
                 <button
-                    class="tool"
-                    onclick="clearCurrentChat()"
-                    title="Clear conversation"
+                    class="top-btn lang-btn"
+                    onclick="toggleLanguage()"
+                    id="languageButton"
                 >
-                    🗑️
-                </button>
-
-                <button
-                    class="tool"
-                    onclick="toggleContext()"
-                >
-                    📊
+                    FR
                 </button>
 
             </div>
 
-            <button
-                class="send"
-                id="sendButton"
-                onclick="sendMessage()"
-            >
-                <span
-                    data-fr="Envoyer"
-                    data-en="Send"
+        </header>
+
+
+        <div class="content">
+
+
+            <!-- =========================
+                 CHAT AREA
+            ========================== -->
+
+            <section class="chat-area">
+
+
+                <div class="chat-header">
+
+                    <div>
+
+                        <div
+                            class="chat-header-title"
+                            id="currentChatTitle"
+                        >
+                            Nouvelle conversation
+                        </div>
+
+                        <div
+                            class="chat-header-meta"
+                            id="currentChatMeta"
+                        >
+                            TASSIMO AI • Assistant intelligent
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        class="delete-chat-btn"
+                        onclick="deleteCurrentChat()"
+                    >
+                        🗑 Supprimer
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="messages"
+                    id="messages"
                 >
-                    Envoyer
-                </span>
-                ➤
-            </button>
+
+                    <div class="empty-state">
+
+                        <div class="empty-card">
+
+                            <div class="empty-icon">
+                                🤖
+                            </div>
+
+                            <div
+                                class="empty-title"
+                                id="welcomeTitle"
+                            >
+                                Bonjour, je suis TASSIMO AI
+                            </div>
+
+                            <div
+                                class="empty-text"
+                                id="welcomeText"
+                            >
+                                Je peux vous aider à gérer TASSIMO BTP,
+                                analyser les clients, préparer des relances,
+                                analyser les conversations, travailler avec
+                                les projets, les finances, les ventes et
+                                préparer des actions soumises à approbation
+                                lorsque cela est nécessaire.
+                            </div>
+
+
+                            <div class="quick-actions">
+
+                                <button
+                                    class="quick-btn"
+                                    onclick="useQuickPrompt('Trouve les clients qui n\\'ont pas été contactés depuis 30 jours et prépare des messages de relance personnalisés pour eux.')"
+                                >
+                                    👥 Relances 30 jours
+                                </button>
+
+                                <button
+                                    class="quick-btn"
+                                    onclick="useQuickPrompt('Analyse mes clients et explique-moi lesquels nécessitent le plus de suivi.')"
+                                >
+                                    📊 Analyser les clients
+                                </button>
+
+                                <button
+                                    class="quick-btn"
+                                    onclick="useQuickPrompt('Donne-moi un résumé de la situation actuelle de mon entreprise.')"
+                                >
+                                    🏢 Résumé entreprise
+                                </button>
+
+                                <button
+                                    class="quick-btn"
+                                    onclick="useQuickPrompt('Aide-moi à préparer une stratégie commerciale pour TASSIMO BTP.')"
+                                >
+                                    🎯 Stratégie commerciale
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="thinking"
+                    id="thinking"
+                >
+
+                    <div class="thinking-box">
+
+                        <span>🤖</span>
+
+                        <span id="thinkingText">
+                            TASSIMO AI réfléchit...
+                        </span>
+
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="composer">
+
+                    <div class="composer-box">
+
+                        <textarea
+                            id="messageInput"
+                            class="message-input"
+                            placeholder="Écrivez votre message à TASSIMO AI..."
+                            rows="1"
+                            onkeydown="handleMessageKey(event)"
+                        ></textarea>
+
+
+                        <button
+                            id="sendButton"
+                            class="send-btn"
+                            onclick="sendMessage()"
+                        >
+                            Envoyer
+                        </button>
+
+                    </div>
+
+
+                    <div
+                        class="composer-hint"
+                        id="composerHint"
+                    >
+                        Entrée = envoyer • Maj + Entrée = nouvelle ligne
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =========================
+                 RIGHT PANEL
+            ========================== -->
+
+            <aside class="right-panel">
+
+                <div class="panel-title">
+                    Contexte TASSIMO AI
+                </div>
+
+
+                <div class="context-card">
+
+                    <div class="context-label">
+                        Entreprise / Business
+                    </div>
+
+                    <div class="context-value">
+                        TASSIMO BTP CONSTRUCTION SARL
+                    </div>
+
+                </div>
+
+
+                <div class="context-card">
+
+                    <div class="context-label">
+                        Directeur général / CEO
+                    </div>
+
+                    <div class="context-value">
+                        TAGNE Simo Innocant
+                    </div>
+
+                </div>
+
+
+                <div class="context-card">
+
+                    <div class="context-label">
+                        Localisation / Location
+                    </div>
+
+                    <div class="context-value">
+                        Douala, Cameroon
+                    </div>
+
+                </div>
+
+
+                <div class="panel-title">
+                    Données de l'entreprise
+                </div>
+
+
+                <div
+                    class="stats-grid"
+                    id="businessStats"
+                >
+
+                    <div class="stat">
+
+                        <div class="stat-number">
+                            —
+                        </div>
+
+                        <div class="stat-label">
+                            Clients
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="stat-number">
+                            —
+                        </div>
+
+                        <div class="stat-label">
+                            Prospects
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="stat-number">
+                            —
+                        </div>
+
+                        <div class="stat-label">
+                            Projets
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat">
+
+                        <div class="stat-number">
+                            —
+                        </div>
+
+                        <div class="stat-label">
+                            Messages
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    style="height:20px"
+                ></div>
+
+
+                <div class="panel-title">
+                    Mémoire de TASSIMO AI
+                </div>
+
+
+                <div
+                    class="memory-list"
+                    id="memoryList"
+                >
+
+                    <div class="memory-item">
+                        Chargement...
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="save-memory"
+                    onclick="saveCurrentMemory()"
+                >
+                    🧠 Mémoriser la dernière demande
+                </button>
+
+            </aside>
 
         </div>
 
-    </div>
+    </main>
 
 </div>
 
-<div class="toast" id="toast"></div>
+
+<div
+    class="toast"
+    id="toast"
+></div>
+
 
 <script>
 
-/* =========================================================
-   LANGUAGE
-========================================================= */
+/* ============================================================
+   TASSIMO AI - COMPLETE ASSISTANT
+============================================================ */
 
-let lang = localStorage.getItem("lang") || "fr";
 
-function applyLanguage(){
+/* ============================================================
+   GLOBAL STATE
+============================================================ */
 
-    document.documentElement.lang = lang;
-
-    document.querySelectorAll("[data-fr]").forEach(el => {
-
-        const value =
-            lang === "fr"
-            ? el.getAttribute("data-fr")
-            : el.getAttribute("data-en");
-
-        if(value){
-            el.textContent = value;
-        }
-
-    });
-
-    document.querySelectorAll("[data-fr-placeholder]").forEach(el => {
-
-        const value =
-            lang === "fr"
-            ? el.getAttribute("data-fr-placeholder")
-            : el.getAttribute("data-en-placeholder");
-
-        if(value){
-            el.placeholder = value;
-        }
-
-    });
-
-    document.getElementById("langButton").textContent =
-        lang === "fr" ? "EN" : "FR";
-}
-
-function toggleLanguage(){
-
-    lang = lang === "fr" ? "en" : "fr";
-
-    localStorage.setItem("lang", lang);
-
-    applyLanguage();
-
-    loadChats();
-
-    loadMemory();
-
-    loadContext();
-
-}
-
-/* =========================================================
-   STATE
-========================================================= */
+let lang =
+    localStorage.getItem("lang") || "fr";
 
 let chats = [];
 
 let currentChatId = null;
 
-let messages = [];
+let currentChat = null;
 
-let memory = [];
+let currentMessages = [];
+
+let memories = [];
 
 let businessContext = {};
 
-/* =========================================================
-   API
-========================================================= */
+let sending = false;
 
-async function api(url, options = {}){
 
-    const response = await fetch(
-        url,
-        {
-            credentials:"same-origin",
-            headers:{
-                "Content-Type":"application/json",
-                ...(options.headers || {})
-            },
-            ...options
+/* ============================================================
+   API HELPER
+============================================================ */
+
+async function api(
+    url,
+    options = {}
+){
+
+    const config = {
+        ...options,
+        headers:{
+            "Content-Type":"application/json",
+            ...(options.headers || {})
         }
-    );
+    };
 
-    if(response.status === 401){
+    const response =
+        await fetch(
+            url,
+            config
+        );
 
-        window.location.href = "/login";
+    if(
+        response.status === 401
+    ){
+
+        window.location.href = "/";
 
         throw new Error(
             lang === "fr"
-            ? "Authentification requise."
-            : "Authentication required."
+            ? "Session expirée. Veuillez vous reconnecter."
+            : "Session expired. Please log in again."
         );
 
     }
 
+
     let data = {};
 
     try{
-        data = await response.json();
-    }catch(e){}
+
+        data =
+            await response.json();
+
+    }catch(error){
+
+        data = {};
+
+    }
+
 
     if(!response.ok){
 
         throw new Error(
             data.error ||
+            data.message ||
             (
                 lang === "fr"
                 ? "Une erreur est survenue."
@@ -1003,103 +1418,380 @@ async function api(url, options = {}){
 
     }
 
+
     return data;
 
 }
 
-/* =========================================================
-   CHAT LIST
-========================================================= */
+
+/* ============================================================
+   LANGUAGE
+============================================================ */
+
+function toggleLanguage(){
+
+    lang =
+        lang === "fr"
+        ? "en"
+        : "fr";
+
+    localStorage.setItem(
+        "lang",
+        lang
+    );
+
+    updateLanguage();
+
+    loadChats();
+
+    loadMemory();
+
+    loadBusinessContext();
+
+}
+
+
+function updateLanguage(){
+
+    const languageButton =
+        document.getElementById(
+            "languageButton"
+        );
+
+    if(languageButton){
+
+        languageButton.textContent =
+            lang === "fr"
+            ? "FR"
+            : "EN";
+
+    }
+
+
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
+
+    if(input){
+
+        input.placeholder =
+            lang === "fr"
+            ? "Écrivez votre message à TASSIMO AI..."
+            : "Write your message to TASSIMO AI...";
+
+    }
+
+
+    const sendButton =
+        document.getElementById(
+            "sendButton"
+        );
+
+    if(sendButton && !sending){
+
+        sendButton.textContent =
+            lang === "fr"
+            ? "Envoyer"
+            : "Send";
+
+    }
+
+
+    const welcomeTitle =
+        document.getElementById(
+            "welcomeTitle"
+        );
+
+    if(welcomeTitle){
+
+        welcomeTitle.textContent =
+            lang === "fr"
+            ? "Bonjour, je suis TASSIMO AI"
+            : "Hello, I am TASSIMO AI";
+
+    }
+
+
+    const welcomeText =
+        document.getElementById(
+            "welcomeText"
+        );
+
+    if(welcomeText){
+
+        welcomeText.textContent =
+            lang === "fr"
+            ? "Je peux vous aider à gérer TASSIMO BTP, analyser les clients, préparer des relances, analyser les conversations, travailler avec les projets, les finances, les ventes et préparer des actions soumises à approbation lorsque cela est nécessaire."
+            : "I can help manage TASSIMO BTP, analyze customers, prepare follow-ups, analyze conversations, work with projects, finance and sales, and prepare actions for approval when required.";
+
+    }
+
+
+    const hint =
+        document.getElementById(
+            "composerHint"
+        );
+
+    if(hint){
+
+        hint.textContent =
+            lang === "fr"
+            ? "Entrée = envoyer • Maj + Entrée = nouvelle ligne"
+            : "Enter = send • Shift + Enter = new line";
+
+    }
+
+
+    const thinkingText =
+        document.getElementById(
+            "thinkingText"
+        );
+
+    if(thinkingText){
+
+        thinkingText.textContent =
+            lang === "fr"
+            ? "TASSIMO AI réfléchit..."
+            : "TASSIMO AI is thinking...";
+
+    }
+
+}
+
+
+/* ============================================================
+   SIDEBAR
+============================================================ */
+
+function toggleSidebar(){
+
+    document
+        .getElementById("sidebar")
+        .classList
+        .toggle("open");
+
+}
+
+
+function closeSidebarMobile(){
+
+    if(window.innerWidth <= 700){
+
+        document
+            .getElementById("sidebar")
+            .classList
+            .remove("open");
+
+    }
+
+}
+
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+let toastTimer = null;
+
+function showToast(message){
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+    toast.textContent =
+        message;
+
+    toast.classList.add("show");
+
+    clearTimeout(
+        toastTimer
+    );
+
+    toastTimer =
+        setTimeout(
+            function(){
+
+                toast.classList.remove(
+                    "show"
+                );
+
+            },
+            3000
+        );
+
+}
+
+
+/* ============================================================
+   THINKING
+============================================================ */
+
+function setThinking(show){
+
+    const thinking =
+        document.getElementById(
+            "thinking"
+        );
+
+    if(show){
+
+        thinking.classList.add(
+            "show"
+        );
+
+    }else{
+
+        thinking.classList.remove(
+            "show"
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   CHATS
+============================================================ */
 
 async function loadChats(){
 
     try{
 
-        const data = await api(
-            "/api/assistant/chats?lang=" + encodeURIComponent(lang)
-        );
+        const data =
+            await api(
+                "/api/assistant/chats"
+            );
 
-        chats = data.chats || [];
+        chats =
+            data.chats ||
+            data.conversations ||
+            [];
 
         renderChats();
 
     }catch(error){
 
-        console.error(error);
+        console.error(
+            "loadChats:",
+            error
+        );
 
     }
 
 }
 
+
 function renderChats(){
 
     const list =
-        document.getElementById("chatList");
-
-    const search =
-        document.getElementById("chatSearch")
-        .value
-        .toLowerCase()
-        .trim();
-
-    const filtered =
-        chats.filter(chat =>
-            String(chat.title || "")
-            .toLowerCase()
-            .includes(search)
+        document.getElementById(
+            "chatList"
         );
 
-    if(!filtered.length){
-
-        list.innerHTML =
-            `<div style="font-size:12px;opacity:.6;padding:10px">
-                ${
-                    lang === "fr"
-                    ? "Aucune conversation."
-                    : "No conversations."
-                }
-            </div>`;
+    if(!list){
 
         return;
 
     }
 
+
+    if(!chats.length){
+
+        list.innerHTML = `
+            <div style="
+                color:#94a3b8;
+                text-align:center;
+                padding:25px 10px;
+                font-size:12px;
+            ">
+                ${
+                    lang === "fr"
+                    ? "Aucune conversation."
+                    : "No conversations yet."
+                }
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    const query =
+        (
+            document
+                .getElementById("chatSearch")
+                ?.value ||
+            ""
+        )
+        .toLowerCase()
+        .trim();
+
+
+    const filtered =
+        chats.filter(
+            chat =>
+                String(
+                    chat.title || ""
+                )
+                .toLowerCase()
+                .includes(query)
+        );
+
+
     list.innerHTML =
-        filtered.map(chat => {
+        filtered.map(
+            chat => {
 
-            const active =
-                String(chat.id) === String(currentChatId)
-                ? "active"
-                : "";
+                const id =
+                    chat.id ||
+                    chat.chat_id;
 
-            const title =
-                escapeHtml(
+                const title =
                     chat.title ||
                     (
                         lang === "fr"
                         ? "Nouvelle conversation"
                         : "New conversation"
-                    )
-                );
+                    );
 
-            return `
-                <div
-                    class="chat-item ${active}"
-                    onclick="openChat('${escapeAttribute(chat.id)}')"
-                >
-                    <div class="chat-title">
-                        ${title}
+                const date =
+                    formatDate(
+                        chat.updated_at ||
+                        chat.created_at
+                    );
+
+                return `
+                    <div
+                        class="chat-item ${
+                            id === currentChatId
+                            ? "active"
+                            : ""
+                        }"
+                        onclick="openChat('${escapeAttribute(id)}')"
+                    >
+
+                        <div class="chat-title">
+                            ${escapeHtml(title)}
+                        </div>
+
+                        <div class="chat-date">
+                            ${escapeHtml(date)}
+                        </div>
+
                     </div>
+                `;
 
-                    <div class="chat-meta">
-                        ${formatDate(chat.updated_at || chat.created_at)}
-                    </div>
-                </div>
-            `;
-
-        }).join("");
+            }
+        )
+        .join("");
 
 }
+
 
 function filterChats(){
 
@@ -1107,167 +1799,22 @@ function filterChats(){
 
 }
 
-/* =========================================================
-   NEW CHAT
-========================================================= */
 
 async function newChat(){
 
     try{
 
-        const data = await api(
-            "/api/assistant/chats",
-            {
-                method:"POST",
-                body:JSON.stringify({
-                    title:
-                        lang === "fr"
-                        ? "Nouvelle conversation"
-                        : "New conversation"
-                })
-            }
-        );
-
-        currentChatId =
-            data.chat.id;
-
-        messages = [];
-
-        renderMessages();
-
-        await loadChats();
-
-        document.getElementById("messageInput").focus();
-
-    }catch(error){
-
-        showToast(error.message);
-
-    }
-
-}
-
-/* =========================================================
-   OPEN CHAT
-========================================================= */
-
-async function openChat(id){
-
-    try{
-
         const data =
             await api(
-                "/api/assistant/chats/" +
-                encodeURIComponent(id)
-            );
-
-        currentChatId = data.chat.id;
-
-        messages =
-            data.messages || [];
-
-        renderMessages();
-
-        loadChats();
-
-        closePanels();
-
-    }catch(error){
-
-        showToast(error.message);
-
-    }
-
-}
-  /* =========================================================
-   ROUTE BUSINESS ACTION REQUESTS TO TASSIMO AI V2
-   ========================================================= */
-
-if (isTassimoV2CustomerFollowupRequest(text)) {
-
-    try {
-
-        const actionData = await runTassimoV2Action(text);
-
-        if (actionData) {
-            renderTassimoV2Result(actionData);
-        }
-
-        /*
-           Stop here.
-           Do NOT send this request again through normal AI.
-        */
-        return;
-
-    } catch (error) {
-
-        console.error(
-            "TASSIMO AI V2 error:",
-            error
-        );
-
-        alert(
-            error.message ||
-            (
-                lang === "fr"
-                    ? "Erreur TASSIMO AI V2."
-                    : "TASSIMO AI V2 error."
-            )
-        );
-
-        return;
-    }
-}
-
-/* =========================================================
-   SEND MESSAGE
-========================================================= */
-
-async function sendMessage(){
-
-    const input =
-        document.getElementById("messageInput");
-
-    const text =
-        input.value.trim();
-
-    if(!text){
-        return;
-    }
-
-    if(!currentChatId){
-        await newChat();
-    }
-
-    if(!currentChatId){
-        return;
-    }
-
-    input.value = "";
-
-    addLocalMessage(
-        "user",
-        text
-    );
-
-    setThinking(true);
-
-    document.getElementById("sendButton").disabled = true;
-
-    try{
-
-        const data =
-            await api(
-                "/api/assistant/chat",
+                "/api/assistant/chats",
                 {
                     method:"POST",
                     body:JSON.stringify({
 
-                        chat_id:
-                            currentChatId,
-
-                        message:
-                            text,
+                        title:
+                            lang === "fr"
+                            ? "Nouvelle conversation"
+                            : "New conversation",
 
                         language:
                             lang
@@ -1276,37 +1823,1268 @@ async function sendMessage(){
                 }
             );
 
-        addLocalMessage(
-            "assistant",
-            data.answer || ""
-        );
+        const chat =
+            data.chat ||
+            data;
 
-        if(data.memory_saved){
 
-            showToast(
-                lang === "fr"
-                ? "Mémoire importante enregistrée."
-                : "Important memory saved."
-            );
+        currentChatId =
+            chat.id ||
+            chat.chat_id;
 
-        }
+
+        currentChat =
+            chat;
+
+
+        currentMessages =
+            [];
+
+
+        clearMessages();
+
+        updateChatHeader();
 
         await loadChats();
 
-        await loadMemory();
+        closeSidebarMobile();
+
+        document
+            .getElementById(
+                "messageInput"
+            )
+            .focus();
+
 
     }catch(error){
 
-        addLocalMessage(
-            "assistant",
-            "⚠ " + error.message
+        showToast(
+            error.message
+        );
+
+    }
+
+}
+
+
+async function openChat(chatId){
+
+    if(!chatId){
+
+        return;
+
+    }
+
+
+    try{
+
+        setThinking(true);
+
+        const data =
+            await api(
+                "/api/assistant/chats/" +
+                encodeURIComponent(chatId)
+            );
+
+
+        currentChatId =
+            chatId;
+
+        currentChat =
+            data.chat ||
+            data;
+
+
+        currentMessages =
+            data.messages ||
+            [];
+
+
+        renderChatMessages();
+
+        updateChatHeader();
+
+        renderChats();
+
+        closeSidebarMobile();
+
+
+    }catch(error){
+
+        showToast(
+            error.message
         );
 
     }finally{
 
         setThinking(false);
 
-        document.getElementById("sendButton").disabled = false;
+    }
+
+}
+
+
+function updateChatHeader(){
+
+    const title =
+        document.getElementById(
+            "currentChatTitle"
+        );
+
+    const meta =
+        document.getElementById(
+            "currentChatMeta"
+        );
+
+
+    if(title){
+
+        title.textContent =
+            currentChat?.title ||
+            (
+                lang === "fr"
+                ? "Nouvelle conversation"
+                : "New conversation"
+            );
+
+    }
+
+
+    if(meta){
+
+        meta.textContent =
+            lang === "fr"
+            ? "TASSIMO AI • Assistant intelligent"
+            : "TASSIMO AI • Intelligent assistant";
+
+    }
+
+}
+
+
+async function deleteCurrentChat(){
+
+    if(!currentChatId){
+
+        return;
+
+    }
+
+
+    const confirmed =
+        confirm(
+            lang === "fr"
+            ? "Supprimer cette conversation ?"
+            : "Delete this conversation?"
+        );
+
+
+    if(!confirmed){
+
+        return;
+
+    }
+
+
+    try{
+
+        await api(
+            "/api/assistant/chats/" +
+            encodeURIComponent(
+                currentChatId
+            ),
+            {
+                method:"DELETE"
+            }
+        );
+
+
+        currentChatId =
+            null;
+
+        currentChat =
+            null;
+
+        currentMessages =
+            [];
+
+
+        clearMessages();
+
+        updateChatHeader();
+
+        await loadChats();
+
+
+        showToast(
+            lang === "fr"
+            ? "Conversation supprimée."
+            : "Conversation deleted."
+        );
+
+
+    }catch(error){
+
+        showToast(
+            error.message
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   MESSAGE DISPLAY
+============================================================ */
+
+function clearMessages(){
+
+    document
+        .getElementById("messages")
+        .innerHTML = `
+            <div class="empty-state">
+
+                <div class="empty-card">
+
+                    <div class="empty-icon">
+                        🤖
+                    </div>
+
+                    <div class="empty-title">
+                        ${
+                            lang === "fr"
+                            ? "Bonjour, je suis TASSIMO AI"
+                            : "Hello, I am TASSIMO AI"
+                        }
+                    </div>
+
+                    <div class="empty-text">
+                        ${
+                            lang === "fr"
+                            ? "Posez-moi une question ou demandez-moi d'analyser votre entreprise."
+                            : "Ask me a question or ask me to analyze your business."
+                        }
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+
+}
+
+
+function renderChatMessages(){
+
+    const container =
+        document.getElementById(
+            "messages"
+        );
+
+
+    if(!currentMessages.length){
+
+        clearMessages();
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    currentMessages.forEach(
+        message => {
+
+            const role =
+                message.role ||
+                message.sender ||
+                "assistant";
+
+            addMessageElement(
+                role === "user"
+                ? "user"
+                : "assistant",
+                message.content ||
+                message.message ||
+                "",
+                message.created_at
+            );
+
+        }
+    );
+
+
+    scrollMessages();
+
+}
+
+
+function addMessageElement(
+    role,
+    content,
+    createdAt = null
+){
+
+    const container =
+        document.getElementById(
+            "messages"
+        );
+
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+    row.className =
+        "message-row " +
+        (
+            role === "user"
+            ? "user"
+            : "assistant"
+        );
+
+
+    const wrapper =
+        document.createElement(
+            "div"
+        );
+
+
+    const bubble =
+        document.createElement(
+            "div"
+        );
+
+    bubble.className =
+        "message-bubble";
+
+    bubble.textContent =
+        content;
+
+
+    const time =
+        document.createElement(
+            "div"
+        );
+
+    time.className =
+        "message-time";
+
+    time.textContent =
+        formatTime(
+            createdAt ||
+            new Date().toISOString()
+        );
+
+
+    wrapper.appendChild(
+        bubble
+    );
+
+    wrapper.appendChild(
+        time
+    );
+
+    row.appendChild(
+        wrapper
+    );
+
+    container.appendChild(
+        row
+    );
+
+}
+
+
+function addLocalMessage(
+    role,
+    content
+){
+
+    addMessageElement(
+        role,
+        content
+    );
+
+    scrollMessages();
+
+}
+
+
+function scrollMessages(){
+
+    const container =
+        document.getElementById(
+            "messages"
+        );
+
+    if(container){
+
+        container.scrollTop =
+            container.scrollHeight;
+
+    }
+
+}
+
+
+/* ============================================================
+   NORMAL AI CHAT
+============================================================ */
+
+async function sendNormalAssistantMessage(
+    text
+){
+
+    const data =
+        await api(
+            "/api/assistant/chat",
+            {
+                method:"POST",
+
+                body:JSON.stringify({
+
+                    chat_id:
+                        currentChatId,
+
+                    message:
+                        text,
+
+                    language:
+                        lang
+
+                })
+            }
+        );
+
+
+    addLocalMessage(
+        "assistant",
+        data.answer ||
+        data.response ||
+        ""
+    );
+
+
+    if(data.memory_saved){
+
+        showToast(
+            lang === "fr"
+            ? "Mémoire importante enregistrée."
+            : "Important memory saved."
+        );
+
+    }
+
+
+    await loadChats();
+
+    await loadMemory();
+
+}
+
+
+/* ============================================================
+   TASSIMO AI V2 INTENT DETECTION
+============================================================ */
+
+function isTassimoV2CustomerFollowupRequest(
+    text
+){
+
+    const value =
+        String(text || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(
+                /[\u0300-\u036f]/g,
+                ""
+            );
+
+
+    const customerWords = [
+        "client",
+        "clients",
+        "customer",
+        "customers",
+        "prospect",
+        "prospects"
+    ];
+
+
+    const inactivityWords = [
+        "30 jours",
+        "30 day",
+        "days",
+        "jours",
+        "inactif",
+        "inactive",
+        "pas ete contacte",
+        "pas contact",
+        "not contacted",
+        "have not been contacted",
+        "has not been contacted",
+        "sans contact",
+        "aucun contact",
+        "dernier contact",
+        "last contact"
+    ];
+
+
+    const followupWords = [
+        "relance",
+        "relancer",
+        "follow up",
+        "follow-up",
+        "followup",
+        "suivi",
+        "message de relance",
+        "messages de relance",
+        "prepare des messages",
+        "prepare les messages",
+        "prepare personalized",
+        "prepare personalized messages",
+        "personalise",
+        "personnalise",
+        "personnalises",
+        "personalized"
+    ];
+
+
+    const hasCustomer =
+        customerWords.some(
+            word =>
+                value.includes(word)
+        );
+
+
+    const hasInactivity =
+        inactivityWords.some(
+            word =>
+                value.includes(word)
+        );
+
+
+    const hasFollowup =
+        followupWords.some(
+            word =>
+                value.includes(word)
+        );
+
+
+    return (
+        hasCustomer &&
+        hasInactivity &&
+        hasFollowup
+    );
+
+}
+
+
+/* ============================================================
+   TASSIMO AI V2 ACTION
+============================================================ */
+
+async function runTassimoV2Action(
+    text
+){
+
+    return await api(
+        "/api/ai/v2/action",
+        {
+            method:"POST",
+
+            body:JSON.stringify({
+
+                request:
+                    text,
+
+                language:
+                    lang
+
+            })
+        }
+    );
+
+}
+
+
+/* ============================================================
+   RENDER V2 RESULT
+============================================================ */
+
+function renderTassimoV2Result(
+    data
+){
+
+    const container =
+        document.getElementById(
+            "messages"
+        );
+
+
+    const customers =
+        data.customers ||
+        data.results ||
+        [];
+
+
+    const count =
+        data.count ??
+        customers.length;
+
+
+    const action =
+        data.action ||
+        data.action_request ||
+        {};
+
+
+    const actionId =
+        action.id ||
+        data.action_id ||
+        "";
+
+
+    const result =
+        document.createElement(
+            "div"
+        );
+
+    result.className =
+        "message-row assistant";
+
+
+    const wrapper =
+        document.createElement(
+            "div"
+        );
+
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+    card.className =
+        "v2-result";
+
+
+    const header =
+        document.createElement(
+            "div"
+        );
+
+    header.className =
+        "v2-header";
+
+
+    const title =
+        document.createElement(
+            "div"
+        );
+
+    title.className =
+        "v2-title";
+
+    title.textContent =
+        lang === "fr"
+        ? "🤖 TASSIMO AI V2 — Relances préparées"
+        : "🤖 TASSIMO AI V2 — Follow-ups prepared";
+
+
+    const subtitle =
+        document.createElement(
+            "div"
+        );
+
+    subtitle.className =
+        "v2-subtitle";
+
+    subtitle.textContent =
+        lang === "fr"
+        ? (
+            "Les clients inactifs ont été identifiés et des brouillons personnalisés ont été préparés. Aucun message externe n'est envoyé automatiquement à cette étape."
+        )
+        : (
+            "Inactive customers were identified and personalized drafts were prepared. No external message is automatically sent at this stage."
+        );
+
+
+    header.appendChild(
+        title
+    );
+
+    header.appendChild(
+        subtitle
+    );
+
+
+    card.appendChild(
+        header
+    );
+
+
+    const summary =
+        document.createElement(
+            "div"
+        );
+
+    summary.className =
+        "v2-summary";
+
+
+    summary.innerHTML = `
+        <div class="v2-stat">
+            <strong>${escapeHtml(count)}</strong>
+            <span>
+                ${
+                    lang === "fr"
+                    ? "Clients trouvés"
+                    : "Customers found"
+                }
+            </span>
+        </div>
+
+        <div class="v2-stat">
+            <strong>${escapeHtml(customers.length)}</strong>
+            <span>
+                ${
+                    lang === "fr"
+                    ? "Messages préparés"
+                    : "Messages prepared"
+                }
+            </span>
+        </div>
+
+        <div class="v2-stat">
+            <strong>CEO</strong>
+            <span>
+                ${
+                    lang === "fr"
+                    ? "Approbation requise"
+                    : "Approval required"
+                }
+            </span>
+        </div>
+    `;
+
+
+    card.appendChild(
+        summary
+    );
+
+
+    const customerContainer =
+        document.createElement(
+            "div"
+        );
+
+    customerContainer.className =
+        "v2-customers";
+
+
+    if(!customers.length){
+
+        const empty =
+            document.createElement(
+                "div"
+            );
+
+        empty.className =
+            "v2-customer";
+
+        empty.textContent =
+            data.message ||
+            (
+                lang === "fr"
+                ? "Aucun client correspondant aux critères."
+                : "No customers matched the criteria."
+            );
+
+        customerContainer.appendChild(
+            empty
+        );
+
+    }else{
+
+        customers.forEach(
+            customer => {
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+                item.className =
+                    "v2-customer";
+
+
+                const top =
+                    document.createElement(
+                        "div"
+                    );
+
+                top.className =
+                    "v2-customer-top";
+
+
+                const name =
+                    document.createElement(
+                        "div"
+                    );
+
+                name.className =
+                    "v2-customer-name";
+
+                name.textContent =
+                    customer.customer_name ||
+                    customer.name ||
+                    (
+                        lang === "fr"
+                        ? "Client sans nom"
+                        : "Unnamed customer"
+                    );
+
+
+                const channel =
+                    document.createElement(
+                        "div"
+                    );
+
+                channel.className =
+                    "v2-channel";
+
+                channel.textContent =
+                    customer.channel ||
+                    "—";
+
+
+                top.appendChild(
+                    name
+                );
+
+                top.appendChild(
+                    channel
+                );
+
+
+                const info =
+                    document.createElement(
+                        "div"
+                    );
+
+                info.className =
+                    "v2-customer-info";
+
+                const inactiveDays =
+                    customer.inactive_days ??
+                    customer.days_inactive ??
+                    "—";
+
+
+                info.textContent =
+                    (
+                        customer.customer_phone
+                        ||
+                        customer.phone
+                        ||
+                        ""
+                    ) +
+                    " • " +
+                    (
+                        lang === "fr"
+                        ? "Inactif depuis "
+                        : "Inactive for "
+                    ) +
+                    inactiveDays +
+                    (
+                        lang === "fr"
+                        ? " jours"
+                        : " days"
+                    );
+
+
+                const draft =
+                    document.createElement(
+                        "div"
+                    );
+
+                draft.className =
+                    "v2-draft";
+
+                draft.textContent =
+                    customer.draft ||
+                    customer.message ||
+                    customer.followup_message ||
+                    (
+                        lang === "fr"
+                        ? "Aucun brouillon disponible."
+                        : "No draft available."
+                    );
+
+
+                const copy =
+                    document.createElement(
+                        "button"
+                    );
+
+                copy.className =
+                    "v2-copy";
+
+                copy.textContent =
+                    lang === "fr"
+                    ? "📋 Copier le message"
+                    : "📋 Copy message";
+
+
+                copy.onclick =
+                    async function(){
+
+                        try{
+
+                            await navigator.clipboard.writeText(
+                                draft.textContent
+                            );
+
+                            showToast(
+                                lang === "fr"
+                                ? "Message copié."
+                                : "Message copied."
+                            );
+
+                        }catch(error){
+
+                            showToast(
+                                lang === "fr"
+                                ? "Impossible de copier."
+                                : "Unable to copy."
+                            );
+
+                        }
+
+                    };
+
+
+                item.appendChild(
+                    top
+                );
+
+                item.appendChild(
+                    info
+                );
+
+                item.appendChild(
+                    draft
+                );
+
+                item.appendChild(
+                    copy
+                );
+
+
+                customerContainer.appendChild(
+                    item
+                );
+
+            }
+        );
+
+    }
+
+
+    card.appendChild(
+        customerContainer
+    );
+
+
+    const approval =
+        document.createElement(
+            "div"
+        );
+
+    approval.className =
+        "v2-approval";
+
+
+    approval.innerHTML =
+        (
+            lang === "fr"
+            ? "<strong>🔐 Approbation CEO requise.</strong><br>Cette action est enregistrée dans le système d'actions TASSIMO AI. Les messages ne doivent pas être envoyés aux clients avant l'approbation du CEO."
+            : "<strong>🔐 CEO approval required.</strong><br>This action has been recorded in the TASSIMO AI action system. Messages must not be sent to customers before CEO approval."
+        );
+
+
+    if(actionId){
+
+        approval.innerHTML +=
+            "<br><br>" +
+            (
+                lang === "fr"
+                ? "ID de l'action : "
+                : "Action ID: "
+            ) +
+            escapeHtml(actionId);
+
+    }
+
+
+    card.appendChild(
+        approval
+    );
+
+
+    wrapper.appendChild(
+        card
+    );
+
+    result.appendChild(
+        wrapper
+    );
+
+    container.appendChild(
+        result
+    );
+
+
+    scrollMessages();
+
+}
+
+
+/* ============================================================
+   SEND MESSAGE
+============================================================ */
+
+async function sendMessage(){
+
+    if(sending){
+
+        return;
+
+    }
+
+
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
+
+
+    if(!input){
+
+        return;
+
+    }
+
+
+    const text =
+        input.value.trim();
+
+
+    if(!text){
+
+        return;
+
+    }
+
+
+    sending = true;
+
+
+    const sendButton =
+        document.getElementById(
+            "sendButton"
+        );
+
+
+    sendButton.disabled =
+        true;
+
+
+    sendButton.textContent =
+        lang === "fr"
+        ? "Envoi..."
+        : "Sending...";
+
+
+    try{
+
+
+        /*
+         * CREATE CHAT IF NEEDED
+         */
+
+        if(!currentChatId){
+
+            await newChat();
+
+        }
+
+
+        if(!currentChatId){
+
+            throw new Error(
+                lang === "fr"
+                ? "Impossible de créer la conversation."
+                : "Unable to create the conversation."
+            );
+
+        }
+
+
+        /*
+         * CLEAR INPUT IMMEDIATELY
+         */
+
+        input.value = "";
+
+
+        /*
+         * SHOW USER MESSAGE
+         */
+
+        addLocalMessage(
+            "user",
+            text
+        );
+
+
+        /*
+         * SAVE LOCALLY FOR THIS SESSION
+         */
+
+        currentMessages.push({
+
+            role:"user",
+
+            content:text,
+
+            created_at:
+                new Date().toISOString()
+
+        });
+
+
+        setThinking(true);
+
+
+        /*
+         * =====================================================
+         * TASSIMO AI V2
+         *
+         * CUSTOMER INACTIVITY + FOLLOW-UP
+         * =====================================================
+         */
+
+        if(
+            isTassimoV2CustomerFollowupRequest(
+                text
+            )
+        ){
+
+            try{
+
+                const actionData =
+                    await runTassimoV2Action(
+                        text
+                    );
+
+
+                renderTassimoV2Result(
+                    actionData
+                );
+
+
+                await loadChats();
+
+                await loadMemory();
+
+
+                return;
+
+            }catch(v2Error){
+
+                console.error(
+                    "TASSIMO AI V2 error:",
+                    v2Error
+                );
+
+
+                /*
+                 * IMPORTANT:
+                 *
+                 * If V2 fails, we do NOT break
+                 * the Send button.
+                 *
+                 * We continue with the
+                 * normal TASSIMO AI assistant.
+                 */
+
+                addLocalMessage(
+                    "assistant",
+                    (
+                        lang === "fr"
+                        ? "TASSIMO AI V2 n'a pas pu terminer l'analyse. Je vais traiter votre demande avec l'assistant général."
+                        : "TASSIMO AI V2 could not complete the analysis. I will process your request with the general assistant."
+                    )
+                );
+
+            }
+
+        }
+
+
+        /*
+         * =====================================================
+         * NORMAL AI ASSISTANT
+         * =====================================================
+         */
+
+        await sendNormalAssistantMessage(
+            text
+        );
+
+
+    }catch(error){
+
+        console.error(
+            "sendMessage:",
+            error
+        );
+
+
+        addLocalMessage(
+            "assistant",
+            "⚠ " +
+            (
+                error.message ||
+                (
+                    lang === "fr"
+                    ? "Une erreur est survenue."
+                    : "Something went wrong."
+                )
+            )
+        );
+
+
+    }finally{
+
+        setThinking(false);
+
+        sending = false;
+
+        sendButton.disabled =
+            false;
+
+        sendButton.textContent =
+            lang === "fr"
+            ? "Envoyer"
+            : "Send";
 
         input.focus();
 
@@ -1315,119 +3093,13 @@ async function sendMessage(){
 }
 
 
+/* ============================================================
+   ENTER KEY
+============================================================ */
 
-
-/* =========================================================
-   LOCAL MESSAGE
-========================================================= */
-
-function addLocalMessage(role,text){
-
-    messages.push({
-        role:role,
-        content:text,
-        created_at:new Date().toISOString()
-    });
-
-    renderMessages();
-
-}
-
-/* =========================================================
-   RENDER
-========================================================= */
-
-function renderMessages(){
-
-    const welcome =
-        document.getElementById("welcome");
-
-    const container =
-        document.getElementById("messages");
-
-    if(messages.length){
-
-        welcome.style.display = "none";
-
-    }else{
-
-        welcome.style.display = "block";
-
-    }
-
-    container.innerHTML =
-        messages.map(message => {
-
-            const role =
-                message.role === "assistant"
-                ? "assistant"
-                : "user";
-
-            return `
-                <div class="message ${role}">
-                    <div>
-                        <div class="bubble">
-                            ${formatAIText(
-                                message.content || ""
-                            )}
-                        </div>
-
-                        <div class="message-meta">
-                            ${
-                                role === "assistant"
-                                ? "🤖 TASSIMO AI"
-                                : "👤 " +
-                                  (
-                                      lang === "fr"
-                                      ? "Vous"
-                                      : "You"
-                                  )
-                            }
-                            ·
-                            ${formatDate(message.created_at)}
-                        </div>
-                    </div>
-                </div>
-            `;
-
-        }).join("");
-
-    const area =
-        document.getElementById("chatArea");
-
-    setTimeout(() => {
-
-        area.scrollTop =
-            area.scrollHeight;
-
-    },20);
-
-}
-
-/* =========================================================
-   SUGGESTIONS
-========================================================= */
-
-function useSuggestion(button){
-
-    const text =
-        lang === "fr"
-        ? button.getAttribute("data-fr")
-        : button.getAttribute("data-en");
-
-    document.getElementById(
-        "messageInput"
-    ).value = text;
-
-    sendMessage();
-
-}
-
-/* =========================================================
-   KEYBOARD
-========================================================= */
-
-function handleKey(event){
+function handleMessageKey(
+    event
+){
 
     if(
         event.key === "Enter" &&
@@ -1442,22 +3114,33 @@ function handleKey(event){
 
 }
 
-/* =========================================================
-   THINKING
-========================================================= */
 
-function setThinking(show){
+/* ============================================================
+   QUICK PROMPTS
+============================================================ */
 
-    document.getElementById(
-        "thinking"
-    ).style.display =
-        show ? "flex" : "none";
+function useQuickPrompt(
+    text
+){
+
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
+
+
+    input.value =
+        text;
+
+
+    input.focus();
 
 }
 
-/* =========================================================
+
+/* ============================================================
    MEMORY
-========================================================= */
+============================================================ */
 
 async function loadMemory(){
 
@@ -1468,91 +3151,121 @@ async function loadMemory(){
                 "/api/assistant/memory"
             );
 
-        memory =
-            data.memories || [];
+
+        memories =
+            data.memories ||
+            [];
+
 
         renderMemory();
 
     }catch(error){
 
-        console.error(error);
+        console.error(
+            "loadMemory:",
+            error
+        );
 
     }
 
 }
 
+
 function renderMemory(){
 
-    const container =
+    const list =
         document.getElementById(
-            "memoryContent"
+            "memoryList"
         );
 
-    if(!memory.length){
 
-        container.innerHTML =
-            `<p style="color:#667085">
-                ${
-                    lang === "fr"
-                    ? "Aucune mémoire enregistrée."
-                    : "No saved memories."
-                }
-            </p>`;
+    if(!list){
 
         return;
 
     }
 
-    container.innerHTML =
-        memory.map(item => {
 
-            return `
-                <div class="memory-card">
+    if(!memories.length){
 
-                    <div class="memory-type">
+        list.innerHTML = `
+            <div class="memory-item">
+                ${
+                    lang === "fr"
+                    ? "Aucune mémoire enregistrée."
+                    : "No memories saved."
+                }
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML =
+        memories
+            .slice(0,20)
+            .map(
+                memory => `
+
+                    <div class="memory-item">
+
                         ${escapeHtml(
-                            item.memory_type || "general"
+                            memory.memory_text ||
+                            memory.text ||
+                            ""
                         )}
+
+                        <div class="memory-meta">
+
+                            ${
+                                memory.memory_type ||
+                                "general"
+                            }
+
+                            •
+
+                            ${
+                                memory.importance ||
+                                5
+                            }/10
+
+                        </div>
+
                     </div>
 
-                    <div class="memory-text">
-                        ${escapeHtml(
-                            item.memory_text || ""
-                        )}
-                    </div>
-
-                </div>
-            `;
-
-        }).join("");
+                `
+            )
+            .join("");
 
 }
 
-/* =========================================================
-   SAVE MEMORY MANUALLY
-========================================================= */
 
-async function rememberCurrent(){
-
-    const input =
-        document.getElementById(
-            "messageInput"
-        );
+async function saveCurrentMemory(){
 
     const text =
-        input.value.trim();
+        currentMessages
+            .filter(
+                message =>
+                    message.role === "user"
+            )
+            .slice(-1)[0]
+            ?.content;
+
 
     if(!text){
 
         showToast(
             lang === "fr"
-            ? "Écrivez d'abord ce que vous voulez mémoriser."
-            : "Write what you want me to remember first."
+            ? "Aucune demande à mémoriser."
+            : "There is no request to remember."
         );
 
         return;
 
     }
+
 
     try{
 
@@ -1560,16 +3273,28 @@ async function rememberCurrent(){
             "/api/assistant/memory",
             {
                 method:"POST",
+
                 body:JSON.stringify({
-                    memory:text,
-                    memory_type:"user_preference"
+
+                    memory_text:
+                        text,
+
+                    memory_type:
+                        "user_request",
+
+                    importance:
+                        7,
+
+                    source:
+                        "TASSIMO AI"
+
                 })
             }
         );
 
-        input.value = "";
 
         await loadMemory();
+
 
         showToast(
             lang === "fr"
@@ -1577,19 +3302,23 @@ async function rememberCurrent(){
             : "Memory saved."
         );
 
+
     }catch(error){
 
-        showToast(error.message);
+        showToast(
+            error.message
+        );
 
     }
 
 }
 
-/* =========================================================
-   BUSINESS CONTEXT
-========================================================= */
 
-async function loadContext(){
+/* ============================================================
+   BUSINESS CONTEXT
+============================================================ */
+
+async function loadBusinessContext(){
 
     try{
 
@@ -1598,211 +3327,245 @@ async function loadContext(){
                 "/api/assistant/context"
             );
 
+
         businessContext =
-            data.context || {};
+            data.context ||
+            data ||
+            {};
 
-        renderContext();
+
+        renderBusinessStats();
 
     }catch(error){
 
-        console.error(error);
+        console.error(
+            "loadBusinessContext:",
+            error
+        );
 
     }
 
 }
 
-function renderContext(){
 
-    const c =
+function renderBusinessStats(){
+
+    const container =
         document.getElementById(
-            "contextContent"
+            "businessStats"
         );
 
-    const labels =
-        lang === "fr"
-        ? {
-            customers:"Clients",
-            leads:"Prospects",
-            projects:"Projets",
-            inventory:"Articles en stock",
-            expenses:"Dépenses",
-            payments:"Paiements",
-            messages:"Messages",
-            documents:"Documents",
-            tasks:"Tâches"
+
+    if(!container){
+
+        return;
+
+    }
+
+
+    const customers =
+        getContextNumber(
+            [
+                "customers",
+                "customer_count"
+            ]
+        );
+
+
+    const leads =
+        getContextNumber(
+            [
+                "leads",
+                "lead_count"
+            ]
+        );
+
+
+    const projects =
+        getContextNumber(
+            [
+                "projects",
+                "project_count"
+            ]
+        );
+
+
+    const messages =
+        getContextNumber(
+            [
+                "messages",
+                "message_count"
+            ]
+        );
+
+
+    container.innerHTML = `
+
+        <div class="stat">
+
+            <div class="stat-number">
+                ${customers}
+            </div>
+
+            <div class="stat-label">
+                ${lang === "fr" ? "Clients" : "Customers"}
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-number">
+                ${leads}
+            </div>
+
+            <div class="stat-label">
+                ${lang === "fr" ? "Prospects" : "Leads"}
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-number">
+                ${projects}
+            </div>
+
+            <div class="stat-label">
+                ${lang === "fr" ? "Projets" : "Projects"}
+            </div>
+
+        </div>
+
+
+        <div class="stat">
+
+            <div class="stat-number">
+                ${messages}
+            </div>
+
+            <div class="stat-label">
+                ${lang === "fr" ? "Messages" : "Messages"}
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+function getContextNumber(
+    keys
+){
+
+    for(
+        const key of keys
+    ){
+
+        if(
+            businessContext &&
+            businessContext[key] !== undefined
+        ){
+
+            return Number(
+                businessContext[key]
+            ) || 0;
+
         }
-        : {
-            customers:"Customers",
-            leads:"Leads",
-            projects:"Projects",
-            inventory:"Inventory items",
-            expenses:"Expenses",
-            payments:"Payments",
-            messages:"Messages",
-            documents:"Documents",
-            tasks:"Tasks"
-        };
-
-    const keys =
-        Object.keys(labels);
-
-    c.innerHTML =
-        keys.map(key => {
-
-            return `
-                <div class="context-item">
-                    <span>${labels[key]}</span>
-                    <strong>
-                        ${businessContext[key] ?? 0}
-                    </strong>
-                </div>
-            `;
-
-        }).join("");
-
-}
-
-/* =========================================================
-   PANELS
-========================================================= */
-
-function toggleContext(){
-
-    const panel =
-        document.getElementById(
-            "contextPanel"
-        );
-
-    panel.classList.toggle("show");
-
-    document.getElementById(
-        "memoryPanel"
-    ).classList.remove("show");
-
-}
-
-function toggleMemory(){
-
-    const panel =
-        document.getElementById(
-            "memoryPanel"
-        );
-
-    panel.classList.toggle("show");
-
-    document.getElementById(
-        "contextPanel"
-    ).classList.remove("show");
-
-}
-
-function closePanels(){
-
-    document.getElementById(
-        "contextPanel"
-    ).classList.remove("show");
-
-    document.getElementById(
-        "memoryPanel"
-    ).classList.remove("show");
-
-}
-
-/* =========================================================
-   CLEAR CHAT
-========================================================= */
-
-async function clearCurrentChat(){
-
-    if(!currentChatId){
-
-        return;
 
     }
 
-    const confirmed =
-        confirm(
-            lang === "fr"
-            ? "Effacer cette conversation ?"
-            : "Clear this conversation?"
-        );
 
-    if(!confirmed){
+    if(
+        businessContext &&
+        businessContext.counts
+    ){
 
-        return;
+        for(
+            const key of keys
+        ){
 
-    }
+            if(
+                businessContext.counts[key] !== undefined
+            ){
 
-    try{
+                return Number(
+                    businessContext.counts[key]
+                ) || 0;
 
-        await api(
-            "/api/assistant/chats/" +
-            encodeURIComponent(currentChatId),
-            {
-                method:"DELETE"
             }
-        );
 
-        currentChatId = null;
-
-        messages = [];
-
-        renderMessages();
-
-        await loadChats();
-
-    }catch(error){
-
-        showToast(error.message);
+        }
 
     }
 
-}
 
-/* =========================================================
-   MOBILE SIDEBAR
-========================================================= */
-
-function toggleSidebar(){
-
-    document
-        .getElementById("sidebar")
-        .classList.toggle("open");
+    return 0;
 
 }
 
-/* =========================================================
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+
+function goDashboard(){
+
+    window.location.href =
+        "/";
+
+}
+
+
+function logout(){
+
+    window.location.href =
+        "/logout";
+
+}
+
+
+/* ============================================================
+   REFRESH
+============================================================ */
+
+async function refreshAll(){
+
+    await Promise.all([
+        loadChats(),
+        loadMemory(),
+        loadBusinessContext()
+    ]);
+
+
+    if(currentChatId){
+
+        await openChat(
+            currentChatId
+        );
+
+    }
+
+
+    showToast(
+        lang === "fr"
+        ? "TASSIMO AI actualisé."
+        : "TASSIMO AI refreshed."
+    );
+
+}
+
+
+/* ============================================================
    UTILITIES
-========================================================= */
+============================================================ */
 
-function escapeHtml(value){
-
-    return String(value)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-
-}
-
-function escapeAttribute(value){
-
-    return String(value)
-        .replaceAll("\\","\\\\")
-        .replaceAll("'","\\'");
-
-}
-
-function formatAIText(text){
-
-    return escapeHtml(text)
-        .replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>")
-        .replace(/\n/g,"<br>");
-
-}
-
-function formatDate(value){
+function formatDate(
+    value
+){
 
     if(!value){
 
@@ -1810,21 +3573,18 @@ function formatDate(value){
 
     }
 
+
     try{
 
-        return new Date(value).toLocaleString(
+        return new Date(
+            value
+        ).toLocaleDateString(
             lang === "fr"
             ? "fr-FR"
-            : "en-US",
-            {
-                day:"2-digit",
-                month:"short",
-                hour:"2-digit",
-                minute:"2-digit"
-            }
+            : "en-US"
         );
 
-    }catch(e){
+    }catch(error){
 
         return "";
 
@@ -1832,35 +3592,166 @@ function formatDate(value){
 
 }
 
-function showToast(text){
 
-    const toast =
-        document.getElementById("toast");
+function formatTime(
+    value
+){
 
-    toast.textContent = text;
+    if(!value){
 
-    toast.classList.add("show");
+        return "";
 
-    setTimeout(
-        () => toast.classList.remove("show"),
-        3000
+    }
+
+
+    try{
+
+        return new Date(
+            value
+        ).toLocaleTimeString(
+            lang === "fr"
+            ? "fr-FR"
+            : "en-US",
+            {
+                hour:"2-digit",
+                minute:"2-digit"
+            }
+        );
+
+    }catch(error){
+
+        return "";
+
+    }
+
+}
+
+
+function escapeHtml(
+    value
+){
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
     );
 
 }
 
-/* =========================================================
+
+function escapeAttribute(
+    value
+){
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /\\/g,
+        "\\\\"
+    )
+    .replace(
+        /'/g,
+        "\\'"
+    );
+
+}
+
+
+/* ============================================================
+   INITIALIZATION
+============================================================ */
+
+async function initialize(){
+
+    updateLanguage();
+
+    setThinking(false);
+
+
+    try{
+
+        await loadChats();
+
+        await loadMemory();
+
+        await loadBusinessContext();
+
+
+        /*
+         * Automatically open the most
+         * recent conversation.
+         */
+
+        if(chats.length){
+
+            const first =
+                chats[0];
+
+            const id =
+                first.id ||
+                first.chat_id;
+
+
+            if(id){
+
+                await openChat(
+                    id
+                );
+
+            }
+
+        }
+
+    }catch(error){
+
+        console.error(
+            "initialize:",
+            error
+        );
+
+    }
+
+
+    document
+        .getElementById(
+            "messageInput"
+        )
+        .focus();
+
+}
+
+
+/* ============================================================
    START
-========================================================= */
+============================================================ */
 
-applyLanguage();
-
-loadChats();
-
-loadMemory();
-
-loadContext();
+document.addEventListener(
+    "DOMContentLoaded",
+    initialize
+);
 
 </script>
 
 </body>
+
 </html>
