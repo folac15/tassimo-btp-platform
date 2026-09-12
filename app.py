@@ -4354,6 +4354,10 @@ function openPage(p){
   window.location.href="/finance.html";
   return;
 }
+  if(p==="approvals"){
+  window.location.href="/ceo-approvals.html";
+  return;
+}
   if(p==="documents"){
   window.location.href="/documents.html";
   return;
@@ -5728,6 +5732,10 @@ def professional_training_page():
 @protected
 def digital_courses_page():
     return send_from_directory(".", "digital-courses.html")
+@app.route("/ceo-approvals.html")
+@protected
+def ceo_approvals_page():
+    return send_from_directory(".", "ceo-approvals.html")
 
     response = app.make_response(DASHBOARD_HTML)
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
