@@ -1179,6 +1179,45 @@ async function openChat(id){
     }
 
 }
+  /* =========================================================
+   ROUTE BUSINESS ACTION REQUESTS TO TASSIMO AI V2
+   ========================================================= */
+
+if (isTassimoV2CustomerFollowupRequest(text)) {
+
+    try {
+
+        const actionData = await runTassimoV2Action(text);
+
+        if (actionData) {
+            renderTassimoV2Result(actionData);
+        }
+
+        /*
+           Stop here.
+           Do NOT send this request again through normal AI.
+        */
+        return;
+
+    } catch (error) {
+
+        console.error(
+            "TASSIMO AI V2 error:",
+            error
+        );
+
+        alert(
+            error.message ||
+            (
+                lang === "fr"
+                    ? "Erreur TASSIMO AI V2."
+                    : "TASSIMO AI V2 error."
+            )
+        );
+
+        return;
+    }
+}
 
 /* =========================================================
    SEND MESSAGE
