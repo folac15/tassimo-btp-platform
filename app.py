@@ -2686,6 +2686,622 @@ def business_intelligence():
     if not answer:
         return jsonify({"error": t("ai_unavailable")}), 503
     return jsonify({"insight": answer})
+ # ------------------------------------------------------------
+# TASSIMO AI V2 — ACTION ENGINE
+# ------------------------------------------------------------
+
+def ai_v2_parse_days(text):
+    """
+    Detect a requested inactivity period.
+    Defaults to 30 days.
+    """
+    text = str(text or "").lower()
+
+    import re
+
+    patterns = [
+        r"(\d+)\s*(?:days|day|jours|jour)",
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            try:
+                days = int(match.group(1))
+                return max(1, min(days, 3650))
+            except (ValueError, TypeError):
+                pass
+
+    return 30
+
+
+def ai_v2_is_customer_followup_request(text):
+    """
+    Detect the first supported TASSIMO AI V2 action:
+    finding inactive customers and preparing follow-ups.
+    """
+
+    text = str(text or "").lower()
+
+    customer_words = [
+        "customer",
+        "customers",
+        "client",
+        "clients",
+        "clientèle",
+    ]
+
+    inactivity_words = [
+        "inactive",
+        "inactif",
+        "inactifs",
+        "not contacted",
+        "haven't been contacted",
+        "hasn't been contacted",
+        "not contacted recently",
+        "no recent contact",
+        "sans contact",
+        "pas contacté",
+        "pas contactés",
+        "dernier contact",
+        "relance",
+        "follow-up",
+        "follow up",
+        "suivi",
+    ]
+
+    return (
+        any(word in text for word in customer_words)
+        and any(word in text for word in inactivity_words)
+    )
+
+
+def ai_v2_get_customer_activity():
+    """
+    Retrieve customers, conversations and messages so TASSIMO AI
+    can reason over actual business records.
+    """
+
+    customers = sb_select(
+        "customers",
+        {
+            "select": "*",
+            "order": "created_at.desc",
+            "limit": "1000",
+        },
+    )
+
+    conversations = sb_select(
+        "conversations",
+        {
+            "select": "*",
+            "order": "last_message_at.desc",
+            "limit": "2000",
+        },
+    )
+
+    messages = sb_select(
+        "messages",
+        {
+            "select": "*",
+            "order": "created_at.desc",
+            "limit": "5000",
+        },
+    )
+
+    customer_map = {}
+
+    for customer in customers:
+        customer_id = customer.get("id")
+
+        if customer_id:
+            customer_map[str(customer_id)] = {
+                **customer,
+                "last_contact_at": None,
+                "last_channel": None,
+                "last_message": None,
+                "message_count": 0,
+            }
+
+    conversation_map = {}
+
+    for conversation in conversations:
+        conversation_id = conversation.get("id")
+        customer_id = conversation.get("customer_id")
+
+        if not conversation_id:
+            continue
+
+        conversation_map[str(conversation_id)] = {
+            "customer_id": customer_id,
+            "channel": conversation.get("channel"),
+            "last_message_at": conversation.get("last_message_at"),
+        }
+
+    for message in messages:
+        conversation_id = message.get("conversation_id")
+
+        if not conversation_id:
+            continue
+
+        conversation = conversation_map.get(
+            str(conversation_id)
+        )
+
+        if not conversation:
+            continue
+
+        customer_id = conversation.get("customer_id")
+
+        if not customer_id:
+            continue
+
+        customer = customer_map.get(
+            str(customer_id)
+        )
+
+        if not customer:
+            continue
+
+        customer["message_count"] += 1
+
+        created_at = message.get("created_at")
+
+        if not created_at:
+            continue
+
+        current_last = customer.get("last_contact_at")
+
+        if (
+            current_last is None
+            or str(created_at) > str(current_last)
+        ):
+            customer["last_contact_at"] = created_at
+            customer["last_channel"] = (
+                conversation.get("channel")
+                or "whatsapp"
+            )
+            customer["last_message"] = (
+                message.get("message_text")
+                or ""
+            )
+
+    return list(customer_map.values())
+
+
+def ai_v2_find_inactive_customers(days=30):
+    """
+    Identify customers whose most recent recorded conversation
+    is older than the requested inactivity period.
+
+    Customers without a recorded conversation are also returned
+    because TASSIMO AI may recommend an initial follow-up.
+    """
+
+    customers = ai_v2_get_customer_activity()
+
+    now = datetime.now(timezone.utc)
+
+    cutoff = now - timedelta(days=days)
+
+    inactive = []
+
+    for customer in customers:
+
+        last_contact = customer.get(
+            "last_contact_at"
+        )
+
+        inactive_days = None
+
+        if last_contact:
+
+            try:
+                parsed = datetime.fromisoformat(
+                    str(last_contact).replace(
+                        "Z",
+                        "+00:00"
+                    )
+                )
+
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(
+                        tzinfo=timezone.utc
+                    )
+
+                inactive_days = max(
+                    0,
+                    (now - parsed).days
+                )
+
+            except Exception:
+                inactive_days = None
+
+        if (
+            last_contact is None
+            or inactive_days is None
+            or inactive_days >= days
+        ):
+
+            customer["inactive_days"] = (
+                inactive_days
+            )
+
+            customer["reason"] = (
+                "Aucun contact récent enregistré."
+                if not last_contact
+                else
+                f"Dernier contact il y a "
+                f"{inactive_days} jour(s)."
+            )
+
+            inactive.append(customer)
+
+    return inactive
+
+
+def ai_v2_prepare_customer_followups(
+    customers,
+    language_code="fr"
+):
+    """
+    Prepare personalized follow-up drafts.
+    No message is sent here.
+    """
+
+    prepared = []
+
+    for customer in customers:
+
+        name = (
+            customer.get("full_name")
+            or customer.get("name")
+            or "Client"
+        )
+
+        phone = (
+            customer.get("phone")
+            or ""
+        )
+
+        channel = (
+            customer.get("last_channel")
+            or "whatsapp"
+        )
+
+        previous_message = (
+            customer.get("last_message")
+            or ""
+        )
+
+        if language_code == "en":
+
+            prompt = f"""
+Prepare a personalized customer follow-up message
+for TASSIMO BTP CONSTRUCTION SARL.
+
+Customer:
+{name}
+
+Last known channel:
+{channel}
+
+Days inactive:
+{customer.get("inactive_days")}
+
+Previous message if available:
+{previous_message}
+
+Write a short professional follow-up.
+Do not invent a project, quotation, price, payment,
+appointment or promise.
+
+The purpose is simply to reconnect with the customer
+and invite them to continue the conversation.
+Return only the message.
+"""
+
+        else:
+
+            prompt = f"""
+Prépare un message de relance personnalisé pour
+TASSIMO BTP CONSTRUCTION SARL.
+
+Client :
+{name}
+
+Dernier canal connu :
+{channel}
+
+Nombre de jours sans contact :
+{customer.get("inactive_days")}
+
+Dernier message connu si disponible :
+{previous_message}
+
+Rédige une relance courte et professionnelle.
+N'invente aucun projet, devis, prix, paiement,
+rendez-vous ou engagement.
+
+Le but est simplement de reprendre contact avec
+le client et l'inviter à poursuivre la conversation.
+
+Retourne uniquement le message.
+"""
+
+        draft = ai_answer(
+            prompt,
+            context={
+                "customer": customer,
+                "channel": channel,
+                "language": language_code,
+                "purpose": "customer_follow_up",
+            },
+        )
+
+        if not draft:
+            draft = (
+                f"Bonjour {name}, "
+                "nous espérons que vous allez bien. "
+                "Nous souhaitions simplement reprendre "
+                "contact avec vous. N'hésitez pas à nous "
+                "faire savoir si vous avez toujours un "
+                "besoin concernant nos services."
+            )
+
+        prepared.append({
+            "customer_id": customer.get("id"),
+            "customer_name": name,
+            "phone": phone,
+            "channel": channel,
+            "inactive_days": customer.get(
+                "inactive_days"
+            ),
+            "reason": customer.get("reason"),
+            "draft": draft.strip(),
+        })
+
+    return prepared
+
+
+@app.route(
+    "/api/ai/v2/action",
+    methods=["POST"]
+)
+@protected
+def ai_v2_action():
+    """
+    TASSIMO AI V2 action planner.
+
+    Current supported action:
+    customer follow-up preparation.
+
+    Important:
+    This endpoint DOES NOT send messages.
+    It creates an action request for later approval/execution.
+    """
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    request_text = str(
+        data.get("request")
+        or data.get("question")
+        or ""
+    ).strip()
+
+    if not request_text:
+        return jsonify({
+            "error": (
+                "La demande est obligatoire. "
+                "/ The request is required."
+            )
+        }), 400
+
+    if not ai_v2_is_customer_followup_request(
+        request_text
+    ):
+        return jsonify({
+            "success": False,
+            "supported": False,
+            "message": (
+                "Cette action TASSIMO AI V2 n'est pas "
+                "encore disponible. "
+                "/ This TASSIMO AI V2 action is not "
+                "supported yet."
+            ),
+            "supported_actions": [
+                "customer_follow_up"
+            ],
+        }), 400
+
+    days = ai_v2_parse_days(
+        request_text
+    )
+
+    inactive_customers = (
+        ai_v2_find_inactive_customers(days)
+    )
+
+    language_code = (
+        "fr"
+        if detect_language(request_text) == "fr"
+        else "en"
+    )
+
+    followups = (
+        ai_v2_prepare_customer_followups(
+            inactive_customers,
+            language_code
+        )
+    )
+
+    action_payload = {
+        "criteria": {
+            "inactivity_days": days
+        },
+        "customers": followups,
+        "count": len(followups),
+        "execution": "approval_required",
+    }
+
+    reasoning = {
+        "criteria": (
+            f"Customers without recorded contact "
+            f"for at least {days} days."
+        ),
+        "customers_found": len(
+            followups
+        ),
+        "language": language_code,
+        "explanation": (
+            "Customers were selected from the "
+            "TASSIMO customer, conversation and "
+            "message records."
+        ),
+    }
+
+    title = (
+        "Relance des clients inactifs"
+        if language_code == "fr"
+        else
+        "Follow up inactive customers"
+    )
+
+    description = (
+        f"Préparer une relance pour "
+        f"{len(followups)} client(s) sans contact "
+        f"récent."
+        if language_code == "fr"
+        else
+        f"Prepare follow-up messages for "
+        f"{len(followups)} customer(s) without "
+        f"recent contact."
+    )
+
+    action_request = {
+        "action_type": "customer_follow_up",
+        "title": title,
+        "description": description,
+        "request_text": request_text,
+        "target_resource": "customers",
+        "action_payload": action_payload,
+        "reasoning": reasoning,
+        "status": "awaiting_approval",
+        "requires_approval": True,
+        "requested_by": "TASSIMO AI",
+        "created_at": utc_now(),
+        "updated_at": utc_now(),
+    }
+
+    saved = sb_insert(
+        "ai_action_requests",
+        action_request
+    )
+
+    if (
+        isinstance(saved, dict)
+        and saved.get("_error")
+    ):
+        return jsonify({
+            "error": (
+                "La demande d'action n'a pas pu "
+                "être enregistrée. "
+                "/ The action request could not "
+                "be saved."
+            ),
+            "details": saved,
+        }), 500
+
+    return jsonify({
+        "success": True,
+        "action": saved,
+        "action_type": "customer_follow_up",
+        "requires_approval": True,
+        "customers_found": len(
+            followups
+        ),
+        "customers": followups,
+        "message": (
+            "Analyse terminée. Les relances sont "
+            "préparées et attendent l'approbation du CEO."
+            if language_code == "fr"
+            else
+            "Analysis completed. Follow-up messages "
+            "are prepared and waiting for CEO approval."
+        ),
+    }), 201
+
+
+@app.route(
+    "/api/ai/v2/actions",
+    methods=["GET"]
+)
+@protected
+def ai_v2_actions():
+    """
+    Retrieve TASSIMO AI V2 action requests.
+    """
+
+    status = str(
+        request.args.get(
+            "status",
+            ""
+        )
+    ).strip().lower()
+
+    params = {
+        "select": "*",
+        "order": "created_at.desc",
+        "limit": "200",
+    }
+
+    if status:
+        params["status"] = (
+            f"eq.{status}"
+        )
+
+    rows = sb_select(
+        "ai_action_requests",
+        params
+    )
+
+    return jsonify({
+        "success": True,
+        "actions": rows,
+        "count": len(rows),
+    })
+
+
+@app.route(
+    "/api/ai/v2/actions/<action_id>",
+    methods=["GET"]
+)
+@protected
+def ai_v2_action_detail(action_id):
+
+    rows = sb_select(
+        "ai_action_requests",
+        {
+            "select": "*",
+            "id": f"eq.{action_id}",
+            "limit": "1",
+        },
+    )
+
+    if not rows:
+        return jsonify({
+            "error": (
+                "Action introuvable. "
+                "/ Action not found."
+            )
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "action": rows[0],
+    })
 
 
 # ------------------------------------------------------------
