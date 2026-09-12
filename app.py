@@ -3596,6 +3596,785 @@ def ceo_reject_action(action_id):
             ),
             "details": str(exc),
         }), 500
+ # ============================================================
+# TASSIMO AI V2 — EXECUTION ENGINE
+# ============================================================
+
+def ai_v2_extract_external_message_id(send_result):
+    """
+    Extract the external message ID returned by a connected
+    messaging platform.
+    """
+
+    if not isinstance(send_result, dict):
+        return None
+
+    data = send_result.get("data")
+
+    if not isinstance(data, dict):
+        return None
+
+    # WhatsApp / Meta style response
+    messages = data.get("messages")
+
+    if isinstance(messages, list) and messages:
+        first = messages[0]
+
+        if isinstance(first, dict):
+            return (
+                first.get("id")
+                or first.get("message_id")
+            )
+
+    # Generic fallback
+    return (
+        data.get("message_id")
+        or data.get("id")
+        or data.get("external_message_id")
+    )
+
+
+def ai_v2_get_or_create_conversation(
+    customer_id,
+    channel,
+    language="fr"
+):
+    """
+    Find an existing customer/channel conversation or create one.
+    """
+
+    rows = sb_select(
+        "conversations",
+        {
+            "select": "*",
+            "customer_id": f"eq.{customer_id}",
+            "channel": f"eq.{channel}",
+            "limit": "1",
+        },
+    )
+
+    if rows:
+        return rows[0]
+
+    now = utc_now()
+
+    conversation = sb_insert(
+        "conversations",
+        {
+            "customer_id": customer_id,
+            "channel": channel,
+            "status": "open",
+            "language": language or "fr",
+            "ai_enabled": True,
+            "last_message_at": now,
+            "created_at": now,
+            "updated_at": now,
+        },
+    )
+
+    return conversation
+
+
+def ai_v2_execute_customer_followup(
+    action,
+    action_payload
+):
+    """
+    Execute an approved customer follow-up action.
+
+    This function:
+    1. Reads the prepared customer messages.
+    2. Finds/creates the conversation.
+    3. Sends through the configured channel.
+    4. Saves the outgoing message.
+    5. Records delivery status.
+    6. Returns a complete execution summary.
+    """
+
+    customers = (
+        action_payload.get("customers")
+        if isinstance(action_payload, dict)
+        else []
+    )
+
+    if not isinstance(customers, list):
+        customers = []
+
+    results = []
+
+    for item in customers:
+
+        if not isinstance(item, dict):
+            continue
+
+        customer_id = item.get("customer_id")
+
+        customer_name = (
+            item.get("customer_name")
+            or "Client"
+        )
+
+        phone = (
+            item.get("phone")
+            or ""
+        )
+
+        channel = str(
+            item.get("channel")
+            or "whatsapp"
+        ).strip().lower()
+
+        text = str(
+            item.get("draft")
+            or ""
+        ).strip()
+
+        # ----------------------------------------------------
+        # VALIDATION
+        # ----------------------------------------------------
+
+        if not customer_id:
+            results.append({
+                "success": False,
+                "customer_name": customer_name,
+                "channel": channel,
+                "status": "skipped",
+                "error": (
+                    "Identifiant client manquant. "
+                    "/ Missing customer ID."
+                ),
+            })
+            continue
+
+        if not text:
+            results.append({
+                "success": False,
+                "customer_id": customer_id,
+                "customer_name": customer_name,
+                "channel": channel,
+                "status": "skipped",
+                "error": (
+                    "Message vide. "
+                    "/ Empty message."
+                ),
+            })
+            continue
+
+        # ----------------------------------------------------
+        # RECIPIENT
+        # ----------------------------------------------------
+
+        recipient = phone
+
+        if not recipient and channel in {
+            "facebook",
+            "instagram",
+        }:
+            recipient = ""
+
+        if not recipient:
+            results.append({
+                "success": False,
+                "customer_id": customer_id,
+                "customer_name": customer_name,
+                "channel": channel,
+                "status": "skipped",
+                "error": (
+                    "Destinataire introuvable. "
+                    "/ Recipient not found."
+                ),
+            })
+            continue
+
+        # ----------------------------------------------------
+        # CONVERSATION
+        # ----------------------------------------------------
+
+        language = (
+            "en"
+            if action_payload.get("language") == "en"
+            else "fr"
+        )
+
+        conversation = (
+            ai_v2_get_or_create_conversation(
+                customer_id,
+                channel,
+                language,
+            )
+        )
+
+        if (
+            isinstance(conversation, dict)
+            and conversation.get("_error")
+        ):
+            results.append({
+                "success": False,
+                "customer_id": customer_id,
+                "customer_name": customer_name,
+                "channel": channel,
+                "status": "failed",
+                "error": (
+                    "Impossible de créer la conversation. "
+                    "/ Unable to create conversation."
+                ),
+                "details": conversation,
+            })
+            continue
+
+        conversation_id = (
+            conversation.get("id")
+            if isinstance(conversation, dict)
+            else None
+        )
+
+        if not conversation_id:
+            results.append({
+                "success": False,
+                "customer_id": customer_id,
+                "customer_name": customer_name,
+                "channel": channel,
+                "status": "failed",
+                "error": (
+                    "Conversation ID manquant. "
+                    "/ Missing conversation ID."
+                ),
+            })
+            continue
+
+        # ----------------------------------------------------
+        # EXTERNAL SEND
+        # ----------------------------------------------------
+
+        try:
+
+            send_result = social_send(
+                channel,
+                recipient,
+                text,
+                {
+                    "ai_generated": True,
+                    "approved_action_id": action.get("id"),
+                    "action_type": action.get("action_type"),
+                },
+            )
+
+        except Exception as exc:
+
+            send_result = {
+                "ok": False,
+                "status": "delivery_error",
+                "error": str(exc),
+            }
+
+        external_message_id = (
+            ai_v2_extract_external_message_id(
+                send_result
+            )
+        )
+
+        delivered = bool(
+            send_result.get("ok", False)
+        )
+
+        # ----------------------------------------------------
+        # SAVE MESSAGE
+        # ----------------------------------------------------
+
+        now = utc_now()
+
+        message_record = {
+            "conversation_id": conversation_id,
+
+            "sender_type": "ai",
+
+            "message_text": text,
+
+            "language": language,
+
+            "ai_generated": True,
+
+            "requires_approval": True,
+
+            "approved": True,
+
+            "created_at": now,
+
+            "customer_name": customer_name,
+
+            "customer_phone": phone,
+
+            "message_type": "text",
+
+            "attachment_url": None,
+
+            "attachment_name": None,
+
+            "attachment_type": None,
+
+            "delivered": delivered,
+
+            "read_status": False,
+
+            "external_message_id": (
+                external_message_id
+            ),
+        }
+
+        saved_message = sb_insert(
+            "messages",
+            message_record,
+        )
+
+        if (
+            isinstance(saved_message, dict)
+            and saved_message.get("_error")
+        ):
+            results.append({
+                "success": False,
+                "customer_id": customer_id,
+                "customer_name": customer_name,
+                "channel": channel,
+                "status": "failed",
+                "delivered": delivered,
+                "external_message_id": (
+                    external_message_id
+                ),
+                "error": (
+                    "Le message a été envoyé mais "
+                    "n'a pas pu être enregistré. "
+                    "/ Message was sent but could "
+                    "not be saved."
+                ),
+                "details": saved_message,
+                "send_result": send_result,
+            })
+            continue
+
+        # ----------------------------------------------------
+        # UPDATE CONVERSATION
+        # ----------------------------------------------------
+
+        sb_update(
+            "conversations",
+            {
+                "id": f"eq.{conversation_id}"
+            },
+            {
+                "last_message_at": now,
+                "updated_at": now,
+            },
+        )
+
+        # ----------------------------------------------------
+        # RESULT
+        # ----------------------------------------------------
+
+        if delivered:
+
+            results.append({
+                "success": True,
+                "customer_id": customer_id,
+                "customer_name": customer_name,
+                "channel": channel,
+                "status": "sent",
+                "delivered": True,
+                "external_message_id": (
+                    external_message_id
+                ),
+                "conversation_id": conversation_id,
+                "message_id": (
+                    saved_message.get("id")
+                    if isinstance(saved_message, dict)
+                    else None
+                ),
+            })
+
+        else:
+
+            results.append({
+                "success": False,
+                "customer_id": customer_id,
+                "customer_name": customer_name,
+                "channel": channel,
+                "status": "delivery_failed",
+                "delivered": False,
+                "external_message_id": (
+                    external_message_id
+                ),
+                "conversation_id": conversation_id,
+                "message_id": (
+                    saved_message.get("id")
+                    if isinstance(saved_message, dict)
+                    else None
+                ),
+                "send_result": send_result,
+            })
+
+    return results
+
+
+@app.route(
+    "/api/ai/v2/actions/<action_id>/execute",
+    methods=["POST"]
+)
+@protected
+def ai_v2_execute_action(action_id):
+    """
+    Execute an approved TASSIMO AI V2 action.
+
+    Security rule:
+    Only actions with status = approved can execute.
+
+    Current supported action:
+    customer_follow_up
+    """
+
+    try:
+
+        # ====================================================
+        # LOAD ACTION
+        # ====================================================
+
+        action_rows = sb_select(
+            "ai_action_requests",
+            {
+                "select": "*",
+                "id": f"eq.{action_id}",
+                "limit": "1",
+            },
+        )
+
+        if not action_rows:
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Action introuvable. "
+                    "/ Action not found."
+                ),
+            }), 404
+
+        action = action_rows[0]
+
+        # ====================================================
+        # SECURITY CHECK
+        # ====================================================
+
+        current_status = str(
+            action.get("status") or ""
+        ).lower()
+
+        if current_status != "approved":
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Cette action doit être approuvée "
+                    "par le CEO avant exécution. "
+                    "/ This action must be approved "
+                    "by the CEO before execution."
+                ),
+                "status": current_status,
+            }), 403
+
+        action_type = str(
+            action.get("action_type") or ""
+        ).strip().lower()
+
+        if action_type != "customer_follow_up":
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Type d'action non pris en charge. "
+                    "/ Unsupported action type."
+                ),
+                "action_type": action_type,
+            }), 400
+
+        # ====================================================
+        # MARK AS EXECUTING
+        # ====================================================
+
+        now = utc_now()
+
+        updated = sb_update(
+            "ai_action_requests",
+            {
+                "id": f"eq.{action_id}"
+            },
+            {
+                "status": "executing",
+                "updated_at": now,
+                "error_message": None,
+            },
+        )
+
+        if (
+            isinstance(updated, dict)
+            and updated.get("_error")
+        ):
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Impossible de démarrer "
+                    "l'exécution. "
+                    "/ Unable to start execution."
+                ),
+                "details": updated,
+            }), 400
+
+        # ====================================================
+        # START AUDIT LOG
+        # ====================================================
+
+        sb_insert(
+            "ai_action_logs",
+            {
+                "action_request_id": action_id,
+                "action_type": action_type,
+                "resource": action.get(
+                    "target_resource"
+                ),
+                "record_id": action.get(
+                    "target_record_id"
+                ),
+                "operation": "execute",
+                "status": "started",
+                "input_payload": {
+                    "action_id": action_id,
+                    "status": current_status,
+                },
+                "output_payload": {},
+                "message": (
+                    "Exécution démarrée. "
+                    "/ Execution started."
+                ),
+                "executed_by": "TASSIMO AI",
+                "created_at": now,
+            },
+        )
+
+        # ====================================================
+        # LOAD ACTION PAYLOAD
+        # ====================================================
+
+        action_payload = (
+            action.get("action_payload")
+            or {}
+        )
+
+        # ====================================================
+        # EXECUTE CUSTOMER FOLLOW-UP
+        # ====================================================
+
+        results = (
+            ai_v2_execute_customer_followup(
+                action,
+                action_payload,
+            )
+        )
+
+        successful = [
+            item
+            for item in results
+            if item.get("success")
+        ]
+
+        failed = [
+            item
+            for item in results
+            if not item.get("success")
+        ]
+
+        total = len(results)
+
+        # ====================================================
+        # FINAL STATUS
+        # ====================================================
+
+        if total == 0:
+
+            final_status = "failed"
+
+            result_summary = (
+                "Aucun message n'a pu être exécuté. "
+                "/ No message could be executed."
+            )
+
+        elif len(successful) == total:
+
+            final_status = "completed"
+
+            result_summary = (
+                f"{len(successful)} message(s) envoyé(s) "
+                "avec succès. / "
+                f"{len(successful)} message(s) sent successfully."
+            )
+
+        elif successful:
+
+            final_status = "completed"
+
+            result_summary = (
+                f"{len(successful)} message(s) envoyé(s), "
+                f"{len(failed)} échec(s). / "
+                f"{len(successful)} message(s) sent, "
+                f"{len(failed)} failed."
+            )
+
+        else:
+
+            final_status = "failed"
+
+            result_summary = (
+                "Tous les envois ont échoué. "
+                "/ All message deliveries failed."
+            )
+
+        finished_at = utc_now()
+
+        # ====================================================
+        # SAVE FINAL ACTION STATUS
+        # ====================================================
+
+        final_update = sb_update(
+            "ai_action_requests",
+            {
+                "id": f"eq.{action_id}"
+            },
+            {
+                "status": final_status,
+                "executed_at": finished_at,
+                "updated_at": finished_at,
+                "result_summary": result_summary,
+                "error_message": (
+                    None
+                    if successful
+                    else "Execution failed."
+                ),
+            },
+        )
+
+        # ====================================================
+        # FINAL AUDIT LOG
+        # ====================================================
+
+        sb_insert(
+            "ai_action_logs",
+            {
+                "action_request_id": action_id,
+                "action_type": action_type,
+                "resource": action.get(
+                    "target_resource"
+                ),
+                "record_id": action.get(
+                    "target_record_id"
+                ),
+                "operation": "execute",
+                "status": (
+                    "success"
+                    if successful
+                    else "failed"
+                ),
+                "input_payload": {
+                    "action_id": action_id,
+                    "customer_count": total,
+                },
+                "output_payload": {
+                    "successful": len(successful),
+                    "failed": len(failed),
+                    "results": results,
+                },
+                "message": result_summary,
+                "error_message": (
+                    None
+                    if successful
+                    else "Execution failed."
+                ),
+                "executed_by": "TASSIMO AI",
+                "created_at": finished_at,
+            },
+        )
+
+        # ====================================================
+        # RESPONSE
+        # ====================================================
+
+        return jsonify({
+            "success": bool(successful),
+            "status": final_status,
+            "action_id": action_id,
+            "summary": result_summary,
+            "total": total,
+            "successful": len(successful),
+            "failed": len(failed),
+            "results": results,
+            "action": final_update,
+        }), 200
+
+    except Exception as exc:
+
+        # ====================================================
+        # FAILURE HANDLING
+        # ====================================================
+
+        try:
+
+            failure_time = utc_now()
+
+            sb_update(
+                "ai_action_requests",
+                {
+                    "id": f"eq.{action_id}"
+                },
+                {
+                    "status": "failed",
+                    "executed_at": failure_time,
+                    "updated_at": failure_time,
+                    "error_message": str(exc),
+                    "result_summary": (
+                        "Erreur pendant l'exécution. "
+                        "/ Execution error."
+                    ),
+                },
+            )
+
+            sb_insert(
+                "ai_action_logs",
+                {
+                    "action_request_id": action_id,
+                    "action_type": "unknown",
+                    "operation": "execute",
+                    "status": "failed",
+                    "input_payload": {
+                        "action_id": action_id,
+                    },
+                    "output_payload": {},
+                    "message": (
+                        "Erreur pendant l'exécution. "
+                        "/ Execution error."
+                    ),
+                    "error_message": str(exc),
+                    "executed_by": "TASSIMO AI",
+                    "created_at": failure_time,
+                },
+            )
+
+        except Exception:
+            pass
+
+        return jsonify({
+            "success": False,
+            "status": "failed",
+            "error": (
+                "Erreur pendant l'exécution. "
+                "/ Execution error."
+            ),
+            "details": str(exc),
+        }), 500
 
 
 # ------------------------------------------------------------
