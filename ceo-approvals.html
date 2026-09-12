@@ -1,0 +1,3935 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TASSIMO BTP - CEO Approvals</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --primary:#0f172a;
+    --secondary:#1e293b;
+    --accent:#f59e0b;
+    --accent-dark:#d97706;
+    --success:#16a34a;
+    --danger:#dc2626;
+    --warning:#f59e0b;
+    --info:#2563eb;
+    --purple:#7c3aed;
+    --bg:#f1f5f9;
+    --card:#ffffff;
+    --text:#0f172a;
+    --muted:#64748b;
+    --border:#e2e8f0;
+    --shadow:0 10px 30px rgba(15,23,42,.08);
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.topbar{
+    height:72px;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 24px;
+    position:sticky;
+    top:0;
+    z-index:1000;
+    box-shadow:0 5px 20px rgba(0,0,0,.15);
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:13px;
+}
+
+.brand-icon{
+    width:44px;
+    height:44px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#f59e0b,#f97316);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    box-shadow:0 5px 15px rgba(245,158,11,.25);
+}
+
+.brand-text h1{
+    font-size:18px;
+    line-height:1.1;
+}
+
+.brand-text span{
+    font-size:11px;
+    opacity:.7;
+}
+
+.top-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.top-btn{
+    border:none;
+    background:rgba(255,255,255,.1);
+    color:white;
+    padding:10px 13px;
+    border-radius:9px;
+    cursor:pointer;
+    font-size:13px;
+}
+
+.top-btn:hover{
+    background:rgba(255,255,255,.18);
+}
+
+.language-btn{
+    font-weight:bold;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+.page{
+    max-width:1500px;
+    margin:auto;
+    padding:24px;
+}
+
+.page-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:20px;
+    margin-bottom:24px;
+}
+
+.page-title h2{
+    font-size:28px;
+    margin-bottom:7px;
+}
+
+.page-title p{
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.5;
+}
+
+.ceo-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    background:#fff7ed;
+    color:#c2410c;
+    border:1px solid #fed7aa;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:bold;
+    margin-top:10px;
+}
+
+.header-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    border:none;
+    border-radius:10px;
+    padding:11px 16px;
+    font-size:13px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.btn:hover{
+    transform:translateY(-1px);
+}
+
+.btn-primary{
+    background:var(--primary);
+    color:white;
+}
+
+.btn-success{
+    background:var(--success);
+    color:white;
+}
+
+.btn-danger{
+    background:var(--danger);
+    color:white;
+}
+
+.btn-warning{
+    background:var(--warning);
+    color:white;
+}
+
+.btn-light{
+    background:white;
+    color:var(--text);
+    border:1px solid var(--border);
+}
+
+/* =========================
+   STATS
+========================= */
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:14px;
+    margin-bottom:24px;
+}
+
+.stat-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:17px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+    transition:.2s;
+}
+
+.stat-card:hover{
+    transform:translateY(-2px);
+}
+
+.stat-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.stat-icon{
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+}
+
+.stat-number{
+    font-size:27px;
+    font-weight:800;
+    margin-top:12px;
+}
+
+.stat-label{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:4px;
+}
+
+.pending .stat-icon{
+    background:#fff7ed;
+}
+
+.approved .stat-icon{
+    background:#f0fdf4;
+}
+
+.rejected .stat-icon{
+    background:#fef2f2;
+}
+
+.executing .stat-icon{
+    background:#eff6ff;
+}
+
+.completed .stat-icon{
+    background:#ecfdf5;
+}
+
+.failed .stat-icon{
+    background:#fef2f2;
+}
+
+/* =========================
+   CONTROL BAR
+========================= */
+
+.control-panel{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:15px;
+    padding:15px;
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+}
+
+.control-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.search-box{
+    flex:1;
+    min-width:230px;
+    position:relative;
+}
+
+.search-box input{
+    width:100%;
+    height:43px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:0 14px 0 40px;
+    outline:none;
+    font-size:13px;
+}
+
+.search-box span{
+    position:absolute;
+    left:14px;
+    top:13px;
+}
+
+select{
+    height:43px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:0 13px;
+    background:white;
+    color:var(--text);
+    outline:none;
+}
+
+.date-input{
+    height:43px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:0 10px;
+}
+
+/* =========================
+   MAIN CONTENT
+========================= */
+
+.content-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.55fr) minmax(320px,.8fr);
+    gap:20px;
+}
+
+.section-card{
+    background:white;
+    border:1px solid var(--border);
+    border-radius:15px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+}
+
+.section-header{
+    padding:17px 19px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.section-header h3{
+    font-size:16px;
+}
+
+.section-header span{
+    font-size:12px;
+    color:var(--muted);
+}
+
+/* =========================
+   ACTION LIST
+========================= */
+
+.action-list{
+    padding:12px;
+}
+
+.action-card{
+    border:1px solid var(--border);
+    border-radius:13px;
+    padding:16px;
+    margin-bottom:10px;
+    cursor:pointer;
+    transition:.2s;
+    background:#fff;
+}
+
+.action-card:hover{
+    border-color:#cbd5e1;
+    box-shadow:0 5px 18px rgba(15,23,42,.06);
+}
+
+.action-card.selected{
+    border:2px solid var(--accent);
+    background:#fffbeb;
+}
+
+.action-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.action-title{
+    font-weight:800;
+    font-size:14px;
+}
+
+.action-description{
+    margin-top:7px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.5;
+}
+
+.action-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:13px;
+}
+
+.meta{
+    background:#f8fafc;
+    border:1px solid var(--border);
+    border-radius:7px;
+    padding:5px 8px;
+    font-size:10px;
+    color:#475569;
+}
+
+.status{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    border-radius:999px;
+    padding:6px 9px;
+    font-size:10px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.status-pending{
+    background:#fff7ed;
+    color:#c2410c;
+}
+
+.status-awaiting{
+    background:#fffbeb;
+    color:#a16207;
+}
+
+.status-approved{
+    background:#f0fdf4;
+    color:#15803d;
+}
+
+.status-rejected{
+    background:#fef2f2;
+    color:#b91c1c;
+}
+
+.status-executing{
+    background:#eff6ff;
+    color:#1d4ed8;
+}
+
+.status-completed{
+    background:#ecfdf5;
+    color:#047857;
+}
+
+.status-failed{
+    background:#fef2f2;
+    color:#dc2626;
+}
+
+.action-footer{
+    margin-top:14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.requested-by{
+    font-size:11px;
+    color:var(--muted);
+}
+
+.action-buttons{
+    display:flex;
+    gap:6px;
+}
+
+.small-btn{
+    border:none;
+    border-radius:7px;
+    padding:7px 10px;
+    font-size:11px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.view-btn{
+    background:#f1f5f9;
+    color:#334155;
+}
+
+.approve-btn{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.reject-btn{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+/* =========================
+   DETAILS
+========================= */
+
+.details-body{
+    padding:18px;
+}
+
+.empty-detail{
+    padding:50px 20px;
+    text-align:center;
+    color:var(--muted);
+}
+
+.empty-icon{
+    font-size:42px;
+    margin-bottom:10px;
+}
+
+.detail-title{
+    font-size:20px;
+    font-weight:800;
+    margin-bottom:8px;
+}
+
+.detail-description{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.6;
+    margin-bottom:18px;
+}
+
+.detail-block{
+    border:1px solid var(--border);
+    border-radius:11px;
+    margin-bottom:12px;
+    overflow:hidden;
+}
+
+.detail-block-title{
+    padding:11px 13px;
+    background:#f8fafc;
+    font-size:12px;
+    font-weight:800;
+    border-bottom:1px solid var(--border);
+}
+
+.detail-block-content{
+    padding:13px;
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.info-item{
+    background:#f8fafc;
+    padding:10px;
+    border-radius:8px;
+}
+
+.info-label{
+    color:var(--muted);
+    font-size:10px;
+    margin-bottom:4px;
+}
+
+.info-value{
+    font-size:12px;
+    font-weight:bold;
+    word-break:break-word;
+}
+
+/* =========================
+   REASONING
+========================= */
+
+.reasoning{
+    background:#faf5ff;
+    border:1px solid #e9d5ff;
+    border-radius:9px;
+    padding:12px;
+    font-size:12px;
+    line-height:1.6;
+    color:#581c87;
+}
+
+.risk-box{
+    background:#fff7ed;
+    border:1px solid #fed7aa;
+    color:#9a3412;
+    border-radius:9px;
+    padding:12px;
+    font-size:12px;
+    line-height:1.5;
+}
+
+/* =========================
+   MESSAGE PREVIEW
+========================= */
+
+.message-card{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:9px;
+    background:#fff;
+}
+
+.message-card-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+}
+
+.message-customer{
+    font-size:12px;
+    font-weight:bold;
+}
+
+.channel{
+    font-size:10px;
+    padding:4px 7px;
+    border-radius:6px;
+    background:#f1f5f9;
+}
+
+.message-text{
+    background:#f8fafc;
+    border-radius:8px;
+    padding:10px;
+    font-size:12px;
+    line-height:1.6;
+    white-space:pre-wrap;
+}
+
+.copy-message{
+    margin-top:7px;
+    border:none;
+    background:#e2e8f0;
+    color:#334155;
+    padding:6px 9px;
+    border-radius:6px;
+    font-size:10px;
+    cursor:pointer;
+}
+
+/* =========================
+   TIMELINE
+========================= */
+
+.timeline{
+    position:relative;
+    padding-left:24px;
+}
+
+.timeline:before{
+    content:"";
+    position:absolute;
+    left:7px;
+    top:4px;
+    bottom:4px;
+    width:2px;
+    background:#e2e8f0;
+}
+
+.timeline-item{
+    position:relative;
+    margin-bottom:17px;
+}
+
+.timeline-dot{
+    position:absolute;
+    left:-21px;
+    top:2px;
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:var(--accent);
+}
+
+.timeline-title{
+    font-size:12px;
+    font-weight:bold;
+}
+
+.timeline-time{
+    color:var(--muted);
+    font-size:10px;
+    margin-top:3px;
+}
+
+/* =========================
+   APPROVAL PANEL
+========================= */
+
+.approval-panel{
+    background:#0f172a;
+    color:white;
+    border-radius:13px;
+    padding:16px;
+    margin-top:15px;
+}
+
+.approval-panel h4{
+    font-size:14px;
+    margin-bottom:7px;
+}
+
+.approval-panel p{
+    font-size:11px;
+    line-height:1.5;
+    opacity:.75;
+    margin-bottom:13px;
+}
+
+.approval-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+
+.approval-actions button{
+    padding:11px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:12px;
+}
+
+.approve-large{
+    background:#22c55e;
+    color:white;
+}
+
+.reject-large{
+    background:#ef4444;
+    color:white;
+}
+
+/* =========================
+   EMPTY
+========================= */
+
+.empty-list{
+    padding:55px 20px;
+    text-align:center;
+    color:var(--muted);
+}
+
+.empty-list-icon{
+    font-size:42px;
+    margin-bottom:10px;
+}
+
+.empty-list h4{
+    color:var(--text);
+    margin-bottom:5px;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    z-index:3000;
+}
+
+.modal-overlay.show{
+    display:flex;
+}
+
+.modal{
+    width:min(600px,100%);
+    max-height:90vh;
+    overflow:auto;
+    background:white;
+    border-radius:16px;
+    box-shadow:0 25px 80px rgba(0,0,0,.25);
+}
+
+.modal-header{
+    padding:17px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.modal-header h3{
+    font-size:16px;
+}
+
+.close-modal{
+    border:none;
+    background:#f1f5f9;
+    width:32px;
+    height:32px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.modal-body{
+    padding:18px;
+}
+
+.modal-body label{
+    display:block;
+    font-size:12px;
+    font-weight:bold;
+    margin-bottom:7px;
+}
+
+.modal-body textarea{
+    width:100%;
+    min-height:120px;
+    resize:vertical;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px;
+    outline:none;
+    font-family:inherit;
+    font-size:13px;
+}
+
+.modal-footer{
+    padding:15px 18px;
+    border-top:1px solid var(--border);
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast-container{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:5000;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.toast{
+    min-width:270px;
+    max-width:360px;
+    background:#0f172a;
+    color:white;
+    padding:13px 15px;
+    border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.2);
+    font-size:12px;
+    animation:toastIn .25s ease;
+}
+
+.toast.success{
+    border-left:4px solid #22c55e;
+}
+
+.toast.error{
+    border-left:4px solid #ef4444;
+}
+
+.toast.info{
+    border-left:4px solid #3b82f6;
+}
+
+@keyframes toastIn{
+    from{
+        transform:translateY(10px);
+        opacity:0;
+    }
+    to{
+        transform:translateY(0);
+        opacity:1;
+    }
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading{
+    padding:40px;
+    text-align:center;
+    color:var(--muted);
+}
+
+.spinner{
+    width:30px;
+    height:30px;
+    border:3px solid #e2e8f0;
+    border-top-color:#f59e0b;
+    border-radius:50%;
+    margin:0 auto 10px;
+    animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:1100px){
+
+    .stats-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .content-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:700px){
+
+    .topbar{
+        height:auto;
+        min-height:64px;
+        padding:10px 13px;
+    }
+
+    .brand-text h1{
+        font-size:15px;
+    }
+
+    .brand-text span{
+        display:none;
+    }
+
+    .top-btn{
+        padding:8px 9px;
+        font-size:11px;
+    }
+
+    .page{
+        padding:14px;
+    }
+
+    .page-header{
+        flex-direction:column;
+    }
+
+    .page-title h2{
+        font-size:23px;
+    }
+
+    .header-actions{
+        width:100%;
+    }
+
+    .header-actions .btn{
+        flex:1;
+    }
+
+    .stats-grid{
+        grid-template-columns:repeat(2,1fr);
+        gap:9px;
+    }
+
+    .stat-card{
+        padding:13px;
+    }
+
+    .stat-number{
+        font-size:23px;
+    }
+
+    .control-row{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .search-box{
+        min-width:100%;
+    }
+
+    select,
+    .date-input,
+    .control-row > .btn{
+        width:100%;
+    }
+
+    .info-grid{
+        grid-template-columns:1fr;
+    }
+
+    .action-head{
+        flex-direction:column;
+    }
+
+    .action-footer{
+        align-items:stretch;
+        flex-direction:column;
+    }
+
+    .action-buttons{
+        width:100%;
+    }
+
+    .small-btn{
+        flex:1;
+    }
+
+    .toast-container{
+        left:12px;
+        right:12px;
+        bottom:12px;
+    }
+
+    .toast{
+        min-width:0;
+        width:100%;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     TOP BAR
+========================= -->
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            🛡️
+        </div>
+
+        <div class="brand-text">
+            <h1>TASSIMO BTP</h1>
+            <span>CEO Approval Center • Centre d'approbation du CEO</span>
+        </div>
+
+    </div>
+
+    <div class="top-actions">
+
+        <button class="top-btn language-btn" onclick="toggleLanguage()">
+            FR / EN
+        </button>
+
+        <button class="top-btn" onclick="goDashboard()">
+            🏠 <span data-fr="Tableau de bord" data-en="Dashboard">Tableau de bord</span>
+        </button>
+
+        <button class="top-btn" onclick="logout()">
+            🚪 <span data-fr="Déconnexion" data-en="Logout">Déconnexion</span>
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="page">
+
+    <!-- =========================
+         PAGE HEADER
+    ========================= -->
+
+    <section class="page-header">
+
+        <div class="page-title">
+
+            <h2>
+                🛡️
+                <span data-fr="Approbations du CEO"
+                      data-en="CEO Approvals">
+                    Approbations du CEO
+                </span>
+            </h2>
+
+            <p
+                data-fr="Contrôlez, examinez et autorisez les actions préparées par TASSIMO AI avant leur exécution."
+                data-en="Review, control and authorize actions prepared by TASSIMO AI before execution.">
+                Contrôlez, examinez et autorisez les actions préparées par TASSIMO AI avant leur exécution.
+            </p>
+
+            <div class="ceo-badge">
+                🔐
+                <span
+                    data-fr="Contrôle CEO actif"
+                    data-en="CEO control active">
+                    Contrôle CEO actif
+                </span>
+            </div>
+
+        </div>
+
+        <div class="header-actions">
+
+            <button class="btn btn-light" onclick="refreshActions()">
+                🔄
+                <span data-fr="Actualiser" data-en="Refresh">
+                    Actualiser
+                </span>
+            </button>
+
+            <button class="btn btn-primary" onclick="showSecurityInfo()">
+                🔐
+                <span data-fr="Sécurité" data-en="Security">
+                    Sécurité
+                </span>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         STATISTICS
+    ========================= -->
+
+    <section class="stats-grid">
+
+        <div class="stat-card pending" onclick="filterStatus('awaiting_approval')">
+            <div class="stat-top">
+                <div class="stat-icon">⏳</div>
+            </div>
+            <div class="stat-number" id="pendingCount">0</div>
+            <div class="stat-label"
+                 data-fr="En attente"
+                 data-en="Pending">
+                En attente
+            </div>
+        </div>
+
+
+        <div class="stat-card approved" onclick="filterStatus('approved')">
+            <div class="stat-top">
+                <div class="stat-icon">👍</div>
+            </div>
+            <div class="stat-number" id="approvedCount">0</div>
+            <div class="stat-label"
+                 data-fr="Approuvées"
+                 data-en="Approved">
+                Approuvées
+            </div>
+        </div>
+
+
+        <div class="stat-card rejected" onclick="filterStatus('rejected')">
+            <div class="stat-top">
+                <div class="stat-icon">❌</div>
+            </div>
+            <div class="stat-number" id="rejectedCount">0</div>
+            <div class="stat-label"
+                 data-fr="Rejetées"
+                 data-en="Rejected">
+                Rejetées
+            </div>
+        </div>
+
+
+        <div class="stat-card executing" onclick="filterStatus('executing')">
+            <div class="stat-top">
+                <div class="stat-icon">⚙️</div>
+            </div>
+            <div class="stat-number" id="executingCount">0</div>
+            <div class="stat-label"
+                 data-fr="En exécution"
+                 data-en="Executing">
+                En exécution
+            </div>
+        </div>
+
+
+        <div class="stat-card completed" onclick="filterStatus('completed')">
+            <div class="stat-top">
+                <div class="stat-icon">✅</div>
+            </div>
+            <div class="stat-number" id="completedCount">0</div>
+            <div class="stat-label"
+                 data-fr="Terminées"
+                 data-en="Completed">
+                Terminées
+            </div>
+        </div>
+
+
+        <div class="stat-card failed" onclick="filterStatus('failed')">
+            <div class="stat-top">
+                <div class="stat-icon">⚠️</div>
+            </div>
+            <div class="stat-number" id="failedCount">0</div>
+            <div class="stat-label"
+                 data-fr="Échecs"
+                 data-en="Failed">
+                Échecs
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         FILTERS
+    ========================= -->
+
+    <section class="control-panel">
+
+        <div class="control-row">
+
+            <div class="search-box">
+                <span>🔎</span>
+                <input
+                    type="text"
+                    id="searchInput"
+                    oninput="applyFilters()"
+                    placeholder="Rechercher une action..."
+                    data-fr-placeholder="Rechercher une action..."
+                    data-en-placeholder="Search an action...">
+            </div>
+
+
+            <select id="statusFilter" onchange="applyFilters()">
+
+                <option value="all"
+                        data-fr="Tous les statuts"
+                        data-en="All statuses">
+                    Tous les statuts
+                </option>
+
+                <option value="awaiting_approval"
+                        data-fr="En attente d'approbation"
+                        data-en="Awaiting approval">
+                    En attente d'approbation
+                </option>
+
+                <option value="approved"
+                        data-fr="Approuvées"
+                        data-en="Approved">
+                    Approuvées
+                </option>
+
+                <option value="rejected"
+                        data-fr="Rejetées"
+                        data-en="Rejected">
+                    Rejetées
+                </option>
+
+                <option value="executing"
+                        data-fr="En exécution"
+                        data-en="Executing">
+                    En exécution
+                </option>
+
+                <option value="completed"
+                        data-fr="Terminées"
+                        data-en="Completed">
+                    Terminées
+                </option>
+
+                <option value="failed"
+                        data-fr="Échecs"
+                        data-en="Failed">
+                    Échecs
+                </option>
+
+            </select>
+
+
+            <select id="typeFilter" onchange="applyFilters()">
+
+                <option value="all"
+                        data-fr="Tous les types"
+                        data-en="All types">
+                    Tous les types
+                </option>
+
+                <option value="customer_follow_up"
+                        data-fr="Relance clients"
+                        data-en="Customer follow-up">
+                    Relance clients
+                </option>
+
+                <option value="message"
+                        data-fr="Message"
+                        data-en="Message">
+                    Message
+                </option>
+
+                <option value="quotation"
+                        data-fr="Devis"
+                        data-en="Quotation">
+                    Devis
+                </option>
+
+                <option value="finance"
+                        data-fr="Finance"
+                        data-en="Finance">
+                    Finance
+                </option>
+
+                <option value="contract"
+                        data-fr="Contrat"
+                        data-en="Contract">
+                    Contrat
+                </option>
+
+                <option value="technical"
+                        data-fr="Décision technique"
+                        data-en="Technical decision">
+                    Décision technique
+                </option>
+
+                <option value="social_publish"
+                        data-fr="Publication sociale"
+                        data-en="Social publishing">
+                    Publication sociale
+                </option>
+
+            </select>
+
+
+            <button class="btn btn-light" onclick="clearFilters()">
+                ✕
+                <span data-fr="Réinitialiser"
+                      data-en="Clear">
+                    Réinitialiser
+                </span>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         CONTENT
+    ========================= -->
+
+    <section class="content-grid">
+
+
+        <!-- =========================
+             ACTION LIST
+        ========================= -->
+
+        <div class="section-card">
+
+            <div class="section-header">
+
+                <div>
+                    <h3>
+                        📋
+                        <span data-fr="Demandes d'action"
+                              data-en="Action requests">
+                            Demandes d'action
+                        </span>
+                    </h3>
+
+                    <span id="resultsCount">
+                        0 demandes
+                    </span>
+                </div>
+
+                <span>
+                    TASSIMO AI
+                </span>
+
+            </div>
+
+
+            <div class="action-list" id="actionList">
+
+                <div class="loading">
+
+                    <div class="spinner"></div>
+
+                    <span data-fr="Chargement des demandes..."
+                          data-en="Loading requests...">
+                        Chargement des demandes...
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             DETAILS
+        ========================= -->
+
+        <div class="section-card">
+
+            <div class="section-header">
+
+                <h3>
+                    👁
+                    <span data-fr="Détails de l'action"
+                          data-en="Action details">
+                        Détails de l'action
+                    </span>
+                </h3>
+
+            </div>
+
+
+            <div class="details-body" id="detailsPanel">
+
+                <div class="empty-detail">
+
+                    <div class="empty-icon">
+                        🛡️
+                    </div>
+
+                    <strong
+                        data-fr="Sélectionnez une demande"
+                        data-en="Select a request">
+                        Sélectionnez une demande
+                    </strong>
+
+                    <p
+                        style="margin-top:7px;font-size:12px;"
+                        data-fr="Les détails de l'action apparaîtront ici."
+                        data-en="Action details will appear here.">
+                        Les détails de l'action apparaîtront ici.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================
+     APPROVAL MODAL
+========================= -->
+
+<div class="modal-overlay" id="approvalModal">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h3 id="modalTitle">
+                Confirmer
+            </h3>
+
+            <button class="close-modal" onclick="closeModal()">
+                ✕
+            </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+            <div id="modalWarning"
+                 class="risk-box"
+                 style="margin-bottom:15px;">
+            </div>
+
+            <label for="decisionComment">
+                <span data-fr="Commentaire du CEO"
+                      data-en="CEO comment">
+                    Commentaire du CEO
+                </span>
+            </label>
+
+            <textarea
+                id="decisionComment"
+                placeholder="Ajoutez une note ou une justification..."
+                data-fr-placeholder="Ajoutez une note ou une justification..."
+                data-en-placeholder="Add a note or justification...">
+            </textarea>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+            <button class="btn btn-light" onclick="closeModal()">
+                <span data-fr="Annuler"
+                      data-en="Cancel">
+                    Annuler
+                </span>
+            </button>
+
+            <button class="btn btn-success"
+                    id="confirmApproveBtn"
+                    onclick="confirmDecision('approve')">
+                ✅
+                <span data-fr="Approuver"
+                      data-en="Approve">
+                    Approuver
+                </span>
+            </button>
+
+            <button class="btn btn-danger"
+                    id="confirmRejectBtn"
+                    onclick="confirmDecision('reject')"
+                    style="display:none;">
+                ❌
+                <span data-fr="Rejeter"
+                      data-en="Reject">
+                    Rejeter
+                </span>
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     SECURITY MODAL
+========================= -->
+
+<div class="modal-overlay" id="securityModal">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <h3>
+                🔐
+                <span data-fr="Sécurité et contrôle CEO"
+                      data-en="CEO Security & Control">
+                    Sécurité et contrôle CEO
+                </span>
+            </h3>
+
+            <button class="close-modal"
+                    onclick="closeSecurityInfo()">
+                ✕
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div class="risk-box">
+
+                <strong
+                    data-fr="Principe de sécurité"
+                    data-en="Security principle">
+                    Principe de sécurité
+                </strong>
+
+                <p
+                    style="margin-top:7px;"
+                    data-fr="TASSIMO AI peut préparer une action, mais les actions sensibles doivent rester sous le contrôle du CEO."
+                    data-en="TASSIMO AI may prepare an action, but sensitive actions remain under CEO control.">
+                    TASSIMO AI peut préparer une action, mais les actions sensibles doivent rester sous le contrôle du CEO.
+                </p>
+
+            </div>
+
+            <br>
+
+            <div class="detail-block">
+
+                <div class="detail-block-title">
+                    🛡️
+                    <span data-fr="Actions protégées"
+                          data-en="Protected actions">
+                        Actions protégées
+                    </span>
+                </div>
+
+                <div class="detail-block-content">
+
+                    <div class="info-grid">
+
+                        <div class="info-item">
+                            <div class="info-label">💬</div>
+                            <div class="info-value"
+                                 data-fr="Messages sensibles"
+                                 data-en="Sensitive messages">
+                                Messages sensibles
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">💰</div>
+                            <div class="info-value"
+                                 data-fr="Finance"
+                                 data-en="Finance">
+                                Finance
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">📄</div>
+                            <div class="info-value"
+                                 data-fr="Devis et contrats"
+                                 data-en="Quotes & contracts">
+                                Devis et contrats
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">🏗️</div>
+                            <div class="info-value"
+                                 data-fr="Décisions techniques"
+                                 data-en="Technical decisions">
+                                Décisions techniques
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">📣</div>
+                            <div class="info-value"
+                                 data-fr="Publications sociales"
+                                 data-en="Social publishing">
+                                Publications sociales
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">🛒</div>
+                            <div class="info-value"
+                                 data-fr="Achats"
+                                 data-en="Purchases">
+                                Achats
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="detail-block">
+
+                <div class="detail-block-title">
+                    📜
+                    <span data-fr="Traçabilité"
+                          data-en="Audit trail">
+                        Traçabilité
+                    </span>
+                </div>
+
+                <div class="detail-block-content">
+
+                    <p
+                        style="font-size:12px;line-height:1.6;color:#64748b;"
+                        data-fr="Chaque demande doit conserver son statut, sa décision, son approbateur, sa date d'approbation et le résultat de son exécution."
+                        data-en="Every request should retain its status, decision, approver, approval date and execution result.">
+                        Chaque demande doit conserver son statut, sa décision, son approbateur, sa date d'approbation et le résultat de son exécution.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     TOASTS
+========================= -->
+
+<div class="toast-container" id="toastContainer"></div>
+
+
+<script>
+
+/* =========================================================
+   TASSIMO CEO APPROVAL CENTER
+========================================================= */
+
+let lang = localStorage.getItem("lang") || "fr";
+
+let allActions = [];
+let filteredActions = [];
+let selectedAction = null;
+
+let pendingDecisionAction = null;
+let pendingDecisionType = null;
+
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+function toggleLanguage(){
+
+    lang = lang === "fr" ? "en" : "fr";
+
+    localStorage.setItem("lang", lang);
+
+    applyLanguage();
+
+    renderActions();
+
+    if(selectedAction){
+        renderDetails(selectedAction);
+    }
+}
+
+
+function applyLanguage(){
+
+    document.documentElement.lang = lang;
+
+    document.querySelectorAll("[data-fr][data-en]").forEach(el => {
+
+        el.textContent = el.getAttribute(
+            lang === "fr" ? "data-fr" : "data-en"
+        );
+
+    });
+
+
+    document.querySelectorAll("[data-fr-placeholder][data-en-placeholder]")
+        .forEach(el => {
+
+            el.placeholder = el.getAttribute(
+                lang === "fr"
+                ? "data-fr-placeholder"
+                : "data-en-placeholder"
+            );
+
+        });
+
+
+    updateSelectLabels();
+
+}
+
+
+function updateSelectLabels(){
+
+    document.querySelectorAll("select option[data-fr][data-en]")
+        .forEach(option => {
+
+            option.textContent =
+                option.getAttribute(
+                    lang === "fr"
+                    ? "data-fr"
+                    : "data-en"
+                );
+
+        });
+
+}
+
+
+/* =========================================================
+   INIT
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    applyLanguage();
+
+    loadActions();
+
+});
+
+
+/* =========================================================
+   API HELPER
+========================================================= */
+
+async function apiFetch(url, options = {}){
+
+    const response = await fetch(url, {
+        credentials:"same-origin",
+        ...options,
+        headers:{
+            "Content-Type":"application/json",
+            ...(options.headers || {})
+        }
+    });
+
+
+    if(response.status === 401){
+
+        showToast(
+            lang === "fr"
+            ? "Votre session a expiré. Veuillez vous reconnecter."
+            : "Your session has expired. Please log in.",
+            "error"
+        );
+
+        setTimeout(() => {
+            window.location.href = "/";
+        }, 1200);
+
+        throw new Error("Authentication required");
+
+    }
+
+
+    let data = {};
+
+    try{
+        data = await response.json();
+    }catch(e){
+        data = {};
+    }
+
+
+    if(!response.ok){
+
+        throw new Error(
+            data.error ||
+            data.message ||
+            (
+                lang === "fr"
+                ? "Une erreur est survenue."
+                : "An error occurred."
+            )
+        );
+
+    }
+
+
+    return data;
+
+}
+
+
+/* =========================================================
+   LOAD ACTIONS
+========================================================= */
+
+async function loadActions(){
+
+    const list = document.getElementById("actionList");
+
+    list.innerHTML = `
+        <div class="loading">
+            <div class="spinner"></div>
+            <div>
+                ${
+                    lang === "fr"
+                    ? "Chargement des demandes..."
+                    : "Loading requests..."
+                }
+            </div>
+        </div>
+    `;
+
+
+    try{
+
+        const data = await apiFetch("/api/ai/v2/actions");
+
+        allActions =
+            data.actions ||
+            data.action_requests ||
+            data.requests ||
+            [];
+
+
+        normalizeActions();
+
+        updateStatistics();
+
+        applyFilters();
+
+
+    }catch(error){
+
+        console.error(error);
+
+        list.innerHTML = `
+            <div class="empty-list">
+
+                <div class="empty-list-icon">
+                    ⚠️
+                </div>
+
+                <h4>
+                    ${
+                        lang === "fr"
+                        ? "Impossible de charger les demandes"
+                        : "Unable to load requests"
+                    }
+                </h4>
+
+                <p>
+                    ${escapeHtml(error.message)}
+                </p>
+
+                <button
+                    class="btn btn-primary"
+                    style="margin-top:14px;"
+                    onclick="loadActions()">
+
+                    🔄
+                    ${
+                        lang === "fr"
+                        ? "Réessayer"
+                        : "Try again"
+                    }
+
+                </button>
+
+            </div>
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   NORMALIZE ACTIONS
+========================================================= */
+
+function normalizeActions(){
+
+    allActions = allActions.map(action => {
+
+        return {
+
+            ...action,
+
+            id:
+                action.id ||
+                action.action_id,
+
+            action_type:
+                action.action_type ||
+                "unknown",
+
+            title:
+                action.title ||
+                (
+                    action.action_type === "customer_follow_up"
+                    ? (
+                        lang === "fr"
+                        ? "Relance des clients"
+                        : "Customer follow-up"
+                    )
+                    : (
+                        lang === "fr"
+                        ? "Action TASSIMO AI"
+                        : "TASSIMO AI Action"
+                    )
+                ),
+
+            description:
+                action.description ||
+                action.request_text ||
+                "",
+
+            status:
+                action.status ||
+                "pending",
+
+            requested_by:
+                action.requested_by ||
+                "TASSIMO AI",
+
+            created_at:
+                action.created_at ||
+                action.requested_at ||
+                null,
+
+            requires_approval:
+                action.requires_approval !== false,
+
+            action_payload:
+                action.action_payload ||
+                {},
+
+            reasoning:
+                action.reasoning ||
+                {}
+
+        };
+
+    });
+
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+function updateStatistics(){
+
+    const count = status =>
+
+        allActions.filter(
+            action => normalizeStatus(action.status) === status
+        ).length;
+
+
+    document.getElementById("pendingCount").textContent =
+        count("awaiting_approval") +
+        count("pending");
+
+
+    document.getElementById("approvedCount").textContent =
+        count("approved");
+
+
+    document.getElementById("rejectedCount").textContent =
+        count("rejected");
+
+
+    document.getElementById("executingCount").textContent =
+        count("executing");
+
+
+    document.getElementById("completedCount").textContent =
+        count("completed");
+
+
+    document.getElementById("failedCount").textContent =
+        count("failed");
+
+}
+
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+function applyFilters(){
+
+    const search =
+        document.getElementById("searchInput")
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    const status =
+        document.getElementById("statusFilter").value;
+
+
+    const type =
+        document.getElementById("typeFilter").value;
+
+
+    filteredActions = allActions.filter(action => {
+
+        const searchable = [
+
+            action.title,
+            action.description,
+            action.request_text,
+            action.action_type,
+            action.requested_by,
+            action.target_resource
+
+        ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+
+        const matchesSearch =
+            !search ||
+            searchable.includes(search);
+
+
+        const matchesStatus =
+            status === "all" ||
+            normalizeStatus(action.status) === status;
+
+
+        const matchesType =
+            type === "all" ||
+            action.action_type === type;
+
+
+        return matchesSearch &&
+               matchesStatus &&
+               matchesType;
+
+    });
+
+
+    renderActions();
+
+}
+
+
+function filterStatus(status){
+
+    document.getElementById("statusFilter").value = status;
+
+    applyFilters();
+
+}
+
+
+function clearFilters(){
+
+    document.getElementById("searchInput").value = "";
+
+    document.getElementById("statusFilter").value = "all";
+
+    document.getElementById("typeFilter").value = "all";
+
+    applyFilters();
+
+}
+
+
+/* =========================================================
+   RENDER ACTIONS
+========================================================= */
+
+function renderActions(){
+
+    const list = document.getElementById("actionList");
+
+    document.getElementById("resultsCount").textContent =
+        filteredActions.length +
+        (
+            lang === "fr"
+            ? " demande(s)"
+            : " request(s)"
+        );
+
+
+    if(!filteredActions.length){
+
+        list.innerHTML = `
+
+            <div class="empty-list">
+
+                <div class="empty-list-icon">
+                    🛡️
+                </div>
+
+                <h4>
+                    ${
+                        lang === "fr"
+                        ? "Aucune demande trouvée"
+                        : "No requests found"
+                    }
+                </h4>
+
+                <p>
+                    ${
+                        lang === "fr"
+                        ? "Les demandes préparées par TASSIMO AI apparaîtront ici."
+                        : "Requests prepared by TASSIMO AI will appear here."
+                    }
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML = filteredActions.map(action => {
+
+        const selected =
+            selectedAction &&
+            selectedAction.id === action.id
+            ? "selected"
+            : "";
+
+
+        return `
+
+            <div
+                class="action-card ${selected}"
+                onclick="selectAction('${escapeAttr(action.id)}')">
+
+                <div class="action-head">
+
+                    <div style="flex:1;">
+
+                        <div class="action-title">
+                            ${escapeHtml(getActionTitle(action))}
+                        </div>
+
+                        <div class="action-description">
+                            ${escapeHtml(
+                                truncate(
+                                    action.description ||
+                                    action.request_text ||
+                                    "",
+                                    180
+                                )
+                            )}
+                        </div>
+
+                    </div>
+
+                    ${getStatusBadge(action.status)}
+
+                </div>
+
+
+                <div class="action-meta">
+
+                    <span class="meta">
+                        🤖
+                        ${escapeHtml(action.requested_by)}
+                    </span>
+
+                    <span class="meta">
+                        🎯
+                        ${escapeHtml(
+                            action.target_resource ||
+                            getActionTypeLabel(action.action_type)
+                        )}
+                    </span>
+
+                    <span class="meta">
+                        🕒
+                        ${formatDate(action.created_at)}
+                    </span>
+
+                </div>
+
+
+                <div class="action-footer">
+
+                    <span class="requested-by">
+
+                        ${
+                            action.requires_approval
+                            ? (
+                                lang === "fr"
+                                ? "🔐 Approbation requise"
+                                : "🔐 Approval required"
+                              )
+                            : (
+                                lang === "fr"
+                                ? "Action non bloquée"
+                                : "Action not blocked"
+                              )
+                        }
+
+                    </span>
+
+
+                    <div class="action-buttons">
+
+                        <button
+                            class="small-btn view-btn"
+                            onclick="event.stopPropagation();selectAction('${escapeAttr(action.id)}')">
+
+                            👁
+                            ${
+                                lang === "fr"
+                                ? "Détails"
+                                : "Details"
+                            }
+
+                        </button>
+
+
+                        ${
+                            canApprove(action)
+                            ? `
+
+                                <button
+                                    class="small-btn approve-btn"
+                                    onclick="event.stopPropagation();openDecision('${escapeAttr(action.id)}','approve')">
+
+                                    ✅
+                                    ${
+                                        lang === "fr"
+                                        ? "Approuver"
+                                        : "Approve"
+                                    }
+
+                                </button>
+
+
+                                <button
+                                    class="small-btn reject-btn"
+                                    onclick="event.stopPropagation();openDecision('${escapeAttr(action.id)}','reject')">
+
+                                    ❌
+                                    ${
+                                        lang === "fr"
+                                        ? "Rejeter"
+                                        : "Reject"
+                                    }
+
+                                </button>
+
+                            `
+                            : ""
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }).join("");
+
+}
+
+
+/* =========================================================
+   SELECT ACTION
+========================================================= */
+
+async function selectAction(id){
+
+    const localAction =
+        allActions.find(
+            action => String(action.id) === String(id)
+        );
+
+
+    if(!localAction){
+        return;
+    }
+
+
+    selectedAction = localAction;
+
+    renderActions();
+
+    renderDetails(selectedAction);
+
+
+    /* Try to load richer server-side details */
+
+    try{
+
+        const data =
+            await apiFetch(
+                "/api/ai/v2/actions/" +
+                encodeURIComponent(id)
+            );
+
+
+        const detail =
+            data.action ||
+            data.action_request ||
+            data.request;
+
+
+        if(detail){
+
+            selectedAction = {
+                ...selectedAction,
+                ...detail
+            };
+
+            renderDetails(selectedAction);
+
+        }
+
+    }catch(error){
+
+        console.warn(
+            "Detailed action endpoint unavailable:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DETAILS
+========================================================= */
+
+function renderDetails(action){
+
+    const panel =
+        document.getElementById("detailsPanel");
+
+
+    if(!action){
+
+        panel.innerHTML = "";
+
+        return;
+
+    }
+
+
+    const payload =
+        action.action_payload || {};
+
+
+    const reasoning =
+        action.reasoning || {};
+
+
+    const customers =
+        payload.customers ||
+        payload.targets ||
+        [];
+
+
+    const drafts =
+        payload.drafts ||
+        payload.messages ||
+        [];
+
+
+    panel.innerHTML = `
+
+        <div class="detail-title">
+            ${escapeHtml(getActionTitle(action))}
+        </div>
+
+
+        <div class="detail-description">
+            ${escapeHtml(
+                action.description ||
+                action.request_text ||
+                (
+                    lang === "fr"
+                    ? "Aucune description disponible."
+                    : "No description available."
+                )
+            )}
+        </div>
+
+
+        <div class="detail-block">
+
+            <div class="detail-block-title">
+                📌
+                ${
+                    lang === "fr"
+                    ? "Informations générales"
+                    : "General information"
+                }
+            </div>
+
+            <div class="detail-block-content">
+
+                <div class="info-grid">
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            ${
+                                lang === "fr"
+                                ? "Statut"
+                                : "Status"
+                            }
+                        </div>
+
+                        <div class="info-value">
+                            ${getStatusBadge(action.status)}
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            ${
+                                lang === "fr"
+                                ? "Type"
+                                : "Type"
+                            }
+                        </div>
+
+                        <div class="info-value">
+                            ${escapeHtml(
+                                getActionTypeLabel(
+                                    action.action_type
+                                )
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            ${
+                                lang === "fr"
+                                ? "Demandé par"
+                                : "Requested by"
+                            }
+                        </div>
+
+                        <div class="info-value">
+                            🤖
+                            ${escapeHtml(
+                                action.requested_by ||
+                                "TASSIMO AI"
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            ${
+                                lang === "fr"
+                                ? "Date"
+                                : "Date"
+                            }
+                        </div>
+
+                        <div class="info-value">
+                            ${formatDate(action.created_at)}
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            ${
+                                lang === "fr"
+                                ? "Approbation requise"
+                                : "Approval required"
+                            }
+                        </div>
+
+                        <div class="info-value">
+                            ${
+                                action.requires_approval
+                                ? "🔐 Oui / Yes"
+                                : "—"
+                            }
+                        </div>
+
+                    </div>
+
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            ${
+                                lang === "fr"
+                                ? "Ressource"
+                                : "Resource"
+                            }
+                        </div>
+
+                        <div class="info-value">
+                            ${escapeHtml(
+                                action.target_resource ||
+                                "—"
+                            )}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        ${
+            action.request_text
+            ? `
+
+                <div class="detail-block">
+
+                    <div class="detail-block-title">
+                        💬
+                        ${
+                            lang === "fr"
+                            ? "Demande originale"
+                            : "Original request"
+                        }
+                    </div>
+
+                    <div class="detail-block-content">
+
+                        <div class="reasoning">
+                            ${escapeHtml(
+                                action.request_text
+                            )}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+
+        ${
+            reasoning
+            ? `
+
+                <div class="detail-block">
+
+                    <div class="detail-block-title">
+                        🧠
+                        ${
+                            lang === "fr"
+                            ? "Raisonnement de TASSIMO AI"
+                            : "TASSIMO AI reasoning"
+                        }
+                    </div>
+
+                    <div class="detail-block-content">
+
+                        <div class="reasoning">
+                            ${formatReasoning(reasoning)}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+
+        ${
+            customers.length
+            ? `
+
+                <div class="detail-block">
+
+                    <div class="detail-block-title">
+
+                        👥
+                        ${
+                            lang === "fr"
+                            ? "Clients ciblés"
+                            : "Target customers"
+                        }
+
+                        (${customers.length})
+
+                    </div>
+
+                    <div class="detail-block-content">
+
+                        ${renderCustomers(customers)}
+
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+
+        ${
+            drafts.length
+            ? `
+
+                <div class="detail-block">
+
+                    <div class="detail-block-title">
+
+                        💬
+                        ${
+                            lang === "fr"
+                            ? "Messages préparés"
+                            : "Prepared messages"
+                        }
+
+                        (${drafts.length})
+
+                    </div>
+
+                    <div class="detail-block-content">
+
+                        ${renderDrafts(drafts)}
+
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+
+        ${
+            isHighRisk(action)
+            ? `
+
+                <div class="risk-box">
+
+                    🚨
+                    <strong>
+                        ${
+                            lang === "fr"
+                            ? "Action sensible"
+                            : "Sensitive action"
+                        }
+                    </strong>
+
+                    <div style="margin-top:5px;">
+
+                        ${
+                            lang === "fr"
+                            ? "Cette action nécessite une vérification attentive du CEO avant toute exécution."
+                            : "This action requires careful CEO review before execution."
+                        }
+
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+
+        ${
+            canApprove(action)
+            ? `
+
+                <div class="approval-panel">
+
+                    <h4>
+                        🔐
+                        ${
+                            lang === "fr"
+                            ? "Décision du CEO"
+                            : "CEO decision"
+                        }
+                    </h4>
+
+                    <p>
+                        ${
+                            lang === "fr"
+                            ? "Cette action est préparée mais ne doit pas être exécutée avant votre décision."
+                            : "This action is prepared but must not execute before your decision."
+                        }
+                    </p>
+
+                    <div class="approval-actions">
+
+                        <button
+                            class="approve-large"
+                            onclick="openDecision('${escapeAttr(action.id)}','approve')">
+
+                            ✅
+                            ${
+                                lang === "fr"
+                                ? "Approuver"
+                                : "Approve"
+                            }
+
+                        </button>
+
+
+                        <button
+                            class="reject-large"
+                            onclick="openDecision('${escapeAttr(action.id)}','reject')">
+
+                            ❌
+                            ${
+                                lang === "fr"
+                                ? "Rejeter"
+                                : "Reject"
+                            }
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+
+        ${
+            action.approved_by
+            ? `
+
+                <div class="detail-block"
+                     style="margin-top:15px;">
+
+                    <div class="detail-block-title">
+                        👤
+                        ${
+                            lang === "fr"
+                            ? "Décision"
+                            : "Decision"
+                        }
+                    </div>
+
+                    <div class="detail-block-content">
+
+                        <div class="info-grid">
+
+                            <div class="info-item">
+
+                                <div class="info-label">
+                                    ${
+                                        lang === "fr"
+                                        ? "Approuvé par"
+                                        : "Approved by"
+                                    }
+                                </div>
+
+                                <div class="info-value">
+                                    ${escapeHtml(
+                                        action.approved_by
+                                    )}
+                                </div>
+
+                            </div>
+
+
+                            <div class="info-item">
+
+                                <div class="info-label">
+                                    ${
+                                        lang === "fr"
+                                        ? "Date d'approbation"
+                                        : "Approval date"
+                                    }
+                                </div>
+
+                                <div class="info-value">
+                                    ${formatDate(
+                                        action.approved_at
+                                    )}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+
+        ${
+            action.result_summary
+            ? `
+
+                <div class="detail-block">
+
+                    <div class="detail-block-title">
+                        📊
+                        ${
+                            lang === "fr"
+                            ? "Résultat"
+                            : "Result"
+                        }
+                    </div>
+
+                    <div class="detail-block-content">
+
+                        <p style="font-size:12px;line-height:1.6;">
+                            ${escapeHtml(
+                                action.result_summary
+                            )}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            `
+            : ""
+        }
+
+    `;
+
+}
+
+
+/* =========================================================
+   CUSTOMERS
+========================================================= */
+
+function renderCustomers(customers){
+
+    return customers.map(customer => {
+
+        return `
+
+            <div class="message-card">
+
+                <div class="message-card-head">
+
+                    <div class="message-customer">
+                        👤
+                        ${escapeHtml(
+                            customer.name ||
+                            customer.customer_name ||
+                            "Client"
+                        )}
+                    </div>
+
+                    <span class="channel">
+                        ${escapeHtml(
+                            customer.channel ||
+                            "—"
+                        )}
+                    </span>
+
+                </div>
+
+
+                <div style="font-size:11px;color:#64748b;">
+
+                    ${
+                        customer.phone
+                        ? "📞 " + escapeHtml(customer.phone)
+                        : ""
+                    }
+
+                    ${
+                        customer.inactive_days
+                        ? `
+                            <br>
+                            ⏳
+                            ${
+                                lang === "fr"
+                                ? "Inactif depuis"
+                                : "Inactive for"
+                            }
+                            ${escapeHtml(
+                                String(
+                                    customer.inactive_days
+                                )
+                            )}
+                            ${
+                                lang === "fr"
+                                ? "jours"
+                                : "days"
+                            }
+                        `
+                        : ""
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+
+    }).join("");
+
+}
+
+
+/* =========================================================
+   DRAFT MESSAGES
+========================================================= */
+
+function renderDrafts(drafts){
+
+    return drafts.map((draft,index) => {
+
+        const text =
+            draft.draft ||
+            draft.message ||
+            draft.text ||
+            draft.content ||
+            "";
+
+
+        const customer =
+            draft.customer_name ||
+            draft.name ||
+            "Client";
+
+
+        const channel =
+            draft.channel ||
+            "—";
+
+
+        return `
+
+            <div class="message-card">
+
+                <div class="message-card-head">
+
+                    <div class="message-customer">
+                        👤
+                        ${escapeHtml(customer)}
+                    </div>
+
+                    <span class="channel">
+                        ${escapeHtml(channel)}
+                    </span>
+
+                </div>
+
+
+                <div class="message-text"
+                     id="draft-${index}">
+                    ${escapeHtml(text)}
+                </div>
+
+
+                <button
+                    class="copy-message"
+                    onclick="copyMessage('${escapeAttr(text)}')">
+
+                    📋
+                    ${
+                        lang === "fr"
+                        ? "Copier le message"
+                        : "Copy message"
+                    }
+
+                </button>
+
+            </div>
+
+        `;
+
+    }).join("");
+
+}
+
+
+/* =========================================================
+   APPROVAL DECISION
+========================================================= */
+
+function openDecision(id,type){
+
+    const action =
+        allActions.find(
+            item => String(item.id) === String(id)
+        );
+
+
+    if(!action){
+        return;
+    }
+
+
+    pendingDecisionAction = action;
+
+    pendingDecisionType = type;
+
+
+    const modal =
+        document.getElementById("approvalModal");
+
+
+    const title =
+        document.getElementById("modalTitle");
+
+
+    const warning =
+        document.getElementById("modalWarning");
+
+
+    const approve =
+        document.getElementById("confirmApproveBtn");
+
+
+    const reject =
+        document.getElementById("confirmRejectBtn");
+
+
+    document.getElementById("decisionComment").value = "";
+
+
+    if(type === "approve"){
+
+        title.textContent =
+            lang === "fr"
+            ? "Confirmer l'approbation"
+            : "Confirm approval";
+
+
+        warning.innerHTML = `
+
+            🔐
+            <strong>
+                ${
+                    lang === "fr"
+                    ? "Vous êtes sur le point d'autoriser cette action."
+                    : "You are about to authorize this action."
+                }
+            </strong>
+
+            <div style="margin-top:6px;">
+                ${escapeHtml(
+                    getActionTitle(action)
+                )}
+            </div>
+
+        `;
+
+
+        approve.style.display = "inline-block";
+
+        reject.style.display = "none";
+
+    }else{
+
+        title.textContent =
+            lang === "fr"
+            ? "Confirmer le rejet"
+            : "Confirm rejection";
+
+
+        warning.innerHTML = `
+
+            ⚠️
+            <strong>
+                ${
+                    lang === "fr"
+                    ? "Cette action sera rejetée et ne pourra pas être exécutée."
+                    : "This action will be rejected and cannot be executed."
+                }
+            </strong>
+
+            <div style="margin-top:6px;">
+                ${escapeHtml(
+                    getActionTitle(action)
+                )}
+            </div>
+
+        `;
+
+
+        approve.style.display = "none";
+
+        reject.style.display = "inline-block";
+
+    }
+
+
+    modal.classList.add("show");
+
+}
+
+
+function closeModal(){
+
+    document
+        .getElementById("approvalModal")
+        .classList.remove("show");
+
+    pendingDecisionAction = null;
+
+    pendingDecisionType = null;
+
+}
+
+
+/* =========================================================
+   CONFIRM DECISION
+========================================================= */
+
+async function confirmDecision(type){
+
+    if(!pendingDecisionAction){
+        return;
+    }
+
+
+    const action =
+        pendingDecisionAction;
+
+
+    const comment =
+        document
+            .getElementById("decisionComment")
+            .value
+            .trim();
+
+
+    closeModal();
+
+
+    showToast(
+        lang === "fr"
+        ? "Traitement de votre décision..."
+        : "Processing your decision...",
+        "info"
+    );
+
+
+    try{
+
+        const result =
+            await sendApprovalDecision(
+                action.id,
+                type,
+                comment
+            );
+
+
+        showToast(
+            result.message ||
+            (
+                type === "approve"
+                ? (
+                    lang === "fr"
+                    ? "Action approuvée."
+                    : "Action approved."
+                )
+                : (
+                    lang === "fr"
+                    ? "Action rejetée."
+                    : "Action rejected."
+                )
+            ),
+            "success"
+        );
+
+
+        await loadActions();
+
+
+        if(selectedAction &&
+           String(selectedAction.id) === String(action.id)){
+
+            const updated =
+                allActions.find(
+                    item =>
+                    String(item.id) ===
+                    String(action.id)
+                );
+
+            if(updated){
+                selectedAction = updated;
+                renderDetails(updated);
+            }
+
+        }
+
+
+    }catch(error){
+
+        console.error(error);
+
+        showToast(
+            error.message ||
+            (
+                lang === "fr"
+                ? "Impossible d'enregistrer la décision."
+                : "Unable to save the decision."
+            ),
+            "error"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   APPROVAL API
+========================================================= */
+
+async function sendApprovalDecision(
+    actionId,
+    type,
+    comment
+){
+
+    /*
+       These endpoints are the CEO Approval API contract.
+
+       approve:
+       POST /api/ceo-approvals/<id>/approve
+
+       reject:
+       POST /api/ceo-approvals/<id>/reject
+    */
+
+    const endpoint =
+        type === "approve"
+        ? `/api/ceo-approvals/${encodeURIComponent(actionId)}/approve`
+        : `/api/ceo-approvals/${encodeURIComponent(actionId)}/reject`;
+
+
+    try{
+
+        return await apiFetch(
+            endpoint,
+            {
+                method:"POST",
+                body:JSON.stringify({
+                    comment:comment,
+                    decision_by:"CEO",
+                    language:lang
+                })
+            }
+        );
+
+    }catch(firstError){
+
+        /*
+          Compatibility fallback for a backend that exposes
+          a generic decision endpoint.
+        */
+
+        try{
+
+            return await apiFetch(
+                `/api/ai/v2/actions/${encodeURIComponent(actionId)}/decision`,
+                {
+                    method:"POST",
+                    body:JSON.stringify({
+                        decision:type,
+                        comment:comment,
+                        approved:type === "approve",
+                        language:lang
+                    })
+                }
+            );
+
+        }catch(secondError){
+
+            throw firstError;
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   STATUS HELPERS
+========================================================= */
+
+function normalizeStatus(status){
+
+    if(!status){
+        return "pending";
+    }
+
+    return String(status).toLowerCase();
+
+}
+
+
+function getStatusBadge(status){
+
+    const s =
+        normalizeStatus(status);
+
+
+    const map = {
+
+        pending:{
+            icon:"⏳",
+            fr:"En attente",
+            en:"Pending",
+            cls:"status-pending"
+        },
+
+        awaiting_approval:{
+            icon:"🔐",
+            fr:"Approbation requise",
+            en:"Awaiting approval",
+            cls:"status-awaiting"
+        },
+
+        approved:{
+            icon:"👍",
+            fr:"Approuvée",
+            en:"Approved",
+            cls:"status-approved"
+        },
+
+        rejected:{
+            icon:"❌",
+            fr:"Rejetée",
+            en:"Rejected",
+            cls:"status-rejected"
+        },
+
+        executing:{
+            icon:"⚙️",
+            fr:"En exécution",
+            en:"Executing",
+            cls:"status-executing"
+        },
+
+        completed:{
+            icon:"✅",
+            fr:"Terminée",
+            en:"Completed",
+            cls:"status-completed"
+        },
+
+        failed:{
+            icon:"⚠️",
+            fr:"Échec",
+            en:"Failed",
+            cls:"status-failed"
+        }
+
+    };
+
+
+    const item =
+        map[s] || map.pending;
+
+
+    return `
+        <span class="status ${item.cls}">
+            ${item.icon}
+            ${lang === "fr" ? item.fr : item.en}
+        </span>
+    `;
+
+}
+
+
+function canApprove(action){
+
+    return [
+        "pending",
+        "awaiting_approval"
+    ].includes(
+        normalizeStatus(action.status)
+    ) &&
+    action.requires_approval !== false;
+
+}
+
+
+/* =========================================================
+   ACTION LABELS
+========================================================= */
+
+function getActionTitle(action){
+
+    if(action.title){
+        return action.title;
+    }
+
+
+    return getActionTypeLabel(
+        action.action_type
+    );
+
+}
+
+
+function getActionTypeLabel(type){
+
+    const labels = {
+
+        customer_follow_up:{
+            fr:"Relance des clients",
+            en:"Customer follow-up"
+        },
+
+        message:{
+            fr:"Envoi de message",
+            en:"Message sending"
+        },
+
+        quotation:{
+            fr:"Création / envoi de devis",
+            en:"Quotation creation / sending"
+        },
+
+        finance:{
+            fr:"Action financière",
+            en:"Financial action"
+        },
+
+        contract:{
+            fr:"Action contractuelle",
+            en:"Contract action"
+        },
+
+        technical:{
+            fr:"Décision technique",
+            en:"Technical decision"
+        },
+
+        social_publish:{
+            fr:"Publication sociale",
+            en:"Social publishing"
+        },
+
+        purchase:{
+            fr:"Achat",
+            en:"Purchase"
+        }
+
+    };
+
+
+    const item =
+        labels[type];
+
+
+    if(item){
+        return lang === "fr"
+            ? item.fr
+            : item.en;
+    }
+
+
+    return type || "TASSIMO AI";
+
+}
+
+
+/* =========================================================
+   HIGH RISK
+========================================================= */
+
+function isHighRisk(action){
+
+    const type =
+        String(
+            action.action_type || ""
+        ).toLowerCase();
+
+
+    return [
+        "finance",
+        "quotation",
+        "contract",
+        "technical",
+        "purchase",
+        "social_publish"
+    ].includes(type);
+
+}
+
+
+/* =========================================================
+   REASONING
+========================================================= */
+
+function formatReasoning(reasoning){
+
+    if(typeof reasoning === "string"){
+        return escapeHtml(reasoning);
+    }
+
+
+    if(!reasoning ||
+       typeof reasoning !== "object"){
+
+        return lang === "fr"
+            ? "Aucun raisonnement détaillé disponible."
+            : "No detailed reasoning available.";
+
+    }
+
+
+    const parts = [];
+
+
+    Object.keys(reasoning).forEach(key => {
+
+        const value =
+            reasoning[key];
+
+
+        if(
+            value === null ||
+            value === undefined ||
+            value === ""
+        ){
+            return;
+        }
+
+
+        const label =
+            key
+                .replace(/_/g," ")
+                .replace(/\b\w/g,
+                    char => char.toUpperCase()
+                );
+
+
+        parts.push(
+            `<strong>${escapeHtml(label)}:</strong> ${
+                escapeHtml(
+                    typeof value === "object"
+                    ? JSON.stringify(value)
+                    : String(value)
+                )
+            }`
+        );
+
+    });
+
+
+    return parts.join("<br>");
+
+}
+
+
+/* =========================================================
+   COPY
+========================================================= */
+
+async function copyMessage(text){
+
+    try{
+
+        await navigator.clipboard.writeText(
+            text
+        );
+
+
+        showToast(
+            lang === "fr"
+            ? "Message copié."
+            : "Message copied.",
+            "success"
+        );
+
+    }catch(error){
+
+        showToast(
+            lang === "fr"
+            ? "Impossible de copier le message."
+            : "Unable to copy the message.",
+            "error"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   REFRESH
+========================================================= */
+
+async function refreshActions(){
+
+    showToast(
+        lang === "fr"
+        ? "Actualisation..."
+        : "Refreshing...",
+        "info"
+    );
+
+
+    await loadActions();
+
+}
+
+
+/* =========================================================
+   SECURITY
+========================================================= */
+
+function showSecurityInfo(){
+
+    document
+        .getElementById("securityModal")
+        .classList.add("show");
+
+}
+
+
+function closeSecurityInfo(){
+
+    document
+        .getElementById("securityModal")
+        .classList.remove("show");
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function goDashboard(){
+
+    window.location.href = "/";
+
+}
+
+
+function logout(){
+
+    window.location.href = "/logout";
+
+}
+
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function showToast(message,type="info"){
+
+    const container =
+        document.getElementById(
+            "toastContainer"
+        );
+
+
+    const toast =
+        document.createElement("div");
+
+
+    toast.className =
+        "toast " + type;
+
+
+    toast.textContent =
+        message;
+
+
+    container.appendChild(toast);
+
+
+    setTimeout(() => {
+
+        toast.remove();
+
+    },4000);
+
+}
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function escapeHtml(value){
+
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+function escapeAttr(value){
+
+    return String(value ?? "")
+        .replace(/\\/g,"\\\\")
+        .replace(/'/g,"\\'")
+        .replace(/"/g,"&quot;");
+
+}
+
+
+function truncate(text,length){
+
+    text =
+        String(text || "");
+
+
+    if(text.length <= length){
+        return text;
+    }
+
+
+    return text.substring(0,length) + "...";
+
+}
+
+
+function formatDate(value){
+
+    if(!value){
+        return "—";
+    }
+
+
+    try{
+
+        const date =
+            new Date(value);
+
+
+        if(isNaN(date.getTime())){
+            return String(value);
+        }
+
+
+        return date.toLocaleString(
+            lang === "fr"
+            ? "fr-FR"
+            : "en-US",
+            {
+                day:"2-digit",
+                month:"short",
+                year:"numeric",
+                hour:"2-digit",
+                minute:"2-digit"
+            }
+        );
+
+    }catch(error){
+
+        return String(value);
+
+    }
+
+}
+
+
+/* =========================================================
+   CLOSE MODALS WHEN CLICKING OUTSIDE
+========================================================= */
+
+document
+    .getElementById("approvalModal")
+    .addEventListener("click",function(event){
+
+        if(event.target === this){
+            closeModal();
+        }
+
+    });
+
+
+document
+    .getElementById("securityModal")
+    .addEventListener("click",function(event){
+
+        if(event.target === this){
+            closeSecurityInfo();
+        }
+
+    });
+
+
+/* =========================================================
+   ESC KEY
+========================================================= */
+
+document.addEventListener("keydown",function(event){
+
+    if(event.key === "Escape"){
+
+        closeModal();
+
+        closeSecurityInfo();
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
