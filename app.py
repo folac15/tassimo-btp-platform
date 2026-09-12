@@ -2593,13 +2593,62 @@ def unified_messages_api():
 @app.route("/api/messages/ai-draft", methods=["POST"])
 @protected
 def messages_ai_draft():
+
     data = request.get_json(silent=True) or {}
-    text = str(data.get("message", "")).strip()
-    channel = str(data.get("channel", "whatsapp")).lower()
+
+    text = str(
+        data.get("message", "")
+    ).strip()
+
+    channel = str(
+        data.get("channel", "whatsapp")
+    ).lower()
+
+    customer = data.get(
+        "customer",
+        {}
+    )
+
+    conversation = data.get(
+        "conversation",
+        []
+    )
+
     if not text:
-        return jsonify({"error": "Message is required."}), 400
-    answer = ai_answer(text, context={"channel": channel, "customer": data.get("customer", {})})
-    return jsonify({"draft": answer, "approval_required": requires_ceo_approval(text)})
+
+        return jsonify({
+            "error": "Message is required."
+        }), 400
+
+    answer = ai_answer(
+        text,
+        conversation=conversation,
+        context={
+            "channel": channel,
+            "customer": customer,
+            "language": language(),
+            "purpose": "customer_service_reply"
+        }
+    )
+
+    if not answer:
+
+        return jsonify({
+            "error": (
+                "AI service unavailable."
+                if language() == "en"
+                else "Le service IA est indisponible."
+            )
+        }), 503
+
+    return jsonify({
+
+        "draft": answer,
+
+        "approval_required":
+            requires_ceo_approval(text)
+
+    })
 
 @app.route("/api/social/ai-post", methods=["POST"])
 @protected
