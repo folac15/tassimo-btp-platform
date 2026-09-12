@@ -3333,6 +3333,269 @@ def approvals_api():
         )
 
     return jsonify({"message": t("saved"), "approval": saved})
+ # ============================================================
+# CEO APPROVAL ACTIONS
+# TASSIMO AI V2
+# ============================================================
+
+@app.route("/api/ceo-approvals/<action_id>/approve", methods=["POST"])
+@protected
+def ceo_approve_action(action_id):
+    """
+    Approve a TASSIMO AI action request.
+
+    Approval does NOT automatically send messages or execute
+    external actions. It only authorizes the action and records
+    the CEO decision.
+    """
+
+    try:
+        action_rows = sb_select(
+            "ai_action_requests",
+            {
+                "select": "*",
+                "id": f"eq.{action_id}",
+                "limit": "1",
+            },
+        )
+
+        if not action_rows:
+            return jsonify({
+                "error": (
+                    "Demande d'approbation introuvable. "
+                    "/ Approval request not found."
+                )
+            }), 404
+
+        action = action_rows[0]
+
+        current_status = str(
+            action.get("status") or ""
+        ).lower()
+
+        if current_status not in {
+            "pending",
+            "awaiting_approval",
+        }:
+            return jsonify({
+                "error": (
+                    "Cette demande ne peut plus être approuvée. "
+                    "/ This request can no longer be approved."
+                ),
+                "status": current_status,
+            }), 400
+
+        now = utc_now()
+
+        updated = sb_update(
+            "ai_action_requests",
+            {
+                "id": f"eq.{action_id}"
+            },
+            {
+                "status": "approved",
+                "approved_by": "CEO",
+                "approved_at": now,
+                "updated_at": now,
+                "error_message": None,
+            },
+        )
+
+        if (
+            isinstance(updated, dict)
+            and updated.get("_error")
+        ):
+            return jsonify({
+                "error": (
+                    "Impossible d'enregistrer l'approbation. "
+                    "/ Unable to save approval."
+                ),
+                "details": updated,
+            }), 400
+
+        # Record the CEO approval in the audit log.
+        sb_insert(
+            "ai_action_logs",
+            {
+                "action_request_id": action_id,
+                "action_type": action.get("action_type") or "unknown",
+                "resource": action.get("target_resource"),
+                "record_id": action.get("target_record_id"),
+                "operation": "ceo_approval",
+                "status": "success",
+                "input_payload": {
+                    "action_id": action_id,
+                    "previous_status": current_status,
+                },
+                "output_payload": {
+                    "status": "approved",
+                    "approved_by": "CEO",
+                    "approved_at": now,
+                },
+                "message": (
+                    "Action approved by CEO. "
+                    "/ Action approuvée par le CEO."
+                ),
+                "executed_by": "CEO",
+                "created_at": now,
+            },
+        )
+
+        return jsonify({
+            "success": True,
+            "message": (
+                "Demande approuvée avec succès. "
+                "/ Request approved successfully."
+            ),
+            "status": "approved",
+            "action": updated,
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "error": (
+                "Erreur lors de l'approbation. "
+                "/ Approval error."
+            ),
+            "details": str(exc),
+        }), 500
+
+
+@app.route("/api/ceo-approvals/<action_id>/reject", methods=["POST"])
+@protected
+def ceo_reject_action(action_id):
+    """
+    Reject a TASSIMO AI action request.
+
+    Rejection cancels authorization and records the CEO decision.
+    """
+
+    try:
+        data = request.get_json(silent=True) or {}
+
+        reason = str(
+            data.get("reason")
+            or data.get("comment")
+            or ""
+        ).strip()
+
+        action_rows = sb_select(
+            "ai_action_requests",
+            {
+                "select": "*",
+                "id": f"eq.{action_id}",
+                "limit": "1",
+            },
+        )
+
+        if not action_rows:
+            return jsonify({
+                "error": (
+                    "Demande d'approbation introuvable. "
+                    "/ Approval request not found."
+                )
+            }), 404
+
+        action = action_rows[0]
+
+        current_status = str(
+            action.get("status") or ""
+        ).lower()
+
+        if current_status not in {
+            "pending",
+            "awaiting_approval",
+        }:
+            return jsonify({
+                "error": (
+                    "Cette demande ne peut plus être rejetée. "
+                    "/ This request can no longer be rejected."
+                ),
+                "status": current_status,
+            }), 400
+
+        now = utc_now()
+
+        rejection_summary = (
+            "Rejetée par le CEO."
+            if not reason
+            else f"Rejetée par le CEO : {reason}"
+        )
+
+        updated = sb_update(
+            "ai_action_requests",
+            {
+                "id": f"eq.{action_id}"
+            },
+            {
+                "status": "rejected",
+                "approved_by": "CEO",
+                "approved_at": now,
+                "updated_at": now,
+                "result_summary": rejection_summary,
+                "error_message": None,
+            },
+        )
+
+        if (
+            isinstance(updated, dict)
+            and updated.get("_error")
+        ):
+            return jsonify({
+                "error": (
+                    "Impossible d'enregistrer le rejet. "
+                    "/ Unable to save rejection."
+                ),
+                "details": updated,
+            }), 400
+
+        # Record the CEO rejection in the audit log.
+        sb_insert(
+            "ai_action_logs",
+            {
+                "action_request_id": action_id,
+                "action_type": action.get("action_type") or "unknown",
+                "resource": action.get("target_resource"),
+                "record_id": action.get("target_record_id"),
+                "operation": "ceo_rejection",
+                "status": "success",
+                "input_payload": {
+                    "action_id": action_id,
+                    "previous_status": current_status,
+                    "reason": reason,
+                },
+                "output_payload": {
+                    "status": "rejected",
+                    "approved_by": "CEO",
+                    "approved_at": now,
+                },
+                "message": (
+                    "Action rejected by CEO. "
+                    "/ Action rejetée par le CEO."
+                ),
+                "executed_by": "CEO",
+                "created_at": now,
+            },
+        )
+
+        return jsonify({
+            "success": True,
+            "message": (
+                "Demande rejetée avec succès. "
+                "/ Request rejected successfully."
+            ),
+            "status": "rejected",
+            "action": updated,
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "error": (
+                "Erreur lors du rejet. "
+                "/ Rejection error."
+            ),
+            "details": str(exc),
+        }), 500
 
 
 # ------------------------------------------------------------
