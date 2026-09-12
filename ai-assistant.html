@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TASSIMO BTP — Assistant IA</title>
+
+<style>
+:root{
+    --nav:#102a43;
+    --nav2:#183b56;
+    --accent:#e0a72e;
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --text:#172b4d;
+    --muted:#667085;
+    --line:#e4e7ec;
+    --success:#027a48;
+    --danger:#b42318;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+
+button,
+input,
+textarea,
+select{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.app{
+    display:flex;
+    min-height:100vh;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+    width:290px;
+    background:var(--nav);
+    color:white;
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    overflow:auto;
+    padding:18px;
+    z-index:20;
+}
+
+.brand{
+    padding:10px 5px 20px;
+    border-bottom:1px solid rgba(255,255,255,.12);
+    margin-bottom:15px;
+}
+
+.brand-title{
+    font-size:20px;
+    font-weight:800;
+}
+
+.brand-sub{
+    margin-top:5px;
+    font-size:12px;
+    opacity:.7;
+}
+
+.new-chat{
+    width:100%;
+    border:0;
+    background:var(--accent);
+    color:#172b4d;
+    padding:13px;
+    border-radius:12px;
+    font-weight:800;
+    margin-bottom:14px;
+}
+
+.search{
+    width:100%;
+    padding:11px;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.08);
+    color:white;
+    outline:none;
+    margin-bottom:12px;
+}
+
+.search::placeholder{
+    color:#cbd5e1;
+}
+
+.chat-list{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.chat-item{
+    padding:11px;
+    border-radius:10px;
+    background:rgba(255,255,255,.05);
+    cursor:pointer;
+}
+
+.chat-item:hover{
+    background:rgba(255,255,255,.12);
+}
+
+.chat-item.active{
+    background:rgba(224,167,46,.2);
+    border-left:3px solid var(--accent);
+}
+
+.chat-title{
+    font-weight:700;
+    font-size:14px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.chat-meta{
+    font-size:11px;
+    opacity:.65;
+    margin-top:5px;
+}
+
+.sidebar-bottom{
+    margin-top:20px;
+    padding-top:15px;
+    border-top:1px solid rgba(255,255,255,.12);
+}
+
+.back-dashboard{
+    width:100%;
+    padding:10px;
+    border:1px solid rgba(255,255,255,.15);
+    border-radius:10px;
+    background:transparent;
+    color:white;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.main{
+    margin-left:290px;
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+}
+
+.topbar{
+    height:70px;
+    background:white;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    position:sticky;
+    top:0;
+    z-index:10;
+}
+
+.top-title{
+    font-size:19px;
+    font-weight:800;
+}
+
+.top-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+
+.top-btn{
+    border:1px solid var(--line);
+    background:white;
+    border-radius:9px;
+    padding:8px 11px;
+}
+
+.lang-btn{
+    font-weight:700;
+}
+
+/* =========================
+   CHAT
+========================= */
+
+.chat-area{
+    flex:1;
+    overflow:auto;
+    padding:25px 15px 180px;
+}
+
+.chat-container{
+    max-width:950px;
+    margin:auto;
+}
+
+.welcome{
+    text-align:center;
+    padding:70px 20px 40px;
+}
+
+.ai-icon{
+    width:70px;
+    height:70px;
+    margin:auto;
+    border-radius:22px;
+    background:var(--nav2);
+    color:white;
+    display:grid;
+    place-items:center;
+    font-size:32px;
+    box-shadow:0 10px 30px rgba(0,0,0,.12);
+}
+
+.welcome h1{
+    margin-bottom:8px;
+}
+
+.welcome p{
+    color:var(--muted);
+}
+
+.suggestions{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-top:25px;
+}
+
+.suggestion{
+    border:1px solid var(--line);
+    background:white;
+    padding:15px;
+    border-radius:13px;
+    text-align:left;
+}
+
+.suggestion:hover{
+    border-color:var(--accent);
+}
+
+.message{
+    display:flex;
+    margin:18px 0;
+}
+
+.message.user{
+    justify-content:flex-end;
+}
+
+.bubble{
+    max-width:80%;
+    padding:14px 16px;
+    border-radius:17px;
+    line-height:1.55;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+}
+
+.message.user .bubble{
+    background:var(--nav2);
+    color:white;
+    border-bottom-right-radius:5px;
+}
+
+.message.assistant .bubble{
+    background:white;
+    border:1px solid var(--line);
+    border-bottom-left-radius:5px;
+}
+
+.message-meta{
+    font-size:10px;
+    color:var(--muted);
+    margin-top:5px;
+}
+
+/* =========================
+   THINKING
+========================= */
+
+.thinking{
+    display:none;
+    align-items:center;
+    gap:8px;
+    padding:10px 15px;
+    color:var(--muted);
+}
+
+.dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:var(--muted);
+    animation:pulse 1.2s infinite;
+}
+
+.dot:nth-child(2){
+    animation-delay:.2s;
+}
+
+.dot:nth-child(3){
+    animation-delay:.4s;
+}
+
+@keyframes pulse{
+    0%,100%{opacity:.25}
+    50%{opacity:1}
+}
+
+/* =========================
+   COMPOSER
+========================= */
+
+.composer-wrap{
+    position:fixed;
+    left:290px;
+    right:0;
+    bottom:0;
+    background:linear-gradient(
+        transparent,
+        rgba(244,247,251,.95) 20%
+    );
+    padding:35px 15px 15px;
+}
+
+.composer{
+    max-width:950px;
+    margin:auto;
+    background:white;
+    border:1px solid var(--line);
+    border-radius:17px;
+    box-shadow:0 10px 35px rgba(0,0,0,.08);
+    padding:10px;
+}
+
+textarea{
+    width:100%;
+    min-height:70px;
+    max-height:220px;
+    resize:none;
+    border:0;
+    outline:none;
+    padding:10px;
+    color:var(--text);
+}
+
+.composer-bottom{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:5px;
+}
+
+.composer-tools{
+    display:flex;
+    gap:5px;
+    flex-wrap:wrap;
+}
+
+.tool{
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:8px;
+    padding:7px 10px;
+}
+
+.send{
+    background:var(--nav2);
+    color:white;
+    border:0;
+    border-radius:9px;
+    padding:9px 17px;
+    font-weight:800;
+}
+
+.send:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+/* =========================
+   CONTEXT PANEL
+========================= */
+
+.context-panel{
+    position:fixed;
+    right:18px;
+    top:82px;
+    width:270px;
+    background:white;
+    border:1px solid var(--line);
+    border-radius:15px;
+    box-shadow:0 15px 45px rgba(0,0,0,.12);
+    padding:15px;
+    display:none;
+    z-index:30;
+}
+
+.context-panel.show{
+    display:block;
+}
+
+.context-title{
+    font-weight:800;
+    margin-bottom:12px;
+}
+
+.context-item{
+    display:flex;
+    justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px solid var(--line);
+    font-size:13px;
+}
+
+.context-item:last-child{
+    border-bottom:0;
+}
+
+/* =========================
+   MEMORY
+========================= */
+
+.memory-panel{
+    position:fixed;
+    right:18px;
+    top:82px;
+    width:320px;
+    max-height:75vh;
+    overflow:auto;
+    background:white;
+    border:1px solid var(--line);
+    border-radius:15px;
+    box-shadow:0 15px 45px rgba(0,0,0,.12);
+    padding:15px;
+    display:none;
+    z-index:30;
+}
+
+.memory-panel.show{
+    display:block;
+}
+
+.memory-card{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px;
+    margin:8px 0;
+}
+
+.memory-type{
+    font-size:10px;
+    font-weight:800;
+    color:var(--accent);
+    text-transform:uppercase;
+}
+
+.memory-text{
+    margin-top:5px;
+    line-height:1.4;
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast{
+    position:fixed;
+    right:20px;
+    bottom:100px;
+    background:#172b4d;
+    color:white;
+    padding:12px 15px;
+    border-radius:10px;
+    display:none;
+    z-index:100;
+}
+
+.toast.show{
+    display:block;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:850px){
+
+    .sidebar{
+        width:250px;
+        transform:translateX(-100%);
+        transition:.25s;
+    }
+
+    .sidebar.open{
+        transform:translateX(0);
+    }
+
+    .main{
+        margin-left:0;
+    }
+
+    .composer-wrap{
+        left:0;
+    }
+
+    .menu-btn{
+        display:block !important;
+    }
+
+    .suggestions{
+        grid-template-columns:1fr;
+    }
+
+    .context-panel,
+    .memory-panel{
+        right:10px;
+        left:10px;
+        width:auto;
+    }
+}
+
+.menu-btn{
+    display:none;
+}
+
+@media(max-width:500px){
+
+    .topbar{
+        padding:0 10px;
+    }
+
+    .top-title{
+        font-size:15px;
+    }
+
+    .top-btn{
+        padding:7px 8px;
+    }
+
+    .bubble{
+        max-width:90%;
+    }
+
+    .chat-area{
+        padding:15px 10px 175px;
+    }
+
+    .welcome{
+        padding-top:40px;
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- =========================
+     SIDEBAR
+========================= -->
+
+<aside class="sidebar" id="sidebar">
+
+    <div class="brand">
+        <div class="brand-title">🤖 TASSIMO AI</div>
+        <div class="brand-sub">
+            Assistant intelligent de l’entreprise
+        </div>
+    </div>
+
+    <button class="new-chat" onclick="newChat()">
+        ＋ <span data-fr="Nouvelle conversation" data-en="New conversation">
+        Nouvelle conversation
+        </span>
+    </button>
+
+    <input
+        id="chatSearch"
+        class="search"
+        type="search"
+        placeholder="Rechercher..."
+        data-fr-placeholder="Rechercher..."
+        data-en-placeholder="Search..."
+        oninput="filterChats()"
+    >
+
+    <div id="chatList" class="chat-list"></div>
+
+    <div class="sidebar-bottom">
+        <button
+            class="back-dashboard"
+            onclick="location.href='/'"
+        >
+            ← <span data-fr="Tableau de bord" data-en="Dashboard">
+            Tableau de bord
+            </span>
+        </button>
+    </div>
+
+</aside>
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<main class="main">
+
+    <header class="topbar">
+
+        <div style="display:flex;align-items:center;gap:10px">
+
+            <button
+                class="top-btn menu-btn"
+                onclick="toggleSidebar()"
+            >
+                ☰
+            </button>
+
+            <div class="top-title">
+                🤖 <span
+                    data-fr="Assistant IA TASSIMO"
+                    data-en="TASSIMO AI Assistant"
+                >
+                    Assistant IA TASSIMO
+                </span>
+            </div>
+
+        </div>
+
+        <div class="top-actions">
+
+            <button
+                class="top-btn"
+                onclick="toggleContext()"
+                title="Business context"
+            >
+                📊
+            </button>
+
+            <button
+                class="top-btn"
+                onclick="toggleMemory()"
+                title="Memory"
+            >
+                🧠
+            </button>
+
+            <button
+                class="top-btn lang-btn"
+                onclick="toggleLanguage()"
+                id="langButton"
+            >
+                EN
+            </button>
+
+        </div>
+
+    </header>
+
+    <section class="chat-area" id="chatArea">
+
+        <div class="chat-container" id="chatContainer">
+
+            <div class="welcome" id="welcome">
+
+                <div class="ai-icon">🤖</div>
+
+                <h1
+                    data-fr="Bonjour, je suis TASSIMO AI"
+                    data-en="Hello, I am TASSIMO AI"
+                >
+                    Bonjour, je suis TASSIMO AI
+                </h1>
+
+                <p
+                    data-fr="Votre assistant intelligent pour gérer, analyser et développer TASSIMO BTP."
+                    data-en="Your intelligent assistant for managing, analysing and growing TASSIMO BTP."
+                >
+                    Votre assistant intelligent pour gérer, analyser et développer TASSIMO BTP.
+                </p>
+
+                <div class="suggestions">
+
+                    <button
+                        class="suggestion"
+                        onclick="useSuggestion(this)"
+                        data-fr="Analyse la situation actuelle de notre entreprise."
+                        data-en="Analyse the current situation of our business."
+                    >
+                        📊 Analyse la situation actuelle de notre entreprise.
+                    </button>
+
+                    <button
+                        class="suggestion"
+                        onclick="useSuggestion(this)"
+                        data-fr="Quels sont nos clients et prospects prioritaires ?"
+                        data-en="Which customers and leads should we prioritize?"
+                    >
+                        👥 Quels sont nos clients et prospects prioritaires ?
+                    </button>
+
+                    <button
+                        class="suggestion"
+                        onclick="useSuggestion(this)"
+                        data-fr="Analyse nos projets et indique les risques."
+                        data-en="Analyse our projects and identify the risks."
+                    >
+                        🏗️ Analyse nos projets et indique les risques.
+                    </button>
+
+                    <button
+                        class="suggestion"
+                        onclick="useSuggestion(this)"
+                        data-fr="Aide-moi à améliorer notre stratégie commerciale."
+                        data-en="Help me improve our sales strategy."
+                    >
+                        🎯 Aide-moi à améliorer notre stratégie commerciale.
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div id="messages"></div>
+
+            <div class="thinking" id="thinking">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <span
+                    data-fr="TASSIMO AI réfléchit..."
+                    data-en="TASSIMO AI is thinking..."
+                >
+                    TASSIMO AI réfléchit...
+                </span>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<!-- =========================
+     CONTEXT PANEL
+========================= -->
+
+<div class="context-panel" id="contextPanel">
+
+    <div class="context-title">
+        📊 <span
+            data-fr="Contexte de l’entreprise"
+            data-en="Business context"
+        >
+            Contexte de l’entreprise
+        </span>
+    </div>
+
+    <div id="contextContent">
+        Chargement...
+    </div>
+
+</div>
+
+<!-- =========================
+     MEMORY PANEL
+========================= -->
+
+<div class="memory-panel" id="memoryPanel">
+
+    <div class="context-title">
+        🧠 <span
+            data-fr="Mémoire de TASSIMO AI"
+            data-en="TASSIMO AI Memory"
+        >
+            Mémoire de TASSIMO AI
+        </span>
+    </div>
+
+    <div id="memoryContent">
+        Chargement...
+    </div>
+
+</div>
+
+<!-- =========================
+     COMPOSER
+========================= -->
+
+<div class="composer-wrap">
+
+    <div class="composer">
+
+        <textarea
+            id="messageInput"
+            placeholder="Posez votre question à TASSIMO AI..."
+            data-fr-placeholder="Posez votre question à TASSIMO AI..."
+            data-en-placeholder="Ask TASSIMO AI anything..."
+            onkeydown="handleKey(event)"
+        ></textarea>
+
+        <div class="composer-bottom">
+
+            <div class="composer-tools">
+
+                <button
+                    class="tool"
+                    onclick="rememberCurrent()"
+                    title="Remember"
+                >
+                    🧠
+                </button>
+
+                <button
+                    class="tool"
+                    onclick="clearCurrentChat()"
+                    title="Clear conversation"
+                >
+                    🗑️
+                </button>
+
+                <button
+                    class="tool"
+                    onclick="toggleContext()"
+                >
+                    📊
+                </button>
+
+            </div>
+
+            <button
+                class="send"
+                id="sendButton"
+                onclick="sendMessage()"
+            >
+                <span
+                    data-fr="Envoyer"
+                    data-en="Send"
+                >
+                    Envoyer
+                </span>
+                ➤
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+let lang = localStorage.getItem("lang") || "fr";
+
+function applyLanguage(){
+
+    document.documentElement.lang = lang;
+
+    document.querySelectorAll("[data-fr]").forEach(el => {
+
+        const value =
+            lang === "fr"
+            ? el.getAttribute("data-fr")
+            : el.getAttribute("data-en");
+
+        if(value){
+            el.textContent = value;
+        }
+
+    });
+
+    document.querySelectorAll("[data-fr-placeholder]").forEach(el => {
+
+        const value =
+            lang === "fr"
+            ? el.getAttribute("data-fr-placeholder")
+            : el.getAttribute("data-en-placeholder");
+
+        if(value){
+            el.placeholder = value;
+        }
+
+    });
+
+    document.getElementById("langButton").textContent =
+        lang === "fr" ? "EN" : "FR";
+}
+
+function toggleLanguage(){
+
+    lang = lang === "fr" ? "en" : "fr";
+
+    localStorage.setItem("lang", lang);
+
+    applyLanguage();
+
+    loadChats();
+
+    loadMemory();
+
+    loadContext();
+
+}
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let chats = [];
+
+let currentChatId = null;
+
+let messages = [];
+
+let memory = [];
+
+let businessContext = {};
+
+/* =========================================================
+   API
+========================================================= */
+
+async function api(url, options = {}){
+
+    const response = await fetch(
+        url,
+        {
+            credentials:"same-origin",
+            headers:{
+                "Content-Type":"application/json",
+                ...(options.headers || {})
+            },
+            ...options
+        }
+    );
+
+    if(response.status === 401){
+
+        window.location.href = "/login";
+
+        throw new Error(
+            lang === "fr"
+            ? "Authentification requise."
+            : "Authentication required."
+        );
+
+    }
+
+    let data = {};
+
+    try{
+        data = await response.json();
+    }catch(e){}
+
+    if(!response.ok){
+
+        throw new Error(
+            data.error ||
+            (
+                lang === "fr"
+                ? "Une erreur est survenue."
+                : "Something went wrong."
+            )
+        );
+
+    }
+
+    return data;
+
+}
+
+/* =========================================================
+   CHAT LIST
+========================================================= */
+
+async function loadChats(){
+
+    try{
+
+        const data = await api(
+            "/api/assistant/chats?lang=" + encodeURIComponent(lang)
+        );
+
+        chats = data.chats || [];
+
+        renderChats();
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
+function renderChats(){
+
+    const list =
+        document.getElementById("chatList");
+
+    const search =
+        document.getElementById("chatSearch")
+        .value
+        .toLowerCase()
+        .trim();
+
+    const filtered =
+        chats.filter(chat =>
+            String(chat.title || "")
+            .toLowerCase()
+            .includes(search)
+        );
+
+    if(!filtered.length){
+
+        list.innerHTML =
+            `<div style="font-size:12px;opacity:.6;padding:10px">
+                ${
+                    lang === "fr"
+                    ? "Aucune conversation."
+                    : "No conversations."
+                }
+            </div>`;
+
+        return;
+
+    }
+
+    list.innerHTML =
+        filtered.map(chat => {
+
+            const active =
+                String(chat.id) === String(currentChatId)
+                ? "active"
+                : "";
+
+            const title =
+                escapeHtml(
+                    chat.title ||
+                    (
+                        lang === "fr"
+                        ? "Nouvelle conversation"
+                        : "New conversation"
+                    )
+                );
+
+            return `
+                <div
+                    class="chat-item ${active}"
+                    onclick="openChat('${escapeAttribute(chat.id)}')"
+                >
+                    <div class="chat-title">
+                        ${title}
+                    </div>
+
+                    <div class="chat-meta">
+                        ${formatDate(chat.updated_at || chat.created_at)}
+                    </div>
+                </div>
+            `;
+
+        }).join("");
+
+}
+
+function filterChats(){
+
+    renderChats();
+
+}
+
+/* =========================================================
+   NEW CHAT
+========================================================= */
+
+async function newChat(){
+
+    try{
+
+        const data = await api(
+            "/api/assistant/chats",
+            {
+                method:"POST",
+                body:JSON.stringify({
+                    title:
+                        lang === "fr"
+                        ? "Nouvelle conversation"
+                        : "New conversation"
+                })
+            }
+        );
+
+        currentChatId =
+            data.chat.id;
+
+        messages = [];
+
+        renderMessages();
+
+        await loadChats();
+
+        document.getElementById("messageInput").focus();
+
+    }catch(error){
+
+        showToast(error.message);
+
+    }
+
+}
+
+/* =========================================================
+   OPEN CHAT
+========================================================= */
+
+async function openChat(id){
+
+    try{
+
+        const data =
+            await api(
+                "/api/assistant/chats/" +
+                encodeURIComponent(id)
+            );
+
+        currentChatId = data.chat.id;
+
+        messages =
+            data.messages || [];
+
+        renderMessages();
+
+        loadChats();
+
+        closePanels();
+
+    }catch(error){
+
+        showToast(error.message);
+
+    }
+
+}
+
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
+
+async function sendMessage(){
+
+    const input =
+        document.getElementById("messageInput");
+
+    const text =
+        input.value.trim();
+
+    if(!text){
+
+        return;
+
+    }
+
+    if(!currentChatId){
+
+        await newChat();
+
+    }
+
+    if(!currentChatId){
+
+        return;
+
+    }
+
+    input.value = "";
+
+    addLocalMessage(
+        "user",
+        text
+    );
+
+    setThinking(true);
+
+    document.getElementById("sendButton").disabled = true;
+
+    try{
+
+        const data =
+            await api(
+                "/api/assistant/chat",
+                {
+                    method:"POST",
+                    body:JSON.stringify({
+
+                        chat_id:
+                            currentChatId,
+
+                        message:
+                            text,
+
+                        language:
+                            lang
+
+                    })
+                }
+            );
+
+        addLocalMessage(
+            "assistant",
+            data.answer || ""
+        );
+
+        if(data.memory_saved){
+
+            showToast(
+                lang === "fr"
+                ? "Mémoire importante enregistrée."
+                : "Important memory saved."
+            );
+
+        }
+
+        await loadChats();
+
+        await loadMemory();
+
+    }catch(error){
+
+        addLocalMessage(
+            "assistant",
+            "⚠ " + error.message
+        );
+
+    }finally{
+
+        setThinking(false);
+
+        document.getElementById("sendButton").disabled = false;
+
+        input.focus();
+
+    }
+
+}
+
+/* =========================================================
+   LOCAL MESSAGE
+========================================================= */
+
+function addLocalMessage(role,text){
+
+    messages.push({
+        role:role,
+        content:text,
+        created_at:new Date().toISOString()
+    });
+
+    renderMessages();
+
+}
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function renderMessages(){
+
+    const welcome =
+        document.getElementById("welcome");
+
+    const container =
+        document.getElementById("messages");
+
+    if(messages.length){
+
+        welcome.style.display = "none";
+
+    }else{
+
+        welcome.style.display = "block";
+
+    }
+
+    container.innerHTML =
+        messages.map(message => {
+
+            const role =
+                message.role === "assistant"
+                ? "assistant"
+                : "user";
+
+            return `
+                <div class="message ${role}">
+                    <div>
+                        <div class="bubble">
+                            ${formatAIText(
+                                message.content || ""
+                            )}
+                        </div>
+
+                        <div class="message-meta">
+                            ${
+                                role === "assistant"
+                                ? "🤖 TASSIMO AI"
+                                : "👤 " +
+                                  (
+                                      lang === "fr"
+                                      ? "Vous"
+                                      : "You"
+                                  )
+                            }
+                            ·
+                            ${formatDate(message.created_at)}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        }).join("");
+
+    const area =
+        document.getElementById("chatArea");
+
+    setTimeout(() => {
+
+        area.scrollTop =
+            area.scrollHeight;
+
+    },20);
+
+}
+
+/* =========================================================
+   SUGGESTIONS
+========================================================= */
+
+function useSuggestion(button){
+
+    const text =
+        lang === "fr"
+        ? button.getAttribute("data-fr")
+        : button.getAttribute("data-en");
+
+    document.getElementById(
+        "messageInput"
+    ).value = text;
+
+    sendMessage();
+
+}
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+function handleKey(event){
+
+    if(
+        event.key === "Enter" &&
+        !event.shiftKey
+    ){
+
+        event.preventDefault();
+
+        sendMessage();
+
+    }
+
+}
+
+/* =========================================================
+   THINKING
+========================================================= */
+
+function setThinking(show){
+
+    document.getElementById(
+        "thinking"
+    ).style.display =
+        show ? "flex" : "none";
+
+}
+
+/* =========================================================
+   MEMORY
+========================================================= */
+
+async function loadMemory(){
+
+    try{
+
+        const data =
+            await api(
+                "/api/assistant/memory"
+            );
+
+        memory =
+            data.memories || [];
+
+        renderMemory();
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
+function renderMemory(){
+
+    const container =
+        document.getElementById(
+            "memoryContent"
+        );
+
+    if(!memory.length){
+
+        container.innerHTML =
+            `<p style="color:#667085">
+                ${
+                    lang === "fr"
+                    ? "Aucune mémoire enregistrée."
+                    : "No saved memories."
+                }
+            </p>`;
+
+        return;
+
+    }
+
+    container.innerHTML =
+        memory.map(item => {
+
+            return `
+                <div class="memory-card">
+
+                    <div class="memory-type">
+                        ${escapeHtml(
+                            item.memory_type || "general"
+                        )}
+                    </div>
+
+                    <div class="memory-text">
+                        ${escapeHtml(
+                            item.memory_text || ""
+                        )}
+                    </div>
+
+                </div>
+            `;
+
+        }).join("");
+
+}
+
+/* =========================================================
+   SAVE MEMORY MANUALLY
+========================================================= */
+
+async function rememberCurrent(){
+
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
+
+    const text =
+        input.value.trim();
+
+    if(!text){
+
+        showToast(
+            lang === "fr"
+            ? "Écrivez d'abord ce que vous voulez mémoriser."
+            : "Write what you want me to remember first."
+        );
+
+        return;
+
+    }
+
+    try{
+
+        await api(
+            "/api/assistant/memory",
+            {
+                method:"POST",
+                body:JSON.stringify({
+                    memory:text,
+                    memory_type:"user_preference"
+                })
+            }
+        );
+
+        input.value = "";
+
+        await loadMemory();
+
+        showToast(
+            lang === "fr"
+            ? "Mémoire enregistrée."
+            : "Memory saved."
+        );
+
+    }catch(error){
+
+        showToast(error.message);
+
+    }
+
+}
+
+/* =========================================================
+   BUSINESS CONTEXT
+========================================================= */
+
+async function loadContext(){
+
+    try{
+
+        const data =
+            await api(
+                "/api/assistant/context"
+            );
+
+        businessContext =
+            data.context || {};
+
+        renderContext();
+
+    }catch(error){
+
+        console.error(error);
+
+    }
+
+}
+
+function renderContext(){
+
+    const c =
+        document.getElementById(
+            "contextContent"
+        );
+
+    const labels =
+        lang === "fr"
+        ? {
+            customers:"Clients",
+            leads:"Prospects",
+            projects:"Projets",
+            inventory:"Articles en stock",
+            expenses:"Dépenses",
+            payments:"Paiements",
+            messages:"Messages",
+            documents:"Documents",
+            tasks:"Tâches"
+        }
+        : {
+            customers:"Customers",
+            leads:"Leads",
+            projects:"Projects",
+            inventory:"Inventory items",
+            expenses:"Expenses",
+            payments:"Payments",
+            messages:"Messages",
+            documents:"Documents",
+            tasks:"Tasks"
+        };
+
+    const keys =
+        Object.keys(labels);
+
+    c.innerHTML =
+        keys.map(key => {
+
+            return `
+                <div class="context-item">
+                    <span>${labels[key]}</span>
+                    <strong>
+                        ${businessContext[key] ?? 0}
+                    </strong>
+                </div>
+            `;
+
+        }).join("");
+
+}
+
+/* =========================================================
+   PANELS
+========================================================= */
+
+function toggleContext(){
+
+    const panel =
+        document.getElementById(
+            "contextPanel"
+        );
+
+    panel.classList.toggle("show");
+
+    document.getElementById(
+        "memoryPanel"
+    ).classList.remove("show");
+
+}
+
+function toggleMemory(){
+
+    const panel =
+        document.getElementById(
+            "memoryPanel"
+        );
+
+    panel.classList.toggle("show");
+
+    document.getElementById(
+        "contextPanel"
+    ).classList.remove("show");
+
+}
+
+function closePanels(){
+
+    document.getElementById(
+        "contextPanel"
+    ).classList.remove("show");
+
+    document.getElementById(
+        "memoryPanel"
+    ).classList.remove("show");
+
+}
+
+/* =========================================================
+   CLEAR CHAT
+========================================================= */
+
+async function clearCurrentChat(){
+
+    if(!currentChatId){
+
+        return;
+
+    }
+
+    const confirmed =
+        confirm(
+            lang === "fr"
+            ? "Effacer cette conversation ?"
+            : "Clear this conversation?"
+        );
+
+    if(!confirmed){
+
+        return;
+
+    }
+
+    try{
+
+        await api(
+            "/api/assistant/chats/" +
+            encodeURIComponent(currentChatId),
+            {
+                method:"DELETE"
+            }
+        );
+
+        currentChatId = null;
+
+        messages = [];
+
+        renderMessages();
+
+        await loadChats();
+
+    }catch(error){
+
+        showToast(error.message);
+
+    }
+
+}
+
+/* =========================================================
+   MOBILE SIDEBAR
+========================================================= */
+
+function toggleSidebar(){
+
+    document
+        .getElementById("sidebar")
+        .classList.toggle("open");
+
+}
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function escapeHtml(value){
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+function escapeAttribute(value){
+
+    return String(value)
+        .replaceAll("\\","\\\\")
+        .replaceAll("'","\\'");
+
+}
+
+function formatAIText(text){
+
+    return escapeHtml(text)
+        .replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>")
+        .replace(/\n/g,"<br>");
+
+}
+
+function formatDate(value){
+
+    if(!value){
+
+        return "";
+
+    }
+
+    try{
+
+        return new Date(value).toLocaleString(
+            lang === "fr"
+            ? "fr-FR"
+            : "en-US",
+            {
+                day:"2-digit",
+                month:"short",
+                hour:"2-digit",
+                minute:"2-digit"
+            }
+        );
+
+    }catch(e){
+
+        return "";
+
+    }
+
+}
+
+function showToast(text){
+
+    const toast =
+        document.getElementById("toast");
+
+    toast.textContent = text;
+
+    toast.classList.add("show");
+
+    setTimeout(
+        () => toast.classList.remove("show"),
+        3000
+    );
+
+}
+
+/* =========================================================
+   START
+========================================================= */
+
+applyLanguage();
+
+loadChats();
+
+loadMemory();
+
+loadContext();
+
+</script>
+
+</body>
+</html>
