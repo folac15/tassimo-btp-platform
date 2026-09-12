@@ -2653,168 +2653,158 @@ async function sendMessage(){
 
 async function generateAIReply(){
 
-    const input =
-        document.getElementById(
-            "messageInput"
-        );
+  const input = document.getElementById("messageInput");
 
+  if(!input){
+    return;
+  }
 
-    if(!input){
+  const existingText = input.value.trim();
+  const customer = currentConversation || {};
 
-        return;
+  const history =
+    currentConversation &&
+    (
+      currentConversation.messages ||
+      currentConversation.history ||
+      []
+    );
 
+  const conversationHistory = (history || [])
+    .slice(-12)
+    .map(message => {
+
+      const text =
+        message.message_text ||
+        message.message ||
+        message.content ||
+        message.text ||
+        "";
+
+      const senderType =
+        String(message.sender_type || "").toLowerCase();
+
+      let role = "user";
+
+      if(
+        senderType === "staff" ||
+        senderType === "ceo" ||
+        senderType === "ai" ||
+        senderType === "business"
+      ){
+        role = "assistant";
+      }
+
+      return {
+        role: role,
+        content: String(text).trim()
+      };
+
+    })
+    .filter(item => item.content);
+
+  const prompt =
+    existingText ||
+    (
+      lang === "fr"
+      ? "Rédige une réponse professionnelle au client en tenant compte de toute la conversation récente."
+      : "Write a professional reply to the customer based on the recent conversation."
+    );
+
+  try {
+
+    const response = await fetch(
+      "/api/messages/ai-draft",
+      {
+        method: "POST",
+
+        credentials: "same-origin",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+          message: prompt,
+
+          channel:
+            currentChannel ||
+            "whatsapp",
+
+          customer: {
+
+            id:
+              customer.customer_id ||
+              "",
+
+            name:
+              customer.customer_name ||
+              customer.name ||
+              "",
+
+            phone:
+              customer.customer_phone ||
+              customer.phone ||
+              ""
+
+          },
+
+          conversation:
+            conversationHistory
+
+        })
+
+      }
+    );
+
+    if(response.status === 401){
+
+      window.location.href = "/login";
+
+      return;
     }
 
+    const data = await response.json();
 
-    if(!currentConversation){
+    if(!response.ok){
 
-        alert(
-            lang === "fr"
-            ? "Veuillez sélectionner une conversation."
-            : "Please select a conversation."
-        );
-
-        return;
-
-    }
-
-
-    const existingText =
-        input.value.trim();
-
-
-    const customer =
-        currentConversation || {};
-
-
-    const prompt =
-        existingText ||
+      throw new Error(
+        data.error ||
         (
-            lang === "fr"
-            ? "Rédige une réponse professionnelle au client."
-            : "Write a professional reply to the customer."
-        );
-
-
-    try{
-
-        const response =
-            await fetch(
-                "/api/messages/ai-draft",
-                {
-                    method:"POST",
-
-                    credentials:"same-origin",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:JSON.stringify({
-
-                        message:
-                            prompt,
-
-                        channel:
-                            currentChannel ||
-                            "whatsapp",
-
-                        customer:{
-
-                            id:
-                                customer.customer_id ||
-                                "",
-
-                            name:
-                                customer.customer_name ||
-                                customer.name ||
-                                customer.full_name ||
-                                "",
-
-                            phone:
-                                customer.customer_phone ||
-                                customer.phone ||
-                                ""
-
-                        }
-
-                    })
-
-                }
-            );
-
-
-        if(response.status === 401){
-
-            window.location.href =
-                "/login";
-
-            return;
-
-        }
-
-
-        let data = {};
-
-
-        try{
-
-            data =
-                await response.json();
-
-        }catch(error){
-
-            throw new Error(
-                lang === "fr"
-                ? "Réponse invalide du service IA."
-                : "Invalid AI service response."
-            );
-
-        }
-
-
-        if(!response.ok){
-
-            throw new Error(
-                data.error ||
-                (
-                    lang === "fr"
-                    ? "L'IA n'a pas pu générer une réponse."
-                    : "AI could not generate a reply."
-                )
-            );
-
-        }
-
-
-        if(data.draft){
-
-            input.value =
-                data.draft;
-
-            input.focus();
-
-        }
-
-    }catch(error){
-
-        console.error(
-            "AI reply error:",
-            error
-        );
-
-
-        alert(
-            error.message ||
-            (
-                lang === "fr"
-                ? "Erreur du service IA."
-                : "AI service error."
-            )
-        );
+          lang === "fr"
+          ? "L'IA n'a pas pu générer une réponse."
+          : "AI could not generate a reply."
+        )
+      );
 
     }
+
+    if(data.draft){
+
+      input.value = data.draft;
+
+      input.focus();
+
+    }
+
+  } catch(error){
+
+    console.error(
+      "AI reply error:",
+      error
+    );
+
+    alert(
+      error.message ||
+      (
+        lang === "fr"
+        ? "Erreur du service IA."
+        : "AI service error."
+      )
+    );
+
+  }
 
 }
 
