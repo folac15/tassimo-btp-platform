@@ -1425,7 +1425,843 @@ def ai_answer(question, conversation=None, context=None):
         answer = call_openrouter(messages, OPENROUTER_FALLBACK_MODEL)
     return answer
 
+# ============================================================
+# TASSIMO AI ASSISTANT
+# Persistent conversations + long-term memory + business context
+# ============================================================
 
+def assistant_user_id():
+    user = get_authenticated_user()
+
+    if user and user.get("id"):
+        return str(user["id"])
+
+    return None
+
+
+def assistant_memory_context(limit=20):
+
+    user_id = assistant_user_id()
+
+    params = {
+        "select": "*",
+        "order": "updated_at.desc",
+        "limit": str(limit),
+    }
+
+    if user_id:
+        params["or"] = (
+            f"(user_id.eq.{user_id},user_id.is.null)"
+        )
+    else:
+        params["user_id"] = "is.null"
+
+    rows = sb_select(
+        "ai_assistant_memories",
+        params
+    )
+
+    return rows or []
+
+
+def assistant_business_context():
+
+    tables = {
+        "customers": "customers",
+        "leads": "leads",
+        "projects": "projects",
+        "inventory": "inventory",
+        "expenses": "expenses",
+        "payments": "payments",
+        "messages": "messages",
+        "documents": "documents",
+        "tasks": "tasks",
+    }
+
+    result = {}
+
+    for key, table in tables.items():
+        try:
+            result[key] = sb_count(table)
+        except Exception:
+            result[key] = 0
+
+    profile = profile_payload()
+
+    result["business"] = {
+        "name": profile.get(
+            "business_name",
+            APP_NAME
+        ),
+        "ceo": profile.get(
+            "ceo_name",
+            CEO_NAME
+        ),
+        "city": profile.get(
+            "city",
+            "Douala"
+        ),
+        "country": profile.get(
+            "country",
+            "Cameroon"
+        ),
+        "slogan": profile.get(
+            "slogan",
+            SLOGAN
+        ),
+    }
+
+    return result
+
+
+def assistant_recent_business_data():
+
+    context = {}
+
+    try:
+        customers = sb_select(
+            "customers",
+            {
+                "select": "*",
+                "order": "created_at.desc",
+                "limit": "15",
+            }
+        )
+
+        context["recent_customers"] = customers
+
+    except Exception:
+        context["recent_customers"] = []
+
+    try:
+        leads = sb_select(
+            "leads",
+            {
+                "select": "*",
+                "order": "created_at.desc",
+                "limit": "15",
+            }
+        )
+
+        context["recent_leads"] = leads
+
+    except Exception:
+        context["recent_leads"] = []
+
+    try:
+        projects = sb_select(
+            "projects",
+            {
+                "select": "*",
+                "order": "created_at.desc",
+                "limit": "15",
+            }
+        )
+
+        context["recent_projects"] = projects
+
+    except Exception:
+        context["recent_projects"] = []
+
+    try:
+        tasks = sb_select(
+            "tasks",
+            {
+                "select": "*",
+                "order": "created_at.desc",
+                "limit": "15",
+            }
+        )
+
+        context["recent_tasks"] = tasks
+
+    except Exception:
+        context["recent_tasks"] = []
+
+    return context
+
+
+def assistant_system_prompt():
+
+    return f"""
+You are TASSIMO AI, the intelligent business operating assistant
+inside {APP_NAME}.
+
+CEO:
+{CEO_NAME}
+
+Location:
+Douala, Cameroon.
+
+Slogan:
+{SLOGAN}
+
+You operate as a professional business AI assistant.
+
+Your responsibilities include:
+
+1. Business analysis
+2. Customer management
+3. Lead and sales analysis
+4. Construction and renovation support
+5. Project analysis
+6. Finance assistance
+7. Inventory analysis
+8. Marketing strategy
+9. Social media strategy
+10. Professional training
+11. Digital courses
+12. Documents and reports
+13. Business planning
+14. Task prioritization
+15. Decision support
+16. Research and reasoning
+17. Writing and rewriting
+18. Data interpretation
+19. Risk identification
+20. CEO decision support
+
+LANGUAGE:
+
+- French is the default language.
+- English is fully supported.
+- Detect the user's language.
+- Respond naturally in the user's language.
+- Do not unnecessarily translate an answer into both languages.
+- If the user asks for French, use professional French.
+- If the user asks for English, use professional English.
+
+MEMORY:
+
+You have persistent business memory.
+
+Important memories supplied to you are facts that should be respected.
+
+Do not invent memories.
+
+If something is uncertain, clearly say that it is uncertain.
+
+BUSINESS DATA:
+
+When business data is supplied in your context, use it.
+
+Do not invent customers, projects, payments, expenses,
+inventory records, quotations, contracts or documents.
+
+If required information is missing, say what is missing.
+
+DECISION SAFETY:
+
+You may analyse, recommend, draft and prepare.
+
+Do not claim that a contract, purchase, payment,
+quotation, legal commitment or sensitive technical decision
+has been approved unless the data explicitly says it has been approved.
+
+When an action requires CEO approval, clearly identify it.
+
+CONSTRUCTION:
+
+When discussing construction, renovation, design or civil engineering:
+
+- Use Cameroon context.
+- Use XAF/CFA when discussing money.
+- Distinguish estimates from approved quotations.
+- State assumptions.
+- Identify risks.
+- Do not invent measurements or prices.
+
+BUSINESS INTELLIGENCE:
+
+Look for:
+
+- trends
+- risks
+- opportunities
+- anomalies
+- priorities
+- customer intent
+- sales opportunities
+- financial concerns
+- project delays
+- operational bottlenecks
+- marketing opportunities
+
+Do not merely repeat data.
+
+Explain what the data means and what should be done next.
+
+PERSONALITY:
+
+Be intelligent, professional, practical, direct and helpful.
+
+Think like a combination of:
+
+- business analyst
+- executive assistant
+- customer service manager
+- construction advisor
+- project manager
+- financial analyst
+- marketing strategist
+- operations manager
+
+But never pretend to possess professional licenses or authority
+that you do not have.
+
+You are TASSIMO AI.
+"""
+
+
+def assistant_build_prompt(question, conversation, memories, context):
+
+    memory_text = json.dumps(
+        memories,
+        ensure_ascii=False,
+        default=str
+    )
+
+    context_text = json.dumps(
+        context,
+        ensure_ascii=False,
+        default=str
+    )
+
+    system = (
+        assistant_system_prompt()
+        + "\n\nPERSISTENT MEMORY:\n"
+        + memory_text
+        + "\n\nCURRENT BUSINESS CONTEXT:\n"
+        + context_text
+    )
+
+    messages = [
+        {
+            "role": "system",
+            "content": system
+        }
+    ]
+
+    for item in conversation[-20:]:
+
+        if not isinstance(item, dict):
+            continue
+
+        role = item.get("role")
+
+        if role not in {
+            "user",
+            "assistant"
+        }:
+            continue
+
+        content = str(
+            item.get("content", "")
+        ).strip()
+
+        if not content:
+            continue
+
+        messages.append({
+            "role": role,
+            "content": content
+        })
+
+    messages.append({
+        "role": "user",
+        "content": question
+    })
+
+    return messages
+
+
+@app.route(
+    "/api/assistant/chats",
+    methods=["GET", "POST"]
+)
+@protected
+def assistant_chats():
+
+    user_id = assistant_user_id()
+
+    if request.method == "GET":
+
+        params = {
+            "select": "*",
+            "order": "updated_at.desc",
+            "limit": "100",
+        }
+
+        if user_id:
+            params["or"] = (
+                f"(user_id.eq.{user_id},user_id.is.null)"
+            )
+
+        rows = sb_select(
+            "ai_assistant_chats",
+            params
+        )
+
+        return jsonify({
+            "chats": rows
+        })
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    title = str(
+        data.get(
+            "title",
+            "Nouvelle conversation"
+        )
+    ).strip()
+
+    if not title:
+        title = (
+            "Nouvelle conversation"
+            if language() == "fr"
+            else "New conversation"
+        )
+
+    payload = {
+        "title": title,
+        "language": language(),
+        "created_at": utc_now(),
+        "updated_at": utc_now(),
+    }
+
+    if user_id:
+        payload["user_id"] = user_id
+
+    saved = sb_insert(
+        "ai_assistant_chats",
+        payload
+    )
+
+    if isinstance(saved, dict) and saved.get("_error"):
+
+        return jsonify({
+            "error": saved["_error"]
+        }), 500
+
+    return jsonify({
+        "chat": saved
+    }), 201
+
+
+@app.route(
+    "/api/assistant/chats/<chat_id>",
+    methods=["GET", "DELETE"]
+)
+@protected
+def assistant_chat(chat_id):
+
+    user_id = assistant_user_id()
+
+    params = {
+        "select": "*",
+        "id": f"eq.{chat_id}",
+        "limit": "1",
+    }
+
+    if user_id:
+        params["or"] = (
+            f"(user_id.eq.{user_id},user_id.is.null)"
+        )
+
+    chats = sb_select(
+        "ai_assistant_chats",
+        params
+    )
+
+    if not chats:
+
+        return jsonify({
+            "error": t("not_found")
+        }), 404
+
+    chat = chats[0]
+
+    if request.method == "DELETE":
+
+        deleted = sb_delete(
+            "ai_assistant_chats",
+            {
+                "id": f"eq.{chat_id}"
+            }
+        )
+
+        return jsonify({
+            "deleted": deleted
+        })
+
+    messages = sb_select(
+        "ai_assistant_messages",
+        {
+            "select": "id,role,content,language,created_at",
+            "chat_id": f"eq.{chat_id}",
+            "order": "created_at.asc",
+            "limit": "200",
+        }
+    )
+
+    return jsonify({
+        "chat": chat,
+        "messages": messages
+    })
+
+
+@app.route(
+    "/api/assistant/chat",
+    methods=["POST"]
+)
+@protected
+def assistant_chat_message():
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    chat_id = str(
+        data.get("chat_id", "")
+    ).strip()
+
+    question = str(
+        data.get("message", "")
+    ).strip()
+
+    requested_language = str(
+        data.get(
+            "language",
+            language()
+        )
+    ).lower()
+
+    if requested_language not in {
+        "fr",
+        "en"
+    }:
+
+        requested_language = "fr"
+
+    if not chat_id or not question:
+
+        return jsonify({
+            "error": t("invalid_data")
+        }), 400
+
+    user_id = assistant_user_id()
+
+    chat_params = {
+        "select": "*",
+        "id": f"eq.{chat_id}",
+        "limit": "1",
+    }
+
+    if user_id:
+        chat_params["or"] = (
+            f"(user_id.eq.{user_id},user_id.is.null)"
+        )
+
+    chats = sb_select(
+        "ai_assistant_chats",
+        chat_params
+    )
+
+    if not chats:
+
+        return jsonify({
+            "error": t("not_found")
+        }), 404
+
+    history = sb_select(
+        "ai_assistant_messages",
+        {
+            "select": "role,content,created_at",
+            "chat_id": f"eq.{chat_id}",
+            "order": "created_at.asc",
+            "limit": "40",
+        }
+    )
+
+    memories = assistant_memory_context(
+        limit=25
+    )
+
+    context = assistant_business_context()
+
+    recent = assistant_recent_business_data()
+
+    context["recent_data"] = recent
+
+    conversation = []
+
+    for item in history:
+
+        conversation.append({
+            "role": item.get("role"),
+            "content": item.get("content", "")
+        })
+
+    messages = assistant_build_prompt(
+        question,
+        conversation,
+        memories,
+        context
+    )
+
+    answer = call_openrouter(
+        messages,
+        OPENROUTER_PRIMARY_MODEL
+    )
+
+    if not answer:
+
+        answer = call_openrouter(
+            messages,
+            OPENROUTER_FALLBACK_MODEL
+        )
+
+    if not answer:
+
+        return jsonify({
+            "error": t("ai_unavailable")
+        }), 503
+
+    now = utc_now()
+
+    saved_user = sb_insert(
+        "ai_assistant_messages",
+        {
+            "chat_id": chat_id,
+            "role": "user",
+            "content": question,
+            "language": requested_language,
+            "created_at": now,
+        }
+    )
+
+    if isinstance(saved_user, dict) and saved_user.get("_error"):
+
+        return jsonify({
+            "error": saved_user["_error"]
+        }), 500
+
+    saved_ai = sb_insert(
+        "ai_assistant_messages",
+        {
+            "chat_id": chat_id,
+            "role": "assistant",
+            "content": answer,
+            "language": requested_language,
+            "created_at": utc_now(),
+        }
+    )
+
+    if isinstance(saved_ai, dict) and saved_ai.get("_error"):
+
+        return jsonify({
+            "error": saved_ai["_error"]
+        }), 500
+
+    # Automatically generate a useful title from the first question.
+    existing_title = chats[0].get("title", "")
+
+    if (
+        not existing_title
+        or existing_title.lower()
+        in {
+            "nouvelle conversation",
+            "new conversation"
+        }
+    ):
+
+        title = question[:70]
+
+        sb_update(
+            "ai_assistant_chats",
+            {
+                "id": f"eq.{chat_id}"
+            },
+            {
+                "title": title,
+                "updated_at": utc_now(),
+            }
+        )
+
+    else:
+
+        sb_update(
+            "ai_assistant_chats",
+            {
+                "id": f"eq.{chat_id}"
+            },
+            {
+                "updated_at": utc_now()
+            }
+        )
+
+    # Detect likely long-term memories.
+    memory_saved = False
+
+    lowered = question.lower()
+
+    memory_triggers = [
+        "remember",
+        "souviens",
+        "remember that",
+        "retiens",
+        "n'oublie",
+        "n’oublie",
+        "préférence",
+        "preference",
+        "always",
+        "toujours",
+    ]
+
+    if any(
+        trigger in lowered
+        for trigger in memory_triggers
+    ):
+
+        memory_saved_record = sb_insert(
+            "ai_assistant_memories",
+            {
+                "user_id": user_id,
+                "memory_type": "conversation",
+                "memory_text": question,
+                "importance": 8,
+                "source": "assistant",
+                "created_at": utc_now(),
+                "updated_at": utc_now(),
+            }
+        )
+
+        if not (
+            isinstance(
+                memory_saved_record,
+                dict
+            )
+            and memory_saved_record.get("_error")
+        ):
+
+            memory_saved = True
+
+    return jsonify({
+        "success": True,
+        "answer": answer,
+        "language": requested_language,
+        "memory_saved": memory_saved,
+        "approval_required":
+            requires_ceo_approval(question),
+    })
+
+
+@app.route(
+    "/api/assistant/memory",
+    methods=["GET", "POST"]
+)
+@protected
+def assistant_memory():
+
+    user_id = assistant_user_id()
+
+    if request.method == "GET":
+
+        return jsonify({
+            "memories":
+                assistant_memory_context(
+                    limit=100
+                )
+        })
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    text = str(
+        data.get("memory", "")
+    ).strip()
+
+    memory_type = str(
+        data.get(
+            "memory_type",
+            "general"
+        )
+    ).strip()
+
+    if not text:
+
+        return jsonify({
+            "error": t("invalid_data")
+        }), 400
+
+    payload = {
+        "memory_type":
+            memory_type or "general",
+        "memory_text":
+            text,
+        "importance":
+            int(data.get("importance", 7)),
+        "source":
+            "user",
+        "created_at":
+            utc_now(),
+        "updated_at":
+            utc_now(),
+    }
+
+    if user_id:
+        payload["user_id"] = user_id
+
+    saved = sb_insert(
+        "ai_assistant_memories",
+        payload
+    )
+
+    if isinstance(saved, dict) and saved.get("_error"):
+
+        return jsonify({
+            "error": saved["_error"]
+        }), 500
+
+    return jsonify({
+        "success": True,
+        "memory": saved
+    }), 201
+
+
+@app.route(
+    "/api/assistant/context",
+    methods=["GET"]
+)
+@protected
+def assistant_context():
+
+    return jsonify({
+        "context":
+            assistant_business_context()
+    })
+
+
+@app.route(
+    "/api/assistant/memory/<memory_id>",
+    methods=["DELETE"]
+)
+@protected
+def assistant_delete_memory(memory_id):
+
+    deleted = sb_delete(
+        "ai_assistant_memories",
+        {
+            "id": f"eq.{memory_id}"
+        }
+    )
+
+    return jsonify({
+        "deleted": deleted
+    })
 @app.route("/api/ai", methods=["POST"])
 @protected
 def ai_assistant():
@@ -2918,6 +3754,10 @@ function openPage(p){
   window.location.href="/automation.html";
   return;
 } 
+  if(p==="ai"){
+    window.location.href="/ai-assistant.html";
+    return;
+}
   if(p==="messages"){
     window.location.href="/messages.html";
     return;
@@ -4260,6 +5100,10 @@ def finance_page():
 @protected
 def documents_page():
     return send_from_directory(".", "documents.html")
+@app.route("/ai-assistant.html")
+@protected
+def ai_assistant_page():
+    return send_from_directory(".", "ai-assistant.html")
 @app.route("/professional-training.html")
 @protected
 def professional_training_page():
