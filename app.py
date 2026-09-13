@@ -5424,6 +5424,10 @@ function openPage(p){
     window.location.href="/messages.html";
     return;
 }
+  if(p==="integrations"){
+    window.location.href="/integrations.html";
+    return;
+}
   if(p==="reports"){
     window.location.href="/reports.html";
     return;
@@ -6804,6 +6808,10 @@ def automation_page():
 @protected
 def messages_page():
     return send_from_directory(".", "messages.html")
+@app.route("/integrations.html")
+@protected
+def integrations_page():
+    return send_from_directory(".", "integrations.html")
 # ------------------------------------------------------------
 # Error handling
 # ------------------------------------------------------------
