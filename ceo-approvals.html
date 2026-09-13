@@ -2540,6 +2540,30 @@ function renderDetails(action){
                         </div>
 
                     </div>
+                                        <!-- APPROVAL ID — ADD THIS BLOCK -->
+
+                    <div class="info-item">
+
+                        <div class="info-label">
+                            ${
+                                lang === "fr"
+                                ? "ID de l'approbation"
+                                : "Approval ID"
+                            }
+                        </div>
+
+                        <div class="info-value"
+                             style="font-family:monospace;word-break:break-all;">
+
+                            ${escapeHtml(
+                                action.id || "—"
+                            )}
+
+                        </div>
+
+                    </div>
+
+                    <!-- END APPROVAL ID -->
 
 
                     <div class="info-item">
