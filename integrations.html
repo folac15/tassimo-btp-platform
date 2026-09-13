@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TASSIMO BTP — Intégrations</title>
+
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --panel: #ffffff;
+            --text: #172033;
+            --muted: #667085;
+            --line: #e4e7ec;
+            --primary: #1769e0;
+            --success: #16803c;
+            --warning: #b54708;
+            --danger: #b42318;
+            --shadow: 0 8px 24px rgba(16, 24, 40, 0.07);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1180px;
+            margin: auto;
+            padding: 18px;
+        }
+
+        .topbar {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .brand p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            line-height: 1.45;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 15px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .secondary {
+            background: #eef4ff;
+            color: #175cd3;
+        }
+
+        .ghost {
+            background: #fff;
+            border: 1px solid var(--line);
+            color: var(--text);
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .summary-card,
+        .card,
+        .info {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .summary-card {
+            padding: 16px;
+        }
+
+        .summary-card .number {
+            font-size: 26px;
+            font-weight: 800;
+            margin-top: 6px;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .section-title {
+            margin: 24px 0 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            padding: 18px;
+        }
+
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .identity {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            background: #eef4ff;
+            font-size: 23px;
+        }
+
+        .name {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .category {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .connected {
+            background: #ecfdf3;
+            color: var(--success);
+        }
+
+        .not-configured {
+            background: #fff1f0;
+            color: var(--danger);
+        }
+
+        .card-body {
+            margin-top: 15px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .meta div {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .meta b {
+            display: block;
+            color: var(--text);
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .info {
+            padding: 18px;
+            margin-top: 18px;
+        }
+
+        .info h3 {
+            margin: 0 0 8px;
+        }
+
+        .info ul {
+            margin: 10px 0 0;
+            padding-left: 20px;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .notice {
+            padding: 12px 14px;
+            background: #eff8ff;
+            border: 1px solid #b2ddff;
+            color: #175cd3;
+            border-radius: 12px;
+            margin-top: 14px;
+            line-height: 1.5;
+        }
+
+        .error {
+            padding: 12px 14px;
+            background: #fff1f0;
+            border: 1px solid #fecdca;
+            color: var(--danger);
+            border-radius: 12px;
+            margin-top: 14px;
+        }
+
+        @media (max-width: 800px) {
+            .summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .container {
+                padding: 10px;
+            }
+
+            .topbar {
+                border-radius: 14px;
+            }
+
+            .summary {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .summary-card {
+                padding: 13px;
+            }
+
+            .summary-card .number {
+                font-size: 22px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .meta {
+                grid-template-columns: 1fr;
+            }
+
+            .actions,
+            .card-actions {
+                width: 100%;
+            }
+
+            .actions button,
+            .card-actions button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topbar">
+
+        <div class="brand">
+            <h1 id="title">🔗 Intégrations</h1>
+
+            <p id="subtitle">
+                Centre de contrôle des connexions de TASSIMO BTP CONSTRUCTION SARL.
+            </p>
+        </div>
+
+        <div class="actions">
+
+            <button
+                class="ghost"
+                id="backBtn"
+                onclick="goDashboard()">
+                ← Tableau de bord
+            </button>
+
+            <button
+                class="primary"
+                id="refreshBtn"
+                onclick="loadStatus()">
+                Actualiser
+            </button>
+
+            <button
+                class="secondary"
+                id="langBtn"
+                onclick="toggleLanguage()">
+                English
+            </button>
+
+        </div>
+
+    </div>
+
+    <div id="message"></div>
+
+    <div class="summary">
+
+        <div class="summary-card">
+            <div class="muted" id="configuredLabel">
+                Configurées
+            </div>
+
+            <div
+                class="number"
+                id="configuredCount">
+                —
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="muted" id="availableLabel">
+                Intégrations suivies
+            </div>
+
+            <div
+                class="number"
+                id="availableCount">
+                —
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="muted" id="socialLabel">
+                Canaux sociaux actifs
+            </div>
+
+            <div
+                class="number"
+                id="socialCount">
+                —
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="muted" id="aiLabel">
+                IA
+            </div>
+
+            <div
+                class="number"
+                id="aiStatus">
+                —
+            </div>
+        </div>
+
+    </div>
+
+    <h2
+        class="section-title"
+        id="communicationTitle">
+        Communication & réseaux sociaux
+    </h2>
+
+    <div
+        class="grid"
+        id="communicationGrid">
+    </div>
+
+    <h2
+        class="section-title"
+        id="platformTitle">
+        Plateforme & IA
+    </h2>
+
+    <div
+        class="grid"
+        id="platformGrid">
+    </div>
+
+    <div class="info">
+
+        <h3 id="truthTitle">
+            État réel des intégrations
+        </h3>
+
+        <div
+            id="truthText"
+            class="muted">
+        </div>
+
+        <ul id="rules">
+            <li>
+                Une variable d'environnement détectée signifie
+                « configuration détectée », pas forcément
+                « connexion API vérifiée ».
+            </li>
+
+            <li>
+                Une API non approuvée ou sans identifiants reste
+                affichée comme non configurée.
+            </li>
+
+            <li>
+                Les fonctions existantes de Messages et TASSIMO AI
+                ne sont pas remplacées par cette page.
+            </li>
+        </ul>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let lang = localStorage.getItem("lang") || "fr";
+
+let currentStatus = null;
+
+
+/* =========================================================
+   INTEGRATIONS
+========================================================= */
+
+const integrations = [
+
+    {
+        key: "whatsapp",
+        name: "WhatsApp",
+        icon: "🟢",
+        category: "Communication",
+        type: "social"
+    },
+
+    {
+        key: "facebook",
+        name: "Facebook Messenger",
+        icon: "🔵",
+        category: "Communication",
+        type: "social"
+    },
+
+    {
+        key: "instagram",
+        name: "Instagram",
+        icon: "📸",
+        category: "Communication",
+        type: "social"
+    },
+
+    {
+        key: "tiktok",
+        name: "TikTok",
+        icon: "🎵",
+        category: "Réseau social",
+        type: "social"
+    },
+
+    {
+        key: "linkedin",
+        name: "LinkedIn",
+        icon: "💼",
+        category: "Réseau professionnel",
+        type: "social"
+    },
+
+    {
+        key: "youtube",
+        name: "YouTube",
+        icon: "▶️",
+        category: "Vidéo / contenu",
+        type: "social"
+    },
+
+    {
+        key: "openrouter",
+        name: "OpenRouter / TASSIMO AI",
+        icon: "🤖",
+        category: "Intelligence artificielle",
+        type: "platform"
+    },
+
+    {
+        key: "supabase",
+        name: "Supabase",
+        icon: "🗄️",
+        category: "Base de données",
+        type: "platform"
+    },
+
+    {
+        key: "ai_auto_publish",
+        name: "Publication automatique IA",
+        icon: "🚀",
+        category: "Automatisation",
+        type: "platform"
+    },
+
+    {
+        key: "render",
+        name: "Render",
+        icon: "☁️",
+        category: "Hébergement",
+        type: "platform"
+    },
+
+    {
+        key: "github",
+        name: "GitHub",
+        icon: "🐙",
+        category: "Code / déploiement",
+        type: "platform"
+    }
+
+];
+
+
+/* =========================================================
+   TRANSLATION
+========================================================= */
+
+function t(fr, en) {
+
+    return lang === "fr" ? fr : en;
+
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+function esc(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+function statusInfo(value) {
+
+    if (value === true) {
+
+        return {
+
+            cls: "connected",
+
+            label: t(
+                "Configuré",
+                "Configured"
+            ),
+
+            detail: t(
+                "La configuration nécessaire est détectée dans l'environnement actuel.",
+                "The required configuration is detected in the current environment."
+            )
+
+        };
+
+    }
+
+    return {
+
+        cls: "not-configured",
+
+        label: t(
+            "Non configuré",
+            "Not configured"
+        ),
+
+        detail: t(
+            "Les identifiants ou paramètres nécessaires ne sont pas détectés.",
+            "The required credentials or settings are not detected."
+        )
+
+    };
+
+}
+
+
+/* =========================================================
+   RENDER CARDS
+========================================================= */
+
+function renderCards() {
+
+    const communication =
+        integrations.filter(
+            item => item.type === "social"
+        );
+
+    const platform =
+        integrations.filter(
+            item => item.type === "platform"
+        );
+
+
+    document.getElementById(
+        "communicationGrid"
+    ).innerHTML =
+        communication
+            .map(cardHTML)
+            .join("");
+
+
+    document.getElementById(
+        "platformGrid"
+    ).innerHTML =
+        platform
+            .map(cardHTML)
+            .join("");
+
+}
+
+
+/* =========================================================
+   CARD
+========================================================= */
+
+function cardHTML(item) {
+
+    const value =
+        Boolean(
+            currentStatus &&
+            currentStatus[item.key]
+        );
+
+
+    const status =
+        statusInfo(value);
+
+
+    let category = item.category;
+
+
+    if (lang === "en") {
+
+        const translations = {
+
+            "Communication":
+                "Communication",
+
+            "Réseau social":
+                "Social network",
+
+            "Réseau professionnel":
+                "Professional network",
+
+            "Vidéo / contenu":
+                "Video / content",
+
+            "Intelligence artificielle":
+                "Artificial intelligence",
+
+            "Base de données":
+                "Database",
+
+            "Automatisation":
+                "Automation",
+
+            "Hébergement":
+                "Hosting",
+
+            "Code / déploiement":
+                "Code / deployment"
+
+        };
+
+        category =
+            translations[item.category] ||
+            item.category;
+
+    }
+
+
+    const role =
+        item.type === "social"
+
+            ? t(
+                "Messages / contenu social",
+                "Messaging / social content"
+            )
+
+            : t(
+                "Infrastructure / IA",
+                "Infrastructure / AI"
+            );
+
+
+    return `
+
+        <div class="card">
+
+            <div class="card-head">
+
+                <div class="identity">
+
+                    <div class="icon">
+                        ${item.icon}
+                    </div>
+
+                    <div>
+
+                        <div class="name">
+                            ${esc(item.name)}
+                        </div>
+
+                        <div class="category">
+                            ${esc(category)}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <span
+                    class="status ${status.cls}">
+
+                    ${value ? "●" : "○"}
+
+                    ${status.label}
+
+                </span>
+
+            </div>
+
+
+            <div class="card-body">
+
+                ${status.detail}
+
+            </div>
+
+
+            <div class="meta">
+
+                <div>
+
+                    <b>
+                        ${t("État", "Status")}
+                    </b>
+
+                    ${
+                        value
+
+                            ? t(
+                                "Configuration détectée",
+                                "Configuration detected"
+                            )
+
+                            : t(
+                                "Action requise",
+                                "Action required"
+                            )
+                    }
+
+                </div>
+
+
+                <div>
+
+                    <b>
+                        ${t("Rôle", "Role")}
+                    </b>
+
+                    ${role}
+
+                </div>
+
+            </div>
+
+
+            <div class="card-actions">
+
+                <button
+                    class="ghost"
+                    onclick="showHelp('${item.key}')">
+
+                    ${t(
+                        "Voir les exigences",
+                        "View requirements"
+                    )}
+
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   HELP / REQUIREMENTS
+========================================================= */
+
+function showHelp(key) {
+
+    const help = {
+
+        whatsapp: [
+            "WhatsApp",
+            "WHATSAPP_ACCESS_TOKEN + WHATSAPP_PHONE_NUMBER_ID",
+            "WhatsApp Business / Meta API"
+        ],
+
+        facebook: [
+            "Facebook Messenger",
+            "FACEBOOK_PAGE_ACCESS_TOKEN",
+            "Meta Graph API"
+        ],
+
+        instagram: [
+            "Instagram",
+            "INSTAGRAM_ACCESS_TOKEN + INSTAGRAM_BUSINESS_ACCOUNT_ID",
+            "Meta Graph API / compte professionnel"
+        ],
+
+        tiktok: [
+            "TikTok",
+            "TIKTOK_ACCESS_TOKEN",
+            "API TikTok + autorisations requises"
+        ],
+
+        linkedin: [
+            "LinkedIn",
+            "LINKEDIN_ACCESS_TOKEN + LINKEDIN_ORGANIZATION_ID",
+            "API LinkedIn + autorisations requises"
+        ],
+
+        youtube: [
+            "YouTube",
+            "YOUTUBE_ACCESS_TOKEN ou YOUTUBE_API_KEY",
+            "YouTube API"
+        ],
+
+        openrouter: [
+            "OpenRouter / TASSIMO AI",
+            "OPENROUTER_API_KEY",
+            "Fournisseur IA utilisé par TASSIMO AI"
+        ],
+
+        supabase: [
+            "Supabase",
+            "SUPABASE_URL + SUPABASE_KEY",
+            "Base de données principale"
+        ],
+
+        ai_auto_publish: [
+            "Publication automatique IA",
+            "AI_AUTO_PUBLISH",
+            "Fonction d'automatisation contrôlée par la configuration"
+        ],
+
+        render: [
+            "Render",
+            "Hébergement actuel",
+            "Déploiement de l'application"
+        ],
+
+        github: [
+            "GitHub",
+            "Dépôt du projet",
+            "Gestion du code source"
+        ]
+
+    };
+
+
+    const item = help[key];
+
+
+    if (!item) {
+        return;
+    }
+
+
+    document.getElementById(
+        "message"
+    ).innerHTML = `
+
+        <div class="notice">
+
+            <b>
+                ${esc(item[0])}
+            </b>
+
+            <br>
+
+            <span>
+                ${t(
+                    "Configuration attendue : ",
+                    "Expected configuration: "
+                )}
+
+                ${esc(item[1])}
+            </span>
+
+            <br>
+
+            <span>
+                ${t(
+                    "Service : ",
+                    "Service: "
+                )}
+
+                ${esc(item[2])}
+            </span>
+
+        </div>
+
+    `;
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+/* =========================================================
+   LOAD BACKEND STATUS
+========================================================= */
+
+async function loadStatus() {
+
+    const button =
+        document.getElementById(
+            "refreshBtn"
+        );
+
+
+    button.disabled = true;
+
+    button.textContent =
+        t(
+            "Chargement...",
+            "Loading..."
+        );
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/integrations/status",
+                {
+                    credentials: "same-origin",
+                    cache: "no-store"
+                }
+            );
+
+
+        if (response.status === 401) {
+
+            window.location.href = "/login";
+
+            return;
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                t(
+                    "Impossible de charger les intégrations.",
+                    "Unable to load integrations."
+                )
+            );
+
+        }
+
+
+        currentStatus = data;
+
+
+        renderCards();
+
+        updateSummary();
+
+
+        document.getElementById(
+            "message"
+        ).innerHTML = "";
+
+
+    } catch (error) {
+
+        document.getElementById(
+            "message"
+        ).innerHTML = `
+
+            <div class="error">
+
+                ${esc(
+                    error.message ||
+                    t(
+                        "Erreur de connexion.",
+                        "Connection error."
+                    )
+                )}
+
+            </div>
+
+        `;
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            t(
+                "Actualiser",
+                "Refresh"
+            );
+
+    }
+
+}
+
+
+/* =========================================================
+   SUMMARY
+========================================================= */
+
+function updateSummary() {
+
+    const keys =
+        integrations.map(
+            item => item.key
+        );
+
+
+    const configured =
+        keys.filter(
+            key =>
+                currentStatus[key] === true
+        ).length;
+
+
+    const social =
+        integrations
+
+            .filter(
+                item =>
+                    item.type === "social"
+            )
+
+            .filter(
+                item =>
+                    currentStatus[item.key] === true
+            )
+
+            .length;
+
+
+    document.getElementById(
+        "configuredCount"
+    ).textContent = configured;
+
+
+    document.getElementById(
+        "availableCount"
+    ).textContent =
+        integrations.length;
+
+
+    document.getElementById(
+        "socialCount"
+    ).textContent = social;
+
+
+    document.getElementById(
+        "aiStatus"
+    ).textContent =
+
+        currentStatus.openrouter
+
+            ? t(
+                "Actif",
+                "Ready"
+            )
+
+            : t(
+                "À configurer",
+                "Needs setup"
+            );
+
+}
+
+
+/* =========================================================
+   LANGUAGE
+========================================================= */
+
+function applyLanguage() {
+
+    document.documentElement.lang =
+        lang;
+
+
+    document.getElementById(
+        "title"
+    ).textContent =
+        "🔗 " +
+        t(
+            "Intégrations",
+            "Integrations"
+        );
+
+
+    document.getElementById(
+        "subtitle"
+    ).textContent =
+        t(
+            "Centre de contrôle des connexions de TASSIMO BTP CONSTRUCTION SARL.",
+            "TASSIMO BTP CONSTRUCTION SARL integration control center."
+        );
+
+
+    document.getElementById(
+        "backBtn"
+    ).textContent =
+        "← " +
+        t(
+            "Tableau de bord",
+            "Dashboard"
+        );
+
+
+    document.getElementById(
+        "refreshBtn"
+    ).textContent =
+        t(
+            "Actualiser",
+            "Refresh"
+        );
+
+
+    document.getElementById(
+        "langBtn"
+    ).textContent =
+        lang === "fr"
+            ? "English"
+            : "Français";
+
+
+    document.getElementById(
+        "configuredLabel"
+    ).textContent =
+        t(
+            "Configurées",
+            "Configured"
+        );
+
+
+    document.getElementById(
+        "availableLabel"
+    ).textContent =
+        t(
+            "Intégrations suivies",
+            "Tracked integrations"
+        );
+
+
+    document.getElementById(
+        "socialLabel"
+    ).textContent =
+        t(
+            "Canaux sociaux actifs",
+            "Active social channels"
+        );
+
+
+    document.getElementById(
+        "aiLabel"
+    ).textContent =
+        t(
+            "IA",
+            "AI"
+        );
+
+
+    document.getElementById(
+        "communicationTitle"
+    ).textContent =
+        t(
+            "Communication & réseaux sociaux",
+            "Communication & social networks"
+        );
+
+
+    document.getElementById(
+        "platformTitle"
+    ).textContent =
+        t(
+            "Plateforme & IA",
+            "Platform & AI"
+        );
+
+
+    document.getElementById(
+        "truthTitle"
+    ).textContent =
+        t(
+            "État réel des intégrations",
+            "Integration status reality"
+        );
+
+
+    document.getElementById(
+        "truthText"
+    ).textContent =
+        t(
+            "Cette page utilise le statut réel fourni par le backend TASSIMO. Elle ne déclare pas une plateforme « connectée » simplement parce qu'une interface existe.",
+            "This page uses the real status supplied by the TASSIMO backend. It does not declare a platform connected merely because an interface exists."
+        );
+
+
+    document.getElementById(
+        "rules"
+    ).innerHTML = `
+
+        <li>
+            ${t(
+                "Une variable d'environnement détectée signifie « configuration détectée », pas forcément « connexion API vérifiée ».",
+                "A detected environment variable means configuration detected, not necessarily a verified API connection."
+            )}
+        </li>
+
+        <li>
+            ${t(
+                "Une API non approuvée ou sans identifiants reste affichée comme non configurée.",
+                "An unapproved API or missing credentials remains shown as not configured."
+            )}
+        </li>
+
+        <li>
+            ${t(
+                "Les fonctions existantes de Messages et TASSIMO AI ne sont pas remplacées par cette page.",
+                "The existing Messages and TASSIMO AI functions are not replaced by this page."
+            )}
+        </li>
+
+    `;
+
+
+    if (currentStatus) {
+
+        renderCards();
+
+    }
+
+}
+
+
+/* =========================================================
+   TOGGLE LANGUAGE
+========================================================= */
+
+function toggleLanguage() {
+
+    lang =
+        lang === "fr"
+            ? "en"
+            : "fr";
+
+
+    localStorage.setItem(
+        "lang",
+        lang
+    );
+
+
+    applyLanguage();
+
+    loadStatus();
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function goDashboard() {
+
+    window.location.href = "/";
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+applyLanguage();
+
+loadStatus();
+
+</script>
+
+</body>
+</html>
