@@ -56,6 +56,9 @@ WHATSAPP_ACCESS_TOKEN = os.environ.get("WHATSAPP_ACCESS_TOKEN", "")
 WHATSAPP_PHONE_NUMBER_ID = os.environ.get("WHATSAPP_PHONE_NUMBER_ID", "")
 WHATSAPP_BUSINESS_ACCOUNT_ID = os.environ.get("WHATSAPP_BUSINESS_ACCOUNT_ID", "")
 META_GRAPH_VERSION = os.environ.get("META_GRAPH_VERSION", "v20.0")
+META_APP_ID = os.environ.get("META_APP_ID", "")
+META_CONFIG_ID = os.environ.get("META_CONFIG_ID", "")
+META_APP_SECRET = os.environ.get("META_APP_SECRET", "")
 INSTAGRAM_VERIFY_TOKEN = os.environ.get("INSTAGRAM_VERIFY_TOKEN", "")
 INSTAGRAM_ACCESS_TOKEN = os.environ.get("INSTAGRAM_ACCESS_TOKEN", "")
 INSTAGRAM_BUSINESS_ACCOUNT_ID = os.environ.get("INSTAGRAM_BUSINESS_ACCOUNT_ID", "")
@@ -4414,7 +4417,71 @@ def integrations_status():
         "github": True,
     })
 
+# ============================================================
+# META WHATSAPP EMBEDDED SIGNUP
+# ============================================================
 
+@app.route("/api/meta/embedded-signup/exchange", methods=["POST"])
+@protected
+def meta_embedded_signup_exchange():
+    data = request.get_json(silent=True) or {}
+    code = str(data.get("code") or "").strip()
+
+    if not code:
+        return jsonify({
+            "success": False,
+            "error": "Missing Meta authorization code."
+        }), 400
+
+    if not META_APP_ID or not META_APP_SECRET:
+        return jsonify({
+            "success": False,
+            "error": "Meta App credentials are not configured."
+        }), 500
+
+    try:
+        graph_url = (
+            f"https://graph.facebook.com/"
+            f"{META_GRAPH_VERSION}/oauth/access_token"
+        )
+
+        response = requests.get(
+            graph_url,
+            params={
+                "client_id": META_APP_ID,
+                "client_secret": META_APP_SECRET,
+                "code": code
+            },
+            timeout=30
+        )
+
+        token_data = response.json()
+
+        if response.status_code >= 400:
+            return jsonify({
+                "success": False,
+                "error": "Meta authorization failed.",
+                "details": token_data
+            }), 400
+
+        if not token_data.get("access_token"):
+            return jsonify({
+                "success": False,
+                "error": "Meta did not return an access token."
+            }), 400
+
+        return jsonify({
+            "success": True,
+            "connected": True,
+            "message": "Meta authorization completed."
+        })
+
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "error": "Meta connection failed.",
+            "details": str(exc)
+        }), 500
 # ------------------------------------------------------------
 # Unified multi-channel messaging + AI publishing intelligence
 # ------------------------------------------------------------
@@ -4823,7 +4890,7 @@ def unified_messages_api():
             },
         )
 
-        if rows:
+        if rows
             conversation = rows[0]
 
     # Second preference: customer + channel
@@ -6717,7 +6784,71 @@ async function page_reports(){const names=['customers','projects','finance','pay
 async function loadReport(x){try{const d=await api('/api/reports/'+x);report.textContent=JSON.stringify(d,null,2)}catch(e){report.textContent=e.message}}
 async function page_automation(){content.innerHTML=`<div class="panel"><h2>${tr('automation')}</h2><p>${lang==='fr'?'Réponses IA, détection de langue, intention du client, relances et contrôles d’approbation du CEO.':'AI replies, language detection, customer intent, follow-ups and CEO approval controls.'}</p><button class="btn" onclick="loadSettings()">${lang==='fr'?'Charger les paramètres d’automatisation':'Load Automation Settings'}</button><pre id="set" style="white-space:pre-wrap"></pre></div>`}
 async function loadSettings(){const d=await api('/api/settings');set.textContent=JSON.stringify(d,null,2)}
-async function page_integrations(){const d=await api('/api/integrations/status');content.innerHTML=`<div class="cards">${Object.entries(d).map(([k,v])=>`<div class="card"><b>${k==='ai_auto_publish'?'Publication automatique IA':k}</b><div class="stat">${v?'✓':'—'}</div></div>`).join('')}</div>`}
+async function page_integrations(){
+
+  const d = await api('/api/integrations/status');
+
+  content.innerHTML = `
+    <div class="panel">
+
+      <h2>
+        ${lang === 'fr'
+          ? 'Intégrations'
+          : 'Integrations'}
+      </h2>
+
+      <p>
+        ${lang === 'fr'
+          ? 'Connectez WhatsApp Business à TASSIMO BTP.'
+          : 'Connect WhatsApp Business to TASSIMO BTP.'}
+      </p>
+
+      <div class="panel" style="margin-top:15px">
+
+        <h3>WhatsApp Business</h3>
+
+        <p id="whatsappConnectStatus">
+          ${d.whatsapp
+            ? '🟢 WhatsApp connecté'
+            : '⚪ WhatsApp non connecté'}
+        </p>
+
+        <button
+          class="btn"
+          onclick="launchWhatsAppSignup()"
+        >
+          ${lang === 'fr'
+            ? 'Connecter WhatsApp Business'
+            : 'Connect WhatsApp Business'}
+        </button>
+
+      </div>
+
+      <div class="cards" style="margin-top:20px">
+
+        ${Object.entries(d)
+          .map(([k,v]) => `
+            <div class="card">
+              <b>
+                ${k === 'ai_auto_publish'
+                  ? 'Publication automatique IA'
+                  : k}
+              </b>
+
+              <div class="stat">
+                ${v ? '✓' : '—'}
+              </div>
+            </div>
+          `)
+          .join('')}
+
+      </div>
+
+    </div>
+  `;
+
+  loadMetaSignupSDK();
+}
 async function page_settings(){const d=await api('/api/profile');const labels={business_name:lang==='fr'?'Nom de l’entreprise':'Business Name',ceo_name:'CEO',slogan:lang==='fr'?'Slogan':'Slogan',country:lang==='fr'?'Pays':'Country',city:lang==='fr'?'Ville':'City'};content.innerHTML=`<div class="panel"><h2>${tr('business_profile')}</h2><div class="form">${['business_name','ceo_name','slogan','country','city'].map(k=>`<label>${labels[k]}<input id="p_${k}" value="${escapeHtml(d[k]||'')}"></label>`).join('')}<button class="btn" onclick="saveProfile()">${tr('save')}</button></div></div>`}
 async function saveProfile(){const data={};['business_name','ceo_name','slogan','country','city'].forEach(k=>data[k]=document.getElementById('p_'+k).value);await api('/api/profile',{method:'POST',body:JSON.stringify(data)});toast(tr('saved'))}
 async function page_admin(){content.innerHTML=`<div class="panel"><h2>${tr('admin')}</h2><p>${tr('permissions')}</p><pre id="status"></pre></div>`;const d=await api('/api/status');status.textContent=JSON.stringify(d,null,2)}
