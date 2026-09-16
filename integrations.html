@@ -837,19 +837,16 @@ function cardHTML(item) {
 
 
             <div class="card-actions">
+    ${item.key === "whatsapp" ? `
+        <button class="primary" onclick="launchWhatsAppSignup()">
+            ${t("Connecter WhatsApp","Connect WhatsApp")}
+        </button>
+    ` : ""}
 
-                <button
-                    class="ghost"
-                    onclick="showHelp('${item.key}')">
-
-                    ${t(
-                        "Voir les exigences",
-                        "View requirements"
-                    )}
-
-                </button>
-
-            </div>
+    <button class="ghost" onclick="showHelp('${item.key}')">
+        ${t("Voir les exigences","View requirements")}
+    </button>
+</div>
 
         </div>
 
@@ -1369,7 +1366,117 @@ function goDashboard() {
 /* =========================================================
    INITIALIZE
 ========================================================= */
+function loadMetaSignupSDK() {
+    return new Promise((resolve, reject) => {
+        if (window.FB) {
+            resolve();
+            return;
+        }
 
+        const script = document.createElement("script");
+        script.src = "https://connect.facebook.net/en_US/sdk.js";
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+            FB.init({
+                appId: "927924303723901",
+                cookie: true,
+                xfbml: true,
+                version: "v25.0"
+            });
+            resolve();
+        };
+        script.onerror = () => reject(new Error("Meta SDK could not load."));
+        document.head.appendChild(script);
+    });
+}
+
+async function launchWhatsAppSignup() {
+    try {
+        await loadMetaSignupSDK();
+
+        FB.login(function(response) {
+            if (!response || !response.authResponse) {
+                alert(
+                    lang === "fr"
+                    ? "La connexion WhatsApp a été annulée."
+                    : "WhatsApp connection was cancelled."
+                );
+                return;
+            }
+
+            const code = response.authResponse.code;
+
+            if (!code) {
+                alert(
+                    lang === "fr"
+                    ? "Meta n'a pas retourné le code de connexion."
+                    : "Meta did not return the connection code."
+                );
+                return;
+            }
+
+            completeWhatsAppSignup(code);
+        }, {
+            config_id: "1742763276998128",
+            response_type: "code",
+            override_default_response_type: true,
+            extras: {
+                setup: {},
+                featureType: "whatsapp_business_app_onboarding"
+            }
+        });
+
+    } catch (error) {
+        console.error("WhatsApp signup error:", error);
+
+        alert(
+            lang === "fr"
+            ? "Impossible de charger la connexion Meta."
+            : "Unable to load Meta connection."
+        );
+    }
+}
+
+async function completeWhatsAppSignup(code) {
+    try {
+        const response = await fetch("/api/meta/embedded-signup/exchange", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                code: code
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error ||
+                "WhatsApp connection failed."
+            );
+        }
+
+        alert(
+            lang === "fr"
+            ? "Connexion WhatsApp terminée."
+            : "WhatsApp connection completed."
+        );
+
+        await loadStatus();
+
+    } catch (error) {
+        console.error("WhatsApp exchange error:", error);
+
+        alert(
+            lang === "fr"
+            ? "La connexion WhatsApp a échoué : " + error.message
+            : "WhatsApp connection failed: " + error.message
+        );
+    }
+    }
 applyLanguage();
 
 loadStatus();
