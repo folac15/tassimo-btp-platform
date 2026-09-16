@@ -6785,215 +6785,230 @@ async function loadReport(x){try{const d=await api('/api/reports/'+x);report.tex
 async function page_automation(){content.innerHTML=`<div class="panel"><h2>${tr('automation')}</h2><p>${lang==='fr'?'Réponses IA, détection de langue, intention du client, relances et contrôles d’approbation du CEO.':'AI replies, language detection, customer intent, follow-ups and CEO approval controls.'}</p><button class="btn" onclick="loadSettings()">${lang==='fr'?'Charger les paramètres d’automatisation':'Load Automation Settings'}</button><pre id="set" style="white-space:pre-wrap"></pre></div>`}
 async function loadSettings(){const d=await api('/api/settings');set.textContent=JSON.stringify(d,null,2)}
 async function page_integrations(){
+  const d=await api('/api/integrations/status');
 
-  const d = await api('/api/integrations/status');
+  content.innerHTML=`
+    <div class="card">
+      <h2>🔗 Integrations</h2>
+      <p>TASSIMO BTP CONSTRUCTION SARL — Communication & Social Networks</p>
 
-  content.innerHTML = `
-    <div class="panel">
+      <div style="margin:18px 0;padding:16px;border:1px solid #ddd;border-radius:12px;">
+        <h3>📱 WhatsApp Business</h3>
 
-      <h2>
-        ${lang === 'fr'
-          ? 'Intégrations'
-          : 'Integrations'}
-      </h2>
-
-      <p>
-        ${lang === 'fr'
-          ? 'Connectez WhatsApp Business à TASSIMO BTP.'
-          : 'Connect WhatsApp Business to TASSIMO BTP.'}
-      </p>
-
-      <div class="panel" style="margin-top:15px">
-
-        <h3>WhatsApp Business</h3>
-
-        <p id="whatsappConnectStatus">
-          ${d.whatsapp
-            ? '🟢 WhatsApp connecté'
-            : '⚪ WhatsApp non connecté'}
+        <p>
+          Connect the existing TASSIMO WhatsApp Business account
+          securely through Meta.
         </p>
+
+        <div id="waConnectionStatus" style="margin:12px 0;">
+          ${d.whatsapp
+            ? '<b style="color:green;">🟢 WhatsApp is configured</b>'
+            : '<b style="color:#b45309;">🟠 WhatsApp is not yet connected</b>'}
+        </div>
 
         <button
           class="btn"
           onclick="launchWhatsAppSignup()"
-        >
-          ${lang === 'fr'
-            ? 'Connecter WhatsApp Business'
-            : 'Connect WhatsApp Business'}
+          style="margin-top:10px;">
+          🔗 Connect WhatsApp with Meta
         </button>
 
+        <p style="font-size:13px;margin-top:12px;opacity:.75;">
+          No WhatsApp password is required here.
+          Meta will handle the authorization securely.
+        </p>
       </div>
 
-      <div class="cards" style="margin-top:20px">
+      <div class="cards">
 
-        ${Object.entries(d)
-          .map(([k,v]) => `
-            <div class="card">
-              <b>
-                ${k === 'ai_auto_publish'
-                  ? 'Publication automatique IA'
-                  : k}
-              </b>
+        <div class="card">
+          <b>Facebook Messenger</b>
+          <div class="stat">${d.facebook?'🟢 Configured':'⚪ Not configured'}</div>
+        </div>
 
-              <div class="stat">
-                ${v ? '✓' : '—'}
-              </div>
-            </div>
-          `)
-          .join('')}
+        <div class="card">
+          <b>Instagram</b>
+          <div class="stat">${d.instagram?'🟢 Configured':'⚪ Not configured'}</div>
+        </div>
+
+        <div class="card">
+          <b>TikTok</b>
+          <div class="stat">${d.tiktok?'🟢 Configured':'⚪ Not configured'}</div>
+        </div>
+
+        <div class="card">
+          <b>LinkedIn</b>
+          <div class="stat">${d.linkedin?'🟢 Configured':'⚪ Not configured'}</div>
+        </div>
+
+        <div class="card">
+          <b>YouTube</b>
+          <div class="stat">${d.youtube?'🟢 Configured':'⚪ Not configured'}</div>
+        </div>
+
+        <div class="card">
+          <b>TASSIMO AI / OpenRouter</b>
+          <div class="stat">${d.openrouter?'🟢 Configured':'⚪ Not configured'}</div>
+        </div>
+
+        <div class="card">
+          <b>Supabase</b>
+          <div class="stat">${d.supabase?'🟢 Configured':'⚪ Not configured'}</div>
+        </div>
+
+        <div class="card">
+          <b>Automatic AI Publishing</b>
+          <div class="stat">${d.ai_auto_publish?'🟢 Configured':'⚪ Not configured'}</div>
+        </div>
 
       </div>
 
+      <div id="metaSignupMessage"
+           style="margin-top:18px;padding:12px;border-radius:10px;"></div>
     </div>
   `;
 
   loadMetaSignupSDK();
 }
-function loadMetaSignupSDK(){
 
+
+function loadMetaSignupSDK(){
   if(window.FB){
+    window.FB.init({
+      appId:'927924303723901',
+      cookie:true,
+      xfbml:true,
+      version:'v25.0'
+    });
     return;
   }
 
-  window.fbAsyncInit = function(){
-
-    FB.init({
-      appId: "927924303723901",
-      cookie: true,
-      xfbml: true,
-      version: "v25.0"
+  window.fbAsyncInit=function(){
+    window.FB.init({
+      appId:'927924303723901',
+      cookie:true,
+      xfbml:true,
+      version:'v25.0'
     });
-
   };
 
-  if(!document.getElementById("facebook-jssdk")){
+  if(document.getElementById('facebook-jssdk')) return;
 
-    const js = document.createElement("script");
+  const js=document.createElement('script');
+  js.id='facebook-jssdk';
+  js.src='https://connect.facebook.net/en_US/sdk.js';
+  js.async=true;
+  js.defer=true;
+  js.crossOrigin='anonymous';
 
-    js.id = "facebook-jssdk";
-    js.async = true;
-    js.defer = true;
-    js.crossOrigin = "anonymous";
-    js.src = "https://connect.facebook.net/en_US/sdk.js";
-
-    document.head.appendChild(js);
-  }
+  document.body.appendChild(js);
 }
 
 
 function launchWhatsAppSignup(){
 
-  const statusBox =
-    document.getElementById("whatsappConnectStatus");
+  const message=document.getElementById('metaSignupMessage');
 
   if(!window.FB){
-
-    statusBox.textContent =
-      lang === "fr"
-        ? "Chargement de Meta..."
-        : "Loading Meta...";
-
+    if(message){
+      message.innerHTML=
+        '<b style="color:#b45309;">Meta connection is still loading. Please try again.</b>';
+    }
     loadMetaSignupSDK();
     return;
   }
 
-  statusBox.textContent =
-    lang === "fr"
-      ? "Ouverture de WhatsApp Business..."
-      : "Opening WhatsApp Business...";
+  if(message){
+    message.innerHTML=
+      '<b>Opening Meta WhatsApp Business authorization...</b>';
+  }
 
-  FB.login(
+  FB.login(function(response){
 
-    function(response){
+    if(response && response.authResponse && response.authResponse.code){
 
-      if(
-        response &&
-        response.authResponse &&
-        response.authResponse.code
-      ){
+      const code=response.authResponse.code;
 
-        completeWhatsAppSignup(
-          response.authResponse.code
-        );
+      completeWhatsAppSignup(code);
 
-      }else{
+    }else{
 
-        statusBox.textContent =
-          lang === "fr"
-            ? "Connexion Meta annulée."
-            : "Meta connection cancelled.";
+      if(message){
+        message.innerHTML=
+          '<b style="color:#b91c1c;">Meta authorization was cancelled or did not return a code.</b>';
       }
 
-    },
-
-    {
-      config_id: "1742763276998128",
-
-      response_type: "code",
-
-      override_default_response_type: true,
-
-      extras: {
-        setup: {},
-        featureType: "whatsapp_business_app_onboarding"
-      }
     }
 
-  );
+  },{
+    config_id:'1742763276998128',
+    response_type:'code',
+    override_default_response_type:true,
+    extras:{
+      setup:{},
+      featureType:'whatsapp_business_app_onboarding'
+    }
+  });
 }
 
 
 async function completeWhatsAppSignup(code){
 
-  const statusBox =
-    document.getElementById("whatsappConnectStatus");
+  const message=document.getElementById('metaSignupMessage');
+
+  if(message){
+    message.innerHTML=
+      '<b>🔄 Completing WhatsApp connection...</b>';
+  }
 
   try{
 
-    statusBox.textContent =
-      lang === "fr"
-        ? "Finalisation de la connexion..."
-        : "Finalizing connection...";
+    const response=await fetch('/api/meta/embedded-signup/exchange',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        code:code
+      })
+    });
 
-    const result = await api(
-      "/api/meta/embedded-signup/exchange",
-      {
-        method: "POST",
+    const data=await response.json();
 
-        body: JSON.stringify({
-          code: code
-        })
-      }
-    );
-
-    if(!result.success){
+    if(!response.ok || !data.ok){
 
       throw new Error(
-        result.error ||
-        "Meta connection failed."
+        data.error ||
+        'Meta authorization exchange failed.'
       );
+
     }
 
-    statusBox.textContent =
-      lang === "fr"
-        ? "✅ WhatsApp Business connecté."
-        : "✅ WhatsApp Business connected.";
+    if(message){
+      message.innerHTML=
+        '<b style="color:green;">✅ Meta authorization completed successfully.</b>' +
+        '<br><small>Refreshing integration status...</small>';
+    }
 
-    toast(
-      lang === "fr"
-        ? "WhatsApp connecté avec succès."
-        : "WhatsApp connected successfully."
-    );
+    setTimeout(function(){
+      page_integrations();
+    },1500);
 
   }catch(error){
 
-    statusBox.textContent =
-      (lang === "fr"
-        ? "❌ Échec : "
-        : "❌ Failed: ") +
-      error.message;
+    console.error('WhatsApp Meta signup error:',error);
+
+    if(message){
+      message.innerHTML=
+        '<b style="color:#b91c1c;">❌ WhatsApp connection failed.</b>' +
+        '<br><small>'+String(error.message || error)+'</small>';
+    }
+
   }
 }
+
+
+        
 async function page_settings(){const d=await api('/api/profile');const labels={business_name:lang==='fr'?'Nom de l’entreprise':'Business Name',ceo_name:'CEO',slogan:lang==='fr'?'Slogan':'Slogan',country:lang==='fr'?'Pays':'Country',city:lang==='fr'?'Ville':'City'};content.innerHTML=`<div class="panel"><h2>${tr('business_profile')}</h2><div class="form">${['business_name','ceo_name','slogan','country','city'].map(k=>`<label>${labels[k]}<input id="p_${k}" value="${escapeHtml(d[k]||'')}"></label>`).join('')}<button class="btn" onclick="saveProfile()">${tr('save')}</button></div></div>`}
 async function saveProfile(){const data={};['business_name','ceo_name','slogan','country','city'].forEach(k=>data[k]=document.getElementById('p_'+k).value);await api('/api/profile',{method:'POST',body:JSON.stringify(data)});toast(tr('saved'))}
 async function page_admin(){content.innerHTML=`<div class="panel"><h2>${tr('admin')}</h2><p>${tr('permissions')}</p><pre id="status"></pre></div>`;const d=await api('/api/status');status.textContent=JSON.stringify(d,null,2)}
