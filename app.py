@@ -4890,7 +4890,7 @@ def unified_messages_api():
             },
         )
 
-        if rows
+        if rows:
             conversation = rows[0]
 
     # Second preference: customer + channel
