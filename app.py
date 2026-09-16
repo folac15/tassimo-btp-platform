@@ -6849,6 +6849,151 @@ async function page_integrations(){
 
   loadMetaSignupSDK();
 }
+function loadMetaSignupSDK(){
+
+  if(window.FB){
+    return;
+  }
+
+  window.fbAsyncInit = function(){
+
+    FB.init({
+      appId: "927924303723901",
+      cookie: true,
+      xfbml: true,
+      version: "v25.0"
+    });
+
+  };
+
+  if(!document.getElementById("facebook-jssdk")){
+
+    const js = document.createElement("script");
+
+    js.id = "facebook-jssdk";
+    js.async = true;
+    js.defer = true;
+    js.crossOrigin = "anonymous";
+    js.src = "https://connect.facebook.net/en_US/sdk.js";
+
+    document.head.appendChild(js);
+  }
+}
+
+
+function launchWhatsAppSignup(){
+
+  const statusBox =
+    document.getElementById("whatsappConnectStatus");
+
+  if(!window.FB){
+
+    statusBox.textContent =
+      lang === "fr"
+        ? "Chargement de Meta..."
+        : "Loading Meta...";
+
+    loadMetaSignupSDK();
+    return;
+  }
+
+  statusBox.textContent =
+    lang === "fr"
+      ? "Ouverture de WhatsApp Business..."
+      : "Opening WhatsApp Business...";
+
+  FB.login(
+
+    function(response){
+
+      if(
+        response &&
+        response.authResponse &&
+        response.authResponse.code
+      ){
+
+        completeWhatsAppSignup(
+          response.authResponse.code
+        );
+
+      }else{
+
+        statusBox.textContent =
+          lang === "fr"
+            ? "Connexion Meta annulée."
+            : "Meta connection cancelled.";
+      }
+
+    },
+
+    {
+      config_id: "1742763276998128",
+
+      response_type: "code",
+
+      override_default_response_type: true,
+
+      extras: {
+        setup: {},
+        featureType: "whatsapp_business_app_onboarding"
+      }
+    }
+
+  );
+}
+
+
+async function completeWhatsAppSignup(code){
+
+  const statusBox =
+    document.getElementById("whatsappConnectStatus");
+
+  try{
+
+    statusBox.textContent =
+      lang === "fr"
+        ? "Finalisation de la connexion..."
+        : "Finalizing connection...";
+
+    const result = await api(
+      "/api/meta/embedded-signup/exchange",
+      {
+        method: "POST",
+
+        body: JSON.stringify({
+          code: code
+        })
+      }
+    );
+
+    if(!result.success){
+
+      throw new Error(
+        result.error ||
+        "Meta connection failed."
+      );
+    }
+
+    statusBox.textContent =
+      lang === "fr"
+        ? "✅ WhatsApp Business connecté."
+        : "✅ WhatsApp Business connected.";
+
+    toast(
+      lang === "fr"
+        ? "WhatsApp connecté avec succès."
+        : "WhatsApp connected successfully."
+    );
+
+  }catch(error){
+
+    statusBox.textContent =
+      (lang === "fr"
+        ? "❌ Échec : "
+        : "❌ Failed: ") +
+      error.message;
+  }
+}
 async function page_settings(){const d=await api('/api/profile');const labels={business_name:lang==='fr'?'Nom de l’entreprise':'Business Name',ceo_name:'CEO',slogan:lang==='fr'?'Slogan':'Slogan',country:lang==='fr'?'Pays':'Country',city:lang==='fr'?'Ville':'City'};content.innerHTML=`<div class="panel"><h2>${tr('business_profile')}</h2><div class="form">${['business_name','ceo_name','slogan','country','city'].map(k=>`<label>${labels[k]}<input id="p_${k}" value="${escapeHtml(d[k]||'')}"></label>`).join('')}<button class="btn" onclick="saveProfile()">${tr('save')}</button></div></div>`}
 async function saveProfile(){const data={};['business_name','ceo_name','slogan','country','city'].forEach(k=>data[k]=document.getElementById('p_'+k).value);await api('/api/profile',{method:'POST',body:JSON.stringify(data)});toast(tr('saved'))}
 async function page_admin(){content.innerHTML=`<div class="panel"><h2>${tr('admin')}</h2><p>${tr('permissions')}</p><pre id="status"></pre></div>`;const d=await api('/api/status');status.textContent=JSON.stringify(d,null,2)}
