@@ -4483,59 +4483,7 @@ def meta_embedded_signup_exchange():
             "details": str(exc)
         }), 500
         
-@app.route("/api/meta/embedded-signup/exchange", methods=["POST"])
-@protected
-def meta_embedded_signup_exchange():
-    data = request.get_json(silent=True) or {}
-    code = str(data.get("code") or "").strip()
 
-    if not code:
-        return jsonify({
-            "error": "Meta authorization code is required."
-        }), 400
-
-    if not META_APP_ID or not META_APP_SECRET:
-        return jsonify({
-            "error": "Meta App ID or App Secret is not configured."
-        }), 500
-
-    try:
-        response = requests.get(
-            f"https://graph.facebook.com/{META_GRAPH_VERSION}/oauth/access_token",
-            params={
-                "client_id": META_APP_ID,
-                "client_secret": META_APP_SECRET,
-                "code": code
-            },
-            timeout=30
-        )
-
-        result = response.json()
-
-    except Exception as exc:
-        return jsonify({
-            "error": f"Meta token exchange failed: {exc}"
-        }), 502
-
-    if not response.ok or result.get("error"):
-        error_data = result.get("error")
-
-        if isinstance(error_data, dict):
-            message = error_data.get(
-                "message",
-                "Meta token exchange failed."
-            )
-        else:
-            message = error_data or "Meta token exchange failed."
-
-        return jsonify({
-            "error": message
-        }), 400
-
-    return jsonify({
-        "ok": True,
-        "message": "Meta authorization code exchanged successfully."
-    })
 # ------------------------------------------------------------
 # Unified multi-channel messaging + AI publishing intelligence
 # ------------------------------------------------------------
