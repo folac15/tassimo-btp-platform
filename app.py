@@ -7082,7 +7082,220 @@ def home():
     response.headers["Pragma"] = "no-cache"
     return response
 
+# ------------------------------------------------------------
+# Public Meta-required legal pages
+# ------------------------------------------------------------
 
+@app.route("/privacy-policy", methods=["GET"])
+def privacy_policy():
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TASSIMO BTP CONSTRUCTION SARL - Privacy Policy</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                max-width: 900px;
+                margin: auto;
+                padding: 24px;
+                color: #222;
+            }
+            h1, h2 { color: #1f2937; }
+            .fr { margin-top: 40px; }
+        </style>
+    </head>
+    <body>
+        <h1>Privacy Policy</h1>
+
+        <p>
+            <strong>TASSIMO BTP CONSTRUCTION SARL</strong> respects the privacy
+            of users of its digital services and applications.
+        </p>
+
+        <h2>Information We May Collect</h2>
+        <p>
+            We may collect information voluntarily provided by users, including
+            names, telephone numbers, email addresses, messages and information
+            necessary to provide our business services.
+        </p>
+
+        <h2>How We Use Information</h2>
+        <p>
+            Information may be used to respond to customer enquiries, manage
+            customers and leads, provide requested services, communicate with
+            customers, and operate and improve our business platform.
+        </p>
+
+        <h2>Third-Party Services</h2>
+        <p>
+            Our services may use third-party platforms and services, including
+            Meta services such as WhatsApp, Facebook and Instagram. Information
+            processed through those services may also be subject to their
+            respective privacy policies.
+        </p>
+
+        <h2>Data Security</h2>
+        <p>
+            TASSIMO BTP CONSTRUCTION SARL takes reasonable measures to protect
+            information handled through its digital services.
+        </p>
+
+        <h2>Data Deletion</h2>
+        <p>
+            Users may request deletion of personal information associated with
+            our services. Instructions are available at:
+            <a href="/data-deletion">Data Deletion Instructions</a>.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+            TASSIMO BTP CONSTRUCTION SARL<br>
+            Douala, Logpom, en face Ancien Eneo<br>
+            Email: tassimoconstruction@gmail.com<br>
+            Phone: 672146946
+        </p>
+
+        <div class="fr">
+            <h1>Politique de confidentialité</h1>
+
+            <p>
+                <strong>TASSIMO BTP CONSTRUCTION SARL</strong> respecte la vie
+                privée des utilisateurs de ses services et applications
+                numériques.
+            </p>
+
+            <h2>Informations pouvant être collectées</h2>
+            <p>
+                Nous pouvons collecter les informations fournies volontairement
+                par les utilisateurs, notamment le nom, le numéro de téléphone,
+                l'adresse e-mail, les messages et les informations nécessaires
+                à la fourniture de nos services.
+            </p>
+
+            <h2>Utilisation des informations</h2>
+            <p>
+                Les informations peuvent être utilisées pour répondre aux
+                demandes des clients, gérer les clients et prospects, fournir
+                les services demandés, communiquer avec les clients et améliorer
+                notre plateforme professionnelle.
+            </p>
+
+            <h2>Services tiers</h2>
+            <p>
+                Nos services peuvent utiliser des plateformes et services tiers,
+                notamment les services Meta tels que WhatsApp, Facebook et
+                Instagram. Le traitement des informations par ces services peut
+                également être soumis à leurs propres politiques de
+                confidentialité.
+            </p>
+
+            <h2>Suppression des données</h2>
+            <p>
+                Les utilisateurs peuvent demander la suppression de leurs
+                informations personnelles associées à nos services. Les
+                instructions sont disponibles ici :
+                <a href="/data-deletion">Instructions de suppression des données</a>.
+            </p>
+
+            <h2>Contact</h2>
+            <p>
+                TASSIMO BTP CONSTRUCTION SARL<br>
+                Douala, Logpom, en face Ancien Eneo<br>
+                E-mail : tassimoconstruction@gmail.com<br>
+                Téléphone : 672146946
+            </p>
+        </div>
+    </body>
+    </html>
+    """
+
+
+@app.route("/data-deletion", methods=["GET"])
+def data_deletion():
+    return """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TASSIMO BTP CONSTRUCTION SARL - Data Deletion</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                max-width: 900px;
+                margin: auto;
+                padding: 24px;
+                color: #222;
+            }
+            h1, h2 { color: #1f2937; }
+            .fr { margin-top: 40px; }
+        </style>
+    </head>
+    <body>
+        <h1>Data Deletion Instructions</h1>
+
+        <p>
+            Users may request deletion of personal information associated with
+            TASSIMO BTP CONSTRUCTION SARL digital services.
+        </p>
+
+        <h2>How to Request Deletion</h2>
+        <p>
+            Send a deletion request to:
+            <strong>tassimoconstruction@gmail.com</strong>
+        </p>
+
+        <p>
+            Please include your name, contact information and a description of
+            the information you want deleted. We may request reasonable
+            information to verify the request.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+            TASSIMO BTP CONSTRUCTION SARL<br>
+            Douala, Logpom, en face Ancien Eneo<br>
+            Email: tassimoconstruction@gmail.com<br>
+            Phone: 672146946
+        </p>
+
+        <div class="fr">
+            <h1>Instructions de suppression des données</h1>
+
+            <p>
+                Les utilisateurs peuvent demander la suppression de leurs
+                informations personnelles associées aux services numériques
+                de TASSIMO BTP CONSTRUCTION SARL.
+            </p>
+
+            <h2>Comment demander la suppression</h2>
+            <p>
+                Envoyez votre demande à :
+                <strong>tassimoconstruction@gmail.com</strong>
+            </p>
+
+            <p>
+                Veuillez indiquer votre nom, vos coordonnées et préciser les
+                informations que vous souhaitez supprimer. Des informations
+                raisonnables peuvent être demandées afin de vérifier la demande.
+            </p>
+
+            <h2>Contact</h2>
+            <p>
+                TASSIMO BTP CONSTRUCTION SARL<br>
+                Douala, Logpom, en face Ancien Eneo<br>
+                E-mail : tassimoconstruction@gmail.com<br>
+                Téléphone : 672146946
+            </p>
+        </div>
+    </body>
+    </html>
+    """
 @app.route("/index.html")
 def index_page():
     if not session_authenticated():
