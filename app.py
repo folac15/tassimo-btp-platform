@@ -7314,6 +7314,31 @@ def automation_page():
 @protected
 def messages_page():
     return send_from_directory(".", "messages.html")
+# ------------------------------------------------------------
+# PUBLIC LEGAL PAGES
+# These pages must remain accessible without authentication.
+# They are used by external services such as TikTok/Meta.
+# ------------------------------------------------------------
+
+@app.route("/privacy-policy")
+def privacy_policy_page():
+    return send_from_directory(".", "privacy-policy.html")
+
+
+@app.route("/terms-of-service")
+def terms_of_service_page():
+    return send_from_directory(".", "terms-of-service.html")
+
+
+# Direct .html aliases
+@app.route("/privacy-policy.html")
+def privacy_policy_html_page():
+    return send_from_directory(".", "privacy-policy.html")
+
+
+@app.route("/terms-of-service.html")
+def terms_of_service_html_page():
+    return send_from_directory(".", "terms-of-service.html")
 @app.route("/integrations.html")
 @protected
 def integrations_page():
