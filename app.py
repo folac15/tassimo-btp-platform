@@ -7344,9 +7344,11 @@ def tiktok_privacy_verification():
     }
 @app.route("/privacy-policy/tiktok-developers-site-verification.txt")
 def tiktok_privacy_verification():
-    return "tiktok-developers-site-verification=XepSX1SMMKQS8oVjN2PvXW01d3KU8qh7", 200, {
-        "Content-Type": "text/plain; charset=utf-8"
-    }
+    return send_from_directory(
+        ".",
+        "tiktok-developers-site-verification.txt",
+        mimetype="text/plain"
+    )
 
 
 @app.route("/terms-of-service.html")
