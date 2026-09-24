@@ -7342,6 +7342,11 @@ def tiktok_privacy_verification():
     return "tiktok-developers-site-verification=mZhTtm9k7GBjODMUSfoyfBCgVj5jfDYa", 200, {
         "Content-Type": "text/plain; charset=utf-8"
     }
+@app.route("/privacy-policy/tiktok-developers-site-verification.txt")
+def tiktok_privacy_verification():
+    return "tiktok-developers-site-verification=XepSX1SMMKQS8oVjN2PvXW01d3KU8qh7", 200, {
+        "Content-Type": "text/plain; charset=utf-8"
+    }
 
 
 @app.route("/terms-of-service.html")
