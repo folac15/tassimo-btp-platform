@@ -7334,6 +7334,9 @@ def terms_of_service_page():
 @app.route("/privacy-policy.html")
 def privacy_policy_html_page():
     return send_from_directory(".", "privacy-policy.html")
+@app.route("/tiktok-developers-site-verification.txt")
+def tiktok_verification():
+    return send_from_directory(".", "tiktok-developers-site-verification.txt")
 
 
 @app.route("/terms-of-service.html")
