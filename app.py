@@ -430,6 +430,267 @@ def protected(fn):
         return fn(*args, **kwargs)
 
     return wrapper
+# ------------------------------------------------------------
+# TIKTOK LOGIN KIT — WEB OAUTH
+# ------------------------------------------------------------
+
+@app.route("/oauth/tiktok")
+@protected
+def tiktok_oauth_start():
+    """
+    Start TikTok Login Kit authorization.
+
+    TikTok requires:
+    - client_key
+    - scope
+    - response_type=code
+    - redirect_uri
+    - state
+    """
+
+    if not TIKTOK_CLIENT_KEY or not TIKTOK_CLIENT_SECRET:
+        return jsonify({
+            "ok": False,
+            "error": "TikTok Client Key/Secret are not configured in Render."
+        }), 503
+
+    # Anti-CSRF state token.
+    state = uuid.uuid4().hex
+    session["tiktok_oauth_state"] = state
+
+    from urllib.parse import urlencode
+
+    params = {
+        "client_key": TIKTOK_CLIENT_KEY,
+        "response_type": "code",
+        "scope": "user.info.basic,video.publish",
+        "redirect_uri": TIKTOK_REDIRECT_URI,
+        "state": state,
+    }
+
+    authorization_url = (
+        "https://www.tiktok.com/v2/auth/authorize/"
+        + "?"
+        + urlencode(params)
+    )
+
+    return redirect(authorization_url)
+
+
+@app.route("/oauth/tiktok/callback")
+@protected
+def tiktok_oauth_callback():
+    """
+    Receive TikTok OAuth authorization response,
+    validate state, exchange authorization code for
+    access/refresh tokens, then retrieve basic TikTok
+    profile information.
+    """
+
+    error = request.args.get("error")
+
+    if error:
+        description = request.args.get(
+            "error_description",
+            "TikTok authorization was not completed."
+        )
+
+        return jsonify({
+            "ok": False,
+            "error": error,
+            "error_description": description
+        }), 400
+
+    code = request.args.get("code", "")
+    returned_state = request.args.get("state", "")
+
+    saved_state = session.pop("tiktok_oauth_state", "")
+
+    if not code:
+        return jsonify({
+            "ok": False,
+            "error": "TikTok did not return an authorization code."
+        }), 400
+
+    if not saved_state or returned_state != saved_state:
+        return jsonify({
+            "ok": False,
+            "error": "Invalid TikTok OAuth state."
+        }), 400
+
+    if not TIKTOK_CLIENT_KEY or not TIKTOK_CLIENT_SECRET:
+        return jsonify({
+            "ok": False,
+            "error": "TikTok Client Key/Secret are not configured."
+        }), 503
+
+    token_url = "https://open.tiktokapis.com/v2/oauth/token/"
+
+    token_payload = {
+        "client_key": TIKTOK_CLIENT_KEY,
+        "client_secret": TIKTOK_CLIENT_SECRET,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": TIKTOK_REDIRECT_URI,
+    }
+
+    try:
+        token_response = requests.post(
+            token_url,
+            data=token_payload,
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Cache-Control": "no-cache",
+            },
+            timeout=30,
+        )
+
+        token_data = token_response.json()
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "error": "Unable to contact TikTok token service.",
+            "details": str(exc),
+        }), 502
+
+    if token_response.status_code >= 400:
+        return jsonify({
+            "ok": False,
+            "error": "TikTok token exchange failed.",
+            "details": token_data,
+        }), 400
+
+    access_token = token_data.get("access_token")
+    refresh_token = token_data.get("refresh_token")
+    open_id = token_data.get("open_id")
+    expires_in = token_data.get("expires_in")
+    refresh_expires_in = token_data.get("refresh_expires_in")
+    granted_scope = token_data.get("scope", "")
+
+    if not access_token or not open_id:
+        return jsonify({
+            "ok": False,
+            "error": "TikTok did not return the required access token/open_id."
+        }), 400
+
+    # --------------------------------------------------------
+    # Retrieve basic TikTok profile information.
+    # user.info.basic gives open_id/display_name/avatar fields.
+    # --------------------------------------------------------
+
+    profile = {}
+
+    try:
+        profile_response = requests.get(
+            "https://open.tiktokapis.com/v2/user/info/",
+            headers={
+                "Authorization": f"Bearer {access_token}"
+            },
+            params={
+                "fields": "open_id,union_id,avatar_url,display_name"
+            },
+            timeout=30,
+        )
+
+        profile_data = profile_response.json()
+
+        if profile_response.status_code < 400:
+            profile = (
+                profile_data.get("data", {}).get("user", {})
+                or {}
+            )
+
+    except Exception:
+        profile = {}
+
+    # --------------------------------------------------------
+    # TEMPORARY SECURE SERVER-SIDE SESSION STORAGE
+    #
+    # We use this only for the initial Sandbox connection test.
+    # Stage 2 will move these tokens into a dedicated Supabase
+    # TikTok connection table for persistent storage and refresh.
+    # --------------------------------------------------------
+
+    session["tiktok_connection"] = {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "open_id": open_id,
+        "display_name": profile.get("display_name", ""),
+        "avatar_url": profile.get("avatar_url", ""),
+        "expires_in": expires_in,
+        "refresh_expires_in": refresh_expires_in,
+        "scope": granted_scope,
+        "connected_at": utc_now(),
+    }
+
+    return """
+    <!doctype html>
+    <html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport"
+              content="width=device-width,initial-scale=1">
+        <title>TASSIMO — TikTok Connected</title>
+        <style>
+            body{
+                margin:0;
+                min-height:100vh;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                padding:20px;
+                font-family:Arial,sans-serif;
+                background:#f2f4f7;
+            }
+            .card{
+                width:100%;
+                max-width:520px;
+                background:#fff;
+                border-radius:20px;
+                padding:30px;
+                box-shadow:0 15px 45px rgba(0,0,0,.12);
+                text-align:center;
+            }
+            h1{margin-top:0}
+            .ok{
+                font-size:50px;
+                margin-bottom:10px;
+            }
+            .name{
+                font-size:20px;
+                font-weight:700;
+                margin:15px 0;
+            }
+            button{
+                border:0;
+                border-radius:12px;
+                padding:14px 20px;
+                background:#111827;
+                color:white;
+                font-weight:700;
+                cursor:pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="ok">✓</div>
+            <h1>TikTok Connected</h1>
+            <p>
+                Le compte TikTok a été autorisé avec succès.
+            </p>
+            <p>
+                Le compte Sandbox est maintenant connecté
+                au flux OAuth de TASSIMO BTP.
+            </p>
+            <button onclick="window.location.href='/integrations.html'">
+                Return to Integrations
+            </button>
+        </div>
+    </body>
+    </html>
+    """
 
 
 # ------------------------------------------------------------
