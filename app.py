@@ -7355,7 +7355,7 @@ def tiktok_web_verification():
         "Content-Type": "text/plain; charset=utf-8"
     }
 @app.route("/tiktokYG57uqyDXm2U3JiEog4SaQNY4Rpe7PVR.txt")
-def tiktok_web_verification():
+def tiktok_web_verification_render():
     return "tiktok-developers-site-verification=YG57uqyDXm2U3JiEog4SaQNY4Rpe7PVR", 200, {
         "Content-Type": "text/plain; charset=utf-8"
     }
