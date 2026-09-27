@@ -476,16 +476,19 @@ def tiktok_oauth_start():
 
     return redirect(authorization_url)
 
-
 @app.route("/oauth/tiktok/callback")
 @protected
 def tiktok_oauth_callback():
     """
     Receive TikTok OAuth authorization response,
     validate state, exchange authorization code for
-    access/refresh tokens, then retrieve basic TikTok
-    profile information.
+    access/refresh tokens, retrieve the TikTok profile,
+    and persist the connection securely in Supabase.
     """
+
+    # --------------------------------------------------------
+    # 1. Handle TikTok authorization errors
+    # --------------------------------------------------------
 
     error = request.args.get("error")
 
@@ -500,6 +503,10 @@ def tiktok_oauth_callback():
             "error": error,
             "error_description": description
         }), 400
+
+    # --------------------------------------------------------
+    # 2. Get authorization code and validate OAuth state
+    # --------------------------------------------------------
 
     code = request.args.get("code", "")
     returned_state = request.args.get("state", "")
@@ -518,11 +525,19 @@ def tiktok_oauth_callback():
             "error": "Invalid TikTok OAuth state."
         }), 400
 
+    # --------------------------------------------------------
+    # 3. Verify TikTok credentials are configured
+    # --------------------------------------------------------
+
     if not TIKTOK_CLIENT_KEY or not TIKTOK_CLIENT_SECRET:
         return jsonify({
             "ok": False,
             "error": "TikTok Client Key/Secret are not configured."
         }), 503
+
+    # --------------------------------------------------------
+    # 4. Exchange authorization code for tokens
+    # --------------------------------------------------------
 
     token_url = "https://open.tiktokapis.com/v2/oauth/token/"
 
@@ -545,7 +560,12 @@ def tiktok_oauth_callback():
             timeout=30,
         )
 
-        token_data = token_response.json()
+        try:
+            token_data = token_response.json()
+        except Exception:
+            token_data = {
+                "raw": token_response.text
+            }
 
     except Exception as exc:
         return jsonify({
@@ -561,22 +581,35 @@ def tiktok_oauth_callback():
             "details": token_data,
         }), 400
 
+    # --------------------------------------------------------
+    # 5. Extract token information
+    # --------------------------------------------------------
+
     access_token = token_data.get("access_token")
     refresh_token = token_data.get("refresh_token")
     open_id = token_data.get("open_id")
+
     expires_in = token_data.get("expires_in")
-    refresh_expires_in = token_data.get("refresh_expires_in")
-    granted_scope = token_data.get("scope", "")
+    refresh_expires_in = token_data.get(
+        "refresh_expires_in"
+    )
+
+    granted_scope = token_data.get(
+        "scope",
+        request.args.get("scopes", "")
+    )
 
     if not access_token or not open_id:
         return jsonify({
             "ok": False,
-            "error": "TikTok did not return the required access token/open_id."
+            "error": (
+                "TikTok did not return the required "
+                "access token/open_id."
+            )
         }), 400
 
     # --------------------------------------------------------
-    # Retrieve basic TikTok profile information.
-    # user.info.basic gives open_id/display_name/avatar fields.
+    # 6. Retrieve basic TikTok profile information
     # --------------------------------------------------------
 
     profile = {}
@@ -588,16 +621,26 @@ def tiktok_oauth_callback():
                 "Authorization": f"Bearer {access_token}"
             },
             params={
-                "fields": "open_id,union_id,avatar_url,display_name"
+                "fields": (
+                    "open_id,"
+                    "union_id,"
+                    "avatar_url,"
+                    "display_name"
+                )
             },
             timeout=30,
         )
 
-        profile_data = profile_response.json()
+        try:
+            profile_data = profile_response.json()
+        except Exception:
+            profile_data = {}
 
         if profile_response.status_code < 400:
             profile = (
-                profile_data.get("data", {}).get("user", {})
+                profile_data
+                .get("data", {})
+                .get("user", {})
                 or {}
             )
 
@@ -605,92 +648,262 @@ def tiktok_oauth_callback():
         profile = {}
 
     # --------------------------------------------------------
-    # TEMPORARY SECURE SERVER-SIDE SESSION STORAGE
+    # 7. Calculate token expiration timestamps
     #
-    # We use this only for the initial Sandbox connection test.
-    # Stage 2 will move these tokens into a dedicated Supabase
-    # TikTok connection table for persistent storage and refresh.
+    # TikTok returns expiration values in seconds.
+    # We convert them into UTC timestamps for Supabase.
     # --------------------------------------------------------
 
-    session["tiktok_connection"] = {
+    now_utc = datetime.now(timezone.utc)
+
+    try:
+        access_expires_seconds = int(
+            expires_in or 0
+        )
+    except (ValueError, TypeError):
+        access_expires_seconds = 0
+
+    try:
+        refresh_expires_seconds = int(
+            refresh_expires_in or 0
+        )
+    except (ValueError, TypeError):
+        refresh_expires_seconds = 0
+
+    expires_at = None
+
+    if access_expires_seconds > 0:
+        expires_at = datetime.fromtimestamp(
+            now_utc.timestamp() + access_expires_seconds,
+            timezone.utc
+        ).isoformat()
+
+    refresh_expires_at = None
+
+    if refresh_expires_seconds > 0:
+        refresh_expires_at = datetime.fromtimestamp(
+            now_utc.timestamp() + refresh_expires_seconds,
+            timezone.utc
+        ).isoformat()
+
+    # --------------------------------------------------------
+    # 8. Prepare the persistent TikTok connection record
+    # --------------------------------------------------------
+
+    connection_data = {
+        "open_id": open_id,
+        "union_id": profile.get(
+            "union_id"
+        ) or token_data.get("union_id"),
+
+        "display_name": profile.get(
+            "display_name",
+            ""
+        ),
+
+        "avatar_url": profile.get(
+            "avatar_url",
+            ""
+        ),
+
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "open_id": open_id,
-        "display_name": profile.get("display_name", ""),
-        "avatar_url": profile.get("avatar_url", ""),
-        "expires_in": expires_in,
-        "refresh_expires_in": refresh_expires_in,
+
         "scope": granted_scope,
-        "connected_at": utc_now(),
+
+        "expires_at": expires_at,
+        "refresh_expires_at": refresh_expires_at,
+
+        "updated_at": utc_now(),
     }
 
-    return """
+    # --------------------------------------------------------
+    # 9. Check whether this TikTok account already exists
+    # --------------------------------------------------------
+
+    existing_connections = sb_select(
+        "tiktok_connections",
+        {
+            "select": "id",
+            "open_id": f"eq.{open_id}",
+            "limit": "1",
+        },
+    )
+
+    # --------------------------------------------------------
+    # 10. Update existing connection OR create new connection
+    # --------------------------------------------------------
+
+    if existing_connections:
+        connection_id = existing_connections[0].get("id")
+
+        saved_connection = sb_update(
+            "tiktok_connections",
+            {
+                "id": f"eq.{connection_id}"
+            },
+            connection_data,
+        )
+
+    else:
+        connection_data["created_at"] = utc_now()
+
+        saved_connection = sb_insert(
+            "tiktok_connections",
+            connection_data,
+        )
+
+    # --------------------------------------------------------
+    # 11. Verify Supabase saved the connection
+    # --------------------------------------------------------
+
+    if (
+        not saved_connection
+        or (
+            isinstance(saved_connection, dict)
+            and saved_connection.get("_error")
+        )
+    ):
+        return jsonify({
+            "ok": False,
+            "error": (
+                "TikTok authorization succeeded, "
+                "but the connection could not be saved "
+                "to Supabase."
+            ),
+            "details": saved_connection,
+        }), 500
+
+    # --------------------------------------------------------
+    # 12. Do NOT store access/refresh tokens in Flask session.
+    #
+    # Tokens are now persisted in Supabase server-side.
+    # --------------------------------------------------------
+
+    session.pop("tiktok_connection", None)
+
+    # Store only safe connection information in the session.
+    session["tiktok_connected"] = True
+    session["tiktok_open_id"] = open_id
+    session["tiktok_display_name"] = profile.get(
+        "display_name",
+        ""
+    )
+
+    # --------------------------------------------------------
+    # 13. TikTok connection success page
+    # --------------------------------------------------------
+
+    display_name = (
+        profile.get("display_name")
+        or "TikTok Sandbox Account"
+    )
+
+    return f"""
     <!doctype html>
     <html lang="fr">
     <head>
         <meta charset="utf-8">
         <meta name="viewport"
               content="width=device-width,initial-scale=1">
+
         <title>TASSIMO — TikTok Connected</title>
+
         <style>
-            body{
-                margin:0;
-                min-height:100vh;
-                display:flex;
-                align-items:center;
-                justify-content:center;
-                padding:20px;
-                font-family:Arial,sans-serif;
-                background:#f2f4f7;
-            }
-            .card{
-                width:100%;
-                max-width:520px;
-                background:#fff;
-                border-radius:20px;
-                padding:30px;
-                box-shadow:0 15px 45px rgba(0,0,0,.12);
-                text-align:center;
-            }
-            h1{margin-top:0}
-            .ok{
-                font-size:50px;
-                margin-bottom:10px;
-            }
-            .name{
-                font-size:20px;
-                font-weight:700;
-                margin:15px 0;
-            }
-            button{
-                border:0;
-                border-radius:12px;
-                padding:14px 20px;
-                background:#111827;
-                color:white;
-                font-weight:700;
-                cursor:pointer;
-            }
+            body {{
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                font-family: Arial, sans-serif;
+                background: #f2f4f7;
+            }}
+
+            .card {{
+                width: 100%;
+                max-width: 520px;
+                background: #fff;
+                border-radius: 20px;
+                padding: 30px;
+                box-shadow: 0 15px 45px rgba(0,0,0,.12);
+                text-align: center;
+            }}
+
+            h1 {{
+                margin-top: 0;
+                color: #111827;
+            }}
+
+            .ok {{
+                font-size: 50px;
+                margin-bottom: 10px;
+            }}
+
+            .name {{
+                font-size: 20px;
+                font-weight: 700;
+                margin: 15px 0;
+                color: #111827;
+            }}
+
+            .message {{
+                color: #4b5563;
+                line-height: 1.6;
+                margin-bottom: 24px;
+            }}
+
+            button {{
+                border: 0;
+                border-radius: 12px;
+                padding: 14px 20px;
+                background: #111827;
+                color: white;
+                font-weight: 700;
+                cursor: pointer;
+                font-size: 15px;
+            }}
+
+            button:hover {{
+                opacity: .9;
+            }}
         </style>
     </head>
+
     <body>
+
         <div class="card">
+
             <div class="ok">✓</div>
+
             <h1>TikTok Connected</h1>
-            <p>
+
+            <div class="name">
+                {display_name}
+            </div>
+
+            <div class="message">
+                <strong>Connexion TikTok réussie.</strong><br>
                 Le compte TikTok a été autorisé avec succès.
-            </p>
-            <p>
-                Le compte Sandbox est maintenant connecté
-                au flux OAuth de TASSIMO BTP.
-            </p>
+                <br><br>
+                <strong>TikTok connection successful.</strong><br>
+                The TikTok account is now securely connected
+                to TASSIMO BTP.
+            </div>
+
             <button onclick="window.location.href='/integrations.html'">
-                Return to Integrations
+                Retour aux intégrations / Back to Integrations
             </button>
+
         </div>
+
     </body>
     </html>
     """
+    
+
+
 
 
 # ------------------------------------------------------------
