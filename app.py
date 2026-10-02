@@ -1221,6 +1221,1046 @@ def tiktok_creator_info():
             ),
             "details": str(exc)
         }), 500
+# ------------------------------------------------------------
+# TIKTOK DIRECT POST — VIDEO PUBLISH
+# ------------------------------------------------------------
+
+@app.route("/api/tiktok/publish", methods=["POST"])
+@protected
+def tiktok_publish():
+    """
+    Upload a video to TikTok using Content Posting API Direct Post.
+
+    Flow:
+    1. Get latest TikTok connection.
+    2. Query Creator Info again.
+    3. Validate privacy and duration.
+    4. Initialize Direct Post.
+    5. Upload the video to TikTok in chunks.
+    6. Return publish_id for status checking.
+    """
+
+    if not supabase_configured():
+        return jsonify({
+            "success": False,
+            "error": (
+                "Supabase is not configured."
+                if language() == "en"
+                else "Supabase n'est pas configuré."
+            )
+        }), 500
+
+    try:
+        # --------------------------------------------------------
+        # 1. Get latest TikTok connection
+        # --------------------------------------------------------
+
+        connections = sb_select(
+            "tiktok_connections",
+            {
+                "select": (
+                    "id,open_id,display_name,access_token,"
+                    "scope,expires_at,updated_at"
+                ),
+                "order": "updated_at.desc",
+                "limit": "1"
+            }
+        )
+
+        if not connections:
+            return jsonify({
+                "success": False,
+                "connected": False,
+                "error": (
+                    "No TikTok account is connected."
+                    if language() == "en"
+                    else "Aucun compte TikTok n'est connecté."
+                )
+            }), 404
+
+        connection = connections[0]
+
+        access_token = str(
+            connection.get("access_token") or ""
+        ).strip()
+
+        if not access_token:
+            return jsonify({
+                "success": False,
+                "error": (
+                    "TikTok access token is missing."
+                    if language() == "en"
+                    else "Le jeton d'accès TikTok est manquant."
+                )
+            }), 401
+
+        # --------------------------------------------------------
+        # 2. Get uploaded video
+        # --------------------------------------------------------
+
+        video_file = request.files.get("video")
+
+        if not video_file:
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Please upload a video file."
+                    if language() == "en"
+                    else "Veuillez sélectionner une vidéo."
+                )
+            }), 400
+
+        original_filename = (
+            video_file.filename or "tiktok_video.mp4"
+        ).strip()
+
+        # Only supported video extensions.
+        allowed_extensions = {
+            ".mp4": "video/mp4",
+            ".mov": "video/quicktime",
+            ".webm": "video/webm",
+        }
+
+        from pathlib import Path
+        from werkzeug.utils import secure_filename
+
+        extension = Path(
+            original_filename
+        ).suffix.lower()
+
+        if extension not in allowed_extensions:
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Supported formats are MP4, MOV and WebM."
+                    if language() == "en"
+                    else "Les formats acceptés sont MP4, MOV et WebM."
+                )
+            }), 400
+
+        mime_type = allowed_extensions[extension]
+
+        # --------------------------------------------------------
+        # 3. Save temporary video locally
+        # --------------------------------------------------------
+
+        upload_directory = os.path.join(
+            os.getcwd(),
+            "tiktok_uploads"
+        )
+
+        os.makedirs(
+            upload_directory,
+            exist_ok=True
+        )
+
+        safe_name = secure_filename(
+            original_filename
+        )
+
+        if not safe_name:
+            safe_name = "tiktok_video" + extension
+
+        unique_name = (
+            uuid.uuid4().hex
+            + "_"
+            + safe_name
+        )
+
+        video_path = os.path.join(
+            upload_directory,
+            unique_name
+        )
+
+        video_file.save(video_path)
+
+        video_size = os.path.getsize(
+            video_path
+        )
+
+        # TikTok's current maximum media size is 4 GB.
+        # We additionally protect the Render server from
+        # unnecessarily large uploads.
+        max_server_upload = (
+            500 * 1024 * 1024
+        )
+
+        if video_size <= 0:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "The uploaded video is empty."
+                    if language() == "en"
+                    else "La vidéo envoyée est vide."
+                )
+            }), 400
+
+        if video_size > max_server_upload:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "The video is larger than the current "
+                    "TASSIMO upload limit of 500 MB."
+                    if language() == "en"
+                    else
+                    "La vidéo dépasse la limite actuelle "
+                    "de 500 Mo de TASSIMO."
+                )
+            }), 413
+
+        # --------------------------------------------------------
+        # 4. Get duration supplied by the upload interface
+        #
+        # The future TikTok publishing page will automatically
+        # read the video's duration before submitting it.
+        # --------------------------------------------------------
+
+        duration_value = request.form.get(
+            "duration_sec",
+            ""
+        )
+
+        try:
+            duration_sec = float(
+                duration_value
+            )
+        except (ValueError, TypeError):
+            duration_sec = 0
+
+        # TikTok requires the application to check the creator's
+        # current maximum video duration.
+        #
+        # We require duration metadata from the client here.
+        if duration_sec <= 0:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Video duration is required."
+                    if language() == "en"
+                    else "La durée de la vidéo est requise."
+                ),
+                "hint": (
+                    "The upload page must send duration_sec."
+                )
+            }), 400
+
+        # --------------------------------------------------------
+        # 5. Query latest Creator Info
+        # --------------------------------------------------------
+
+        creator_url = (
+            "https://open.tiktokapis.com/"
+            "v2/post/publish/creator_info/query/"
+        )
+
+        creator_response = requests.post(
+            creator_url,
+            headers={
+                "Authorization":
+                    f"Bearer {access_token}",
+                "Content-Type":
+                    "application/json; charset=UTF-8",
+            },
+            json={},
+            timeout=30
+        )
+
+        try:
+            creator_result = (
+                creator_response.json()
+            )
+        except Exception:
+            creator_result = {}
+
+        if creator_response.status_code >= 400:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "TikTok Creator Info request failed."
+                    if language() == "en"
+                    else
+                    "La récupération des informations "
+                    "du créateur TikTok a échoué."
+                ),
+                "details": creator_result
+            }), creator_response.status_code
+
+        creator_error = (
+            creator_result.get("error", {})
+            if isinstance(
+                creator_result,
+                dict
+            )
+            else {}
+        )
+
+        if (
+            isinstance(
+                creator_error,
+                dict
+            )
+            and creator_error.get("code")
+            and creator_error.get("code") != "ok"
+        ):
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": creator_error
+            }), 400
+
+        creator_data = (
+            creator_result.get("data", {})
+            if isinstance(
+                creator_result,
+                dict
+            )
+            else {}
+        )
+
+        creator_data = (
+            creator_data
+            if isinstance(
+                creator_data,
+                dict
+            )
+            else {}
+        )
+
+        # --------------------------------------------------------
+        # 6. Validate privacy level
+        # --------------------------------------------------------
+
+        privacy_level = str(
+            request.form.get(
+                "privacy_level",
+                "SELF_ONLY"
+            )
+        ).strip().upper()
+
+        privacy_options = creator_data.get(
+            "privacy_level_options",
+            []
+        )
+
+        if privacy_level not in privacy_options:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Selected privacy level is not available "
+                    "for this TikTok account."
+                    if language() == "en"
+                    else
+                    "Le niveau de confidentialité sélectionné "
+                    "n'est pas disponible pour ce compte TikTok."
+                ),
+                "available_options": privacy_options
+            }), 400
+
+        # --------------------------------------------------------
+        # 7. Validate duration
+        # --------------------------------------------------------
+
+        max_duration = creator_data.get(
+            "max_video_post_duration_sec"
+        )
+
+        try:
+            max_duration = float(
+                max_duration
+            )
+        except (ValueError, TypeError):
+            max_duration = 600
+
+        if duration_sec > max_duration:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    f"Video duration ({duration_sec:g}s) "
+                    f"exceeds the TikTok creator limit "
+                    f"of {max_duration:g}s."
+                    if language() == "en"
+                    else
+                    f"La durée de la vidéo ({duration_sec:g}s) "
+                    f"dépasse la limite TikTok de "
+                    f"{max_duration:g}s."
+                ),
+                "max_video_post_duration_sec":
+                    max_duration
+            }), 400
+
+        # --------------------------------------------------------
+        # 8. Caption
+        # --------------------------------------------------------
+
+        title = str(
+            request.form.get(
+                "title",
+                ""
+            )
+        ).strip()
+
+        # TikTok currently allows up to 2200 UTF-16 runes.
+        if len(title) > 2200:
+            title = title[:2200]
+
+        # --------------------------------------------------------
+        # 9. Interaction settings
+        # --------------------------------------------------------
+
+        disable_comment = (
+            str(
+                request.form.get(
+                    "disable_comment",
+                    "false"
+                )
+            ).lower()
+            in ["true", "1", "yes", "on"]
+        )
+
+        disable_duet = (
+            str(
+                request.form.get(
+                    "disable_duet",
+                    "false"
+                )
+            ).lower()
+            in ["true", "1", "yes", "on"]
+        )
+
+        disable_stitch = (
+            str(
+                request.form.get(
+                    "disable_stitch",
+                    "false"
+                )
+            ).lower()
+            in ["true", "1", "yes", "on"]
+        )
+
+        # --------------------------------------------------------
+        # 10. AI-generated content flag
+        # --------------------------------------------------------
+
+        is_aigc = (
+            str(
+                request.form.get(
+                    "is_aigc",
+                    "false"
+                )
+            ).lower()
+            in ["true", "1", "yes", "on"]
+        )
+
+        # --------------------------------------------------------
+        # 11. Brand / organic business content
+        # --------------------------------------------------------
+
+        brand_organic_toggle = (
+            str(
+                request.form.get(
+                    "brand_organic_toggle",
+                    "false"
+                )
+            ).lower()
+            in ["true", "1", "yes", "on"]
+        )
+
+        # --------------------------------------------------------
+        # 12. Initialize TikTok Direct Post
+        # --------------------------------------------------------
+
+        chunk_size = 10_000_000
+
+        if video_size < 5_000_000:
+            chunk_size = video_size
+            total_chunk_count = 1
+        else:
+            total_chunk_count = (
+                (video_size + chunk_size - 1)
+                // chunk_size
+            )
+
+        if total_chunk_count > 1000:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "The video would require too many upload chunks."
+                )
+            }), 400
+
+        init_url = (
+            "https://open.tiktokapis.com/"
+            "v2/post/publish/video/init/"
+        )
+
+        init_payload = {
+            "post_info": {
+                "title": title,
+                "privacy_level": privacy_level,
+                "disable_duet": disable_duet,
+                "disable_comment": disable_comment,
+                "disable_stitch": disable_stitch,
+                "brand_organic_toggle":
+                    brand_organic_toggle,
+                "is_aigc": is_aigc,
+            },
+            "source_info": {
+                "source": "FILE_UPLOAD",
+                "video_size": video_size,
+                "chunk_size": chunk_size,
+                "total_chunk_count":
+                    total_chunk_count
+            }
+        }
+
+        init_response = requests.post(
+            init_url,
+            headers={
+                "Authorization":
+                    f"Bearer {access_token}",
+                "Content-Type":
+                    "application/json; charset=UTF-8",
+            },
+            json=init_payload,
+            timeout=30
+        )
+
+        try:
+            init_result = (
+                init_response.json()
+            )
+        except Exception:
+            init_result = {
+                "raw": init_response.text[:1000]
+            }
+
+        if init_response.status_code >= 400:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "TikTok Direct Post initialization failed."
+                    if language() == "en"
+                    else
+                    "L'initialisation de la publication "
+                    "TikTok a échoué."
+                ),
+                "http_status":
+                    init_response.status_code,
+                "details": init_result
+            }), init_response.status_code
+
+        init_error = (
+            init_result.get("error", {})
+            if isinstance(
+                init_result,
+                dict
+            )
+            else {}
+        )
+
+        init_error_code = (
+            init_error.get("code")
+            if isinstance(
+                init_error,
+                dict
+            )
+            else None
+        )
+
+        if init_error_code and init_error_code != "ok":
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": init_error
+            }), 400
+
+        init_data = (
+            init_result.get("data", {})
+            if isinstance(
+                init_result,
+                dict
+            )
+            else {}
+        )
+
+        publish_id = init_data.get(
+            "publish_id"
+        )
+
+        upload_url = init_data.get(
+            "upload_url"
+        )
+
+        if not publish_id or not upload_url:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "TikTok did not return a publish ID "
+                    "and upload URL."
+                ),
+                "details": init_result
+            }), 502
+
+        # --------------------------------------------------------
+        # 13. Upload video to TikTok
+        # --------------------------------------------------------
+
+        upload_success = False
+
+        try:
+            with open(
+                video_path,
+                "rb"
+            ) as video_stream:
+
+                start_byte = 0
+
+                while start_byte < video_size:
+
+                    remaining = (
+                        video_size
+                        - start_byte
+                    )
+
+                    current_chunk_size = min(
+                        chunk_size,
+                        remaining
+                    )
+
+                    chunk = video_stream.read(
+                        current_chunk_size
+                    )
+
+                    if not chunk:
+                        raise RuntimeError(
+                            "Unexpected end of video file."
+                        )
+
+                    end_byte = (
+                        start_byte
+                        + len(chunk)
+                        - 1
+                    )
+
+                    upload_response = requests.put(
+                        upload_url,
+                        headers={
+                            "Content-Type":
+                                mime_type,
+                            "Content-Length":
+                                str(len(chunk)),
+                            "Content-Range":
+                                (
+                                    f"bytes "
+                                    f"{start_byte}-"
+                                    f"{end_byte}/"
+                                    f"{video_size}"
+                                )
+                        },
+                        data=chunk,
+                        timeout=120
+                    )
+
+                    if upload_response.status_code not in (
+                        200,
+                        201,
+                        206
+                    ):
+                        try:
+                            upload_error = (
+                                upload_response.json()
+                            )
+                        except Exception:
+                            upload_error = (
+                                upload_response.text[:1000]
+                            )
+
+                        raise RuntimeError(
+                            f"TikTok upload failed "
+                            f"({upload_response.status_code}): "
+                            f"{upload_error}"
+                        )
+
+                    start_byte = (
+                        end_byte + 1
+                    )
+
+            upload_success = True
+
+        finally:
+            try:
+                os.remove(video_path)
+            except Exception:
+                pass
+
+        if not upload_success:
+            return jsonify({
+                "success": False,
+                "publish_id": publish_id,
+                "error": (
+                    "The video upload to TikTok failed."
+                )
+            }), 502
+
+        # --------------------------------------------------------
+        # 14. Remember publish ID in current session
+        # --------------------------------------------------------
+
+        publish_ids = session.get(
+            "tiktok_publish_ids",
+            []
+        )
+
+        if not isinstance(
+            publish_ids,
+            list
+        ):
+            publish_ids = []
+
+        publish_ids.append(
+            publish_id
+        )
+
+        # Keep only the latest 20.
+        session["tiktok_publish_ids"] = (
+            publish_ids[-20:]
+        )
+
+        # --------------------------------------------------------
+        # 15. Success
+        # --------------------------------------------------------
+
+        return jsonify({
+            "success": True,
+            "published": True,
+            "publish_id": publish_id,
+
+            "creator": {
+                "username":
+                    creator_data.get(
+                        "creator_username"
+                    ),
+                "nickname":
+                    creator_data.get(
+                        "creator_nickname"
+                    )
+            },
+
+            "privacy_level":
+                privacy_level,
+
+            "video_size":
+                video_size,
+
+            "duration_sec":
+                duration_sec,
+
+            "max_video_post_duration_sec":
+                max_duration,
+
+            "message": (
+                "Video sent to TikTok successfully. "
+                "Use the publish ID to check processing status."
+                if language() == "en"
+                else
+                "La vidéo a été envoyée à TikTok. "
+                "Utilisez l'identifiant de publication "
+                "pour suivre son traitement."
+            )
+        }), 200
+
+    except requests.RequestException as exc:
+
+        try:
+            if "video_path" in locals():
+                if os.path.exists(video_path):
+                    os.remove(video_path)
+        except Exception:
+            pass
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "TikTok network request failed."
+                if language() == "en"
+                else
+                "La communication avec TikTok a échoué."
+            ),
+            "details": str(exc)
+        }), 502
+
+    except Exception as exc:
+
+        try:
+            if "video_path" in locals():
+                if os.path.exists(video_path):
+                    os.remove(video_path)
+        except Exception:
+            pass
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "TikTok publishing failed."
+                if language() == "en"
+                else
+                "La publication TikTok a échoué."
+            ),
+            "details": str(exc)
+        }), 500
+
+
+# ------------------------------------------------------------
+# TIKTOK DIRECT POST — CHECK PUBLISH STATUS
+# ------------------------------------------------------------
+
+@app.route("/api/tiktok/publish-status", methods=["POST"])
+@protected
+def tiktok_publish_status():
+
+    data = request.get_json(
+        silent=True
+    ) or {}
+
+    publish_id = str(
+        data.get("publish_id") or ""
+    ).strip()
+
+    if not publish_id:
+        return jsonify({
+            "success": False,
+            "error": (
+                "publish_id is required."
+                if language() == "en"
+                else
+                "publish_id est requis."
+            )
+        }), 400
+
+    # Only allow publish IDs created by this
+    # authenticated TASSIMO session.
+    publish_ids = session.get(
+        "tiktok_publish_ids",
+        []
+    )
+
+    if publish_id not in publish_ids:
+        return jsonify({
+            "success": False,
+            "error": (
+                "This publish ID is not associated "
+                "with the current session."
+                if language() == "en"
+                else
+                "Cet identifiant de publication "
+                "n'est pas associé à la session actuelle."
+            )
+        }), 403
+
+    connections = sb_select(
+        "tiktok_connections",
+        {
+            "select": (
+                "access_token,display_name"
+            ),
+            "order": "updated_at.desc",
+            "limit": "1"
+        }
+    )
+
+    if not connections:
+        return jsonify({
+            "success": False,
+            "connected": False,
+            "error": (
+                "No TikTok account is connected."
+            )
+        }), 404
+
+    access_token = str(
+        connections[0].get(
+            "access_token"
+        ) or ""
+    ).strip()
+
+    if not access_token:
+        return jsonify({
+            "success": False,
+            "error": (
+                "TikTok access token is missing."
+            )
+        }), 401
+
+    try:
+
+        status_url = (
+            "https://open.tiktokapis.com/"
+            "v2/post/publish/status/fetch/"
+        )
+
+        response = requests.post(
+            status_url,
+            headers={
+                "Authorization":
+                    f"Bearer {access_token}",
+                "Content-Type":
+                    "application/json; charset=UTF-8",
+            },
+            json={
+                "publish_id":
+                    publish_id
+            },
+            timeout=30
+        )
+
+        try:
+            result = response.json()
+        except Exception:
+            result = {
+                "raw": response.text[:1000]
+            }
+
+        if response.status_code >= 400:
+            return jsonify({
+                "success": False,
+                "http_status":
+                    response.status_code,
+                "details": result
+            }), response.status_code
+
+        error_data = (
+            result.get("error", {})
+            if isinstance(
+                result,
+                dict
+            )
+            else {}
+        )
+
+        error_code = (
+            error_data.get("code")
+            if isinstance(
+                error_data,
+                dict
+            )
+            else None
+        )
+
+        if error_code and error_code != "ok":
+            return jsonify({
+                "success": False,
+                "publish_id":
+                    publish_id,
+                "error":
+                    error_data
+            }), 400
+
+        status_data = (
+            result.get("data", {})
+            if isinstance(
+                result,
+                dict
+            )
+            else {}
+        )
+
+        return jsonify({
+            "success": True,
+            "publish_id":
+                publish_id,
+            "status_data":
+                status_data,
+            "message": (
+                "TikTok publishing status retrieved successfully."
+                if language() == "en"
+                else
+                "L'état de la publication TikTok "
+                "a été récupéré avec succès."
+            )
+        }), 200
+
+    except requests.RequestException as exc:
+
+        return jsonify({
+            "success": False,
+            "publish_id":
+                publish_id,
+            "error": (
+                "Unable to connect to TikTok."
+                if language() == "en"
+                else
+                "Impossible de se connecter à TikTok."
+            ),
+            "details": str(exc)
+        }), 502
+
+    except Exception as exc:
+
+        return jsonify({
+            "success": False,
+            "publish_id":
+                publish_id,
+            "error": (
+                "Status check failed."
+                if language() == "en"
+                else
+                "La vérification du statut a échoué."
+            ),
+            "details": str(exc)
+        }), 500
 
 # ------------------------------------------------------------
 # Business profile / settings
