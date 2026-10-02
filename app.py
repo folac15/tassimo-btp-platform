@@ -1005,6 +1005,7 @@ def tiktok_oauth_callback():
     </body>
     </html>
     """
+    
 
 
 
@@ -1017,7 +1018,209 @@ def tiktok_oauth_callback():
     
 
 
+# ------------------------------------------------------------
+# TIKTOK CONTENT POSTING API
+# Creator Information
+# ------------------------------------------------------------
 
+@app.route("/api/tiktok/creator-info", methods=["GET"])
+@protected
+def tiktok_creator_info():
+    """
+    Get the currently connected TikTok creator's
+    latest posting permissions and capabilities.
+
+    TikTok requires Creator Info to be queried before
+    initiating a Direct Post.
+    """
+
+    if not supabase_configured():
+        return jsonify({
+            "success": False,
+            "error": (
+                "Supabase is not configured."
+                if language() == "en"
+                else "Supabase n'est pas configuré."
+            )
+        }), 500
+
+    try:
+        # Get the most recently updated TikTok connection.
+        connections = sb_select(
+            "tiktok_connections",
+            {
+                "select": (
+                    "id,open_id,display_name,avatar_url,"
+                    "access_token,scope,expires_at,updated_at"
+                ),
+                "order": "updated_at.desc",
+                "limit": "1"
+            }
+        )
+
+        if not connections:
+            return jsonify({
+                "success": False,
+                "connected": False,
+                "error": (
+                    "No TikTok account is connected."
+                    if language() == "en"
+                    else "Aucun compte TikTok n'est connecté."
+                )
+            }), 404
+
+        connection = connections[0]
+
+        access_token = str(
+            connection.get("access_token") or ""
+        ).strip()
+
+        if not access_token:
+            return jsonify({
+                "success": False,
+                "connected": False,
+                "error": (
+                    "TikTok access token is missing."
+                    if language() == "en"
+                    else "Le jeton d'accès TikTok est manquant."
+                )
+            }), 401
+
+        # TikTok Creator Info endpoint.
+        url = (
+            "https://open.tiktokapis.com/"
+            "v2/post/publish/creator_info/query/"
+        )
+
+        response = requests.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json; charset=UTF-8",
+            },
+            json={},
+            timeout=30,
+        )
+
+        try:
+            result = response.json()
+        except Exception:
+            result = {
+                "raw": response.text[:1000]
+            }
+
+        # Never expose the access token in the response.
+        if response.status_code >= 400:
+            return jsonify({
+                "success": False,
+                "connected": True,
+                "http_status": response.status_code,
+                "error": (
+                    result.get("error")
+                    if isinstance(result, dict)
+                    else result
+                )
+            }), response.status_code
+
+        error_data = (
+            result.get("error")
+            if isinstance(result, dict)
+            else {}
+        )
+
+        error_code = (
+            error_data.get("code")
+            if isinstance(error_data, dict)
+            else None
+        )
+
+        if error_code and error_code != "ok":
+            return jsonify({
+                "success": False,
+                "connected": True,
+                "error": error_data
+            }), 400
+
+        creator = (
+            result.get("data")
+            if isinstance(result, dict)
+            else {}
+        )
+
+        creator = creator if isinstance(creator, dict) else {}
+
+        return jsonify({
+            "success": True,
+            "connected": True,
+
+            "creator": {
+                "username": creator.get(
+                    "creator_username"
+                ),
+                "nickname": creator.get(
+                    "creator_nickname"
+                ),
+                "avatar_url": creator.get(
+                    "creator_avatar_url"
+                ),
+            },
+
+            "privacy_level_options": creator.get(
+                "privacy_level_options",
+                []
+            ),
+
+            "comment_disabled": creator.get(
+                "comment_disabled",
+                False
+            ),
+
+            "duet_disabled": creator.get(
+                "duet_disabled",
+                False
+            ),
+
+            "stitch_disabled": creator.get(
+                "stitch_disabled",
+                False
+            ),
+
+            "max_video_post_duration_sec": creator.get(
+                "max_video_post_duration_sec"
+            ),
+
+            "tiktok_error": error_data,
+
+            "message": (
+                "TikTok creator information retrieved successfully."
+                if language() == "en"
+                else "Les informations du créateur TikTok ont été récupérées avec succès."
+            )
+        }), 200
+
+    except requests.RequestException as exc:
+        return jsonify({
+            "success": False,
+            "connected": True,
+            "error": (
+                "Unable to connect to TikTok."
+                if language() == "en"
+                else "Impossible de se connecter à TikTok."
+            ),
+            "details": str(exc)
+        }), 502
+
+    except Exception as exc:
+        return jsonify({
+            "success": False,
+            "connected": True,
+            "error": (
+                "TikTok creator information request failed."
+                if language() == "en"
+                else "La récupération des informations TikTok a échoué."
+            ),
+            "details": str(exc)
+        }), 500
 
 # ------------------------------------------------------------
 # Business profile / settings
