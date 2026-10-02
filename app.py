@@ -477,6 +477,63 @@ def tiktok_supabase_test():
             "error": str(exc)
         }), 500
 # ------------------------------------------------------------
+# TEMPORARY TIKTOK CONNECTION INSERT DIAGNOSTIC
+# ------------------------------------------------------------
+
+@app.route("/api/tiktok/supabase-insert-test")
+@protected
+def tiktok_supabase_insert_test():
+    """
+    Temporary diagnostic endpoint.
+    Tests whether Render can INSERT into
+    the tiktok_connections table through Supabase REST API.
+    """
+
+    if not supabase_configured():
+        return jsonify({
+            "ok": False,
+            "supabase_configured": False,
+            "error": "Supabase is not configured."
+        }), 500
+
+    try:
+        test_open_id = f"render-test-{uuid.uuid4().hex[:12]}"
+
+        payload = {
+            "open_id": test_open_id,
+            "display_name": "Render Diagnostic Test",
+            "access_token": "temporary-test-token",
+            "scope": "user.info.basic",
+            "created_at": utc_now(),
+            "updated_at": utc_now(),
+        }
+
+        result = sb_insert(
+            "tiktok_connections",
+            payload,
+            select=True
+        )
+
+        if isinstance(result, dict) and result.get("_error"):
+            return jsonify({
+                "ok": False,
+                "inserted": False,
+                "error": result
+            }), 500
+
+        return jsonify({
+            "ok": True,
+            "inserted": True,
+            "result": result
+        }), 200
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "inserted": False,
+            "error": str(exc)
+        }), 500
+# ------------------------------------------------------------
 # TIKTOK LOGIN KIT — WEB OAUTH
 # ------------------------------------------------------------
 
