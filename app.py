@@ -430,6 +430,52 @@ def protected(fn):
         return fn(*args, **kwargs)
 
     return wrapper
+@app.route("/api/tiktok/supabase-test")
+@protected
+def tiktok_supabase_test():
+    """
+    Temporary diagnostic endpoint.
+    Tests whether Render can read the tiktok_connections
+    table through Supabase REST API.
+    """
+
+    if not supabase_configured():
+        return jsonify({
+            "ok": False,
+            "supabase_configured": False,
+            "error": "Supabase is not configured."
+        }), 500
+
+    try:
+        response = requests.get(
+            sb_url("tiktok_connections"),
+            headers=supabase_headers(),
+            params={
+                "select": "id,open_id,display_name",
+                "limit": "1",
+            },
+            timeout=20,
+        )
+
+        try:
+            data = response.json()
+        except Exception:
+            data = response.text[:500]
+
+        return jsonify({
+            "ok": response.status_code < 400,
+            "status_code": response.status_code,
+            "supabase_configured": True,
+            "table": "tiktok_connections",
+            "response": data
+        }), 200
+
+    except Exception as exc:
+        return jsonify({
+            "ok": False,
+            "supabase_configured": True,
+            "error": str(exc)
+        }), 500
 # ------------------------------------------------------------
 # TIKTOK LOGIN KIT — WEB OAUTH
 # ------------------------------------------------------------
