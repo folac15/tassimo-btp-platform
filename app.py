@@ -2651,26 +2651,23 @@ def content_upload():
         # ----------------------------------------------------
         # Upload to Supabase Storage
         # ----------------------------------------------------
+          storage_result = content_storage_upload(
+    storage_path,
+    temp_path,
+    mime_type
+)
 
-        storage_result = content_storage_upload(
-            storage_path,
-            temp_path,
-            mime_type
+if (
+    isinstance(storage_result, dict)
+    and storage_result.get("_error")
+):
+    return jsonify({
+        "success": False,
+        "stage": "storage",
+        "error": str(
+            storage_result.get("_error")
         )
-
-        if (
-            isinstance(
-                storage_result,
-                dict
-            )
-            and storage_result.get("_error")
-        ):
-
-            return jsonify({
-                "success": False,
-                "stage": "storage",
-                "error": storage_result
-            }), 500
+    }), 500
 
         # ----------------------------------------------------
         # Save metadata in database
