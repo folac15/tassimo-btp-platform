@@ -2146,14 +2146,31 @@ def content_storage_upload(
 ):
     """
     Upload a local file to Supabase Storage.
+
+    This version:
+    - keeps the upload server-side
+    - provides clearer Supabase errors
+    - supports large video files more reliably
+    - uses a longer timeout
     """
 
     if not supabase_configured():
         return {
-            "_error": "Supabase is not configured."
+            "_error": "Supabase is not configured. Check SUPABASE_URL and SUPABASE_KEY."
+        }
+
+    if not storage_path or not file_path:
+        return {
+            "_error": "Storage path or local file path is missing."
+        }
+
+    if not os.path.exists(file_path):
+        return {
+            "_error": "Temporary upload file does not exist."
         }
 
     try:
+        file_size = os.path.getsize(file_path)
 
         url = (
             f"{SUPABASE_URL.rstrip('/')}"
@@ -2165,48 +2182,74 @@ def content_storage_upload(
         headers = {
             "apikey": SUPABASE_KEY,
             "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": mime_type or "application/octet-stream",
+            "Content-Type": (
+                mime_type or
+                "application/octet-stream"
+            ),
             "x-upsert": "false",
+            "Content-Length": str(file_size),
         }
 
         with open(file_path, "rb") as file_handle:
-
             response = requests.post(
                 url,
                 headers=headers,
                 data=file_handle,
-                timeout=180,
+                timeout=(30, 600),
             )
 
         if response.status_code >= 400:
-
             try:
                 error_data = response.json()
             except Exception:
-                error_data = response.text[:1000]
+                error_data = response.text
 
             return {
                 "_error": (
-                    f"Storage upload error "
-                    f"({response.status_code}): "
+                    f"Supabase Storage upload failed "
+                    f"(HTTP {response.status_code}): "
                     f"{error_data}"
                 )
             }
 
         try:
-            return response.json()
+            response_data = response.json()
         except Exception:
-            return {
-                "success": True
+            response_data = {
+                "status_code": response.status_code,
+                "response": response.text[:500]
             }
 
-    except Exception as exc:
+        return {
+            "success": True,
+            "storage_path": storage_path,
+            "file_size": file_size,
+            "response": response_data
+        }
 
+    except requests.Timeout:
         return {
             "_error": (
-                f"Storage upload failed: {str(exc)}"
+                "Supabase Storage upload timed out. "
+                "The video may be too large or the connection is too slow."
             )
         }
+
+    except requests.RequestException as exc:
+        return {
+            "_error": (
+                f"Unable to connect to Supabase Storage: {str(exc)}"
+            )
+        }
+
+    except Exception as exc:
+        return {
+            "_error": (
+                f"Storage upload error: {str(exc)}"
+            )
+        }
+
+        
 
 
 def content_storage_delete(storage_path):
