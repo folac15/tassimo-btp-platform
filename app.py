@@ -2114,6 +2114,1066 @@ def tiktok_publish_status():
             ),
             "details": str(exc)
         }), 500
+# ============================================================
+# TASSIMO CONTENT CENTER
+# Permanent media library + publishing records
+# ============================================================
+
+
+CONTENT_STORAGE_BUCKET = "tassimo-content"
+
+
+def content_public_url(storage_path):
+    """
+    Build the public Supabase Storage URL for a content asset.
+    """
+
+    if not storage_path or not supabase_configured():
+        return ""
+
+    return (
+        f"{SUPABASE_URL.rstrip('/')}"
+        f"/storage/v1/object/public/"
+        f"{CONTENT_STORAGE_BUCKET}/"
+        f"{storage_path}"
+    )
+
+
+def content_storage_upload(
+    storage_path,
+    file_path,
+    mime_type
+):
+    """
+    Upload a local file to Supabase Storage.
+    """
+
+    if not supabase_configured():
+        return {
+            "_error": "Supabase is not configured."
+        }
+
+    try:
+
+        url = (
+            f"{SUPABASE_URL.rstrip('/')}"
+            f"/storage/v1/object/"
+            f"{CONTENT_STORAGE_BUCKET}/"
+            f"{storage_path}"
+        )
+
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": mime_type or "application/octet-stream",
+            "x-upsert": "false",
+        }
+
+        with open(file_path, "rb") as file_handle:
+
+            response = requests.post(
+                url,
+                headers=headers,
+                data=file_handle,
+                timeout=180,
+            )
+
+        if response.status_code >= 400:
+
+            try:
+                error_data = response.json()
+            except Exception:
+                error_data = response.text[:1000]
+
+            return {
+                "_error": (
+                    f"Storage upload error "
+                    f"({response.status_code}): "
+                    f"{error_data}"
+                )
+            }
+
+        try:
+            return response.json()
+        except Exception:
+            return {
+                "success": True
+            }
+
+    except Exception as exc:
+
+        return {
+            "_error": (
+                f"Storage upload failed: {str(exc)}"
+            )
+        }
+
+
+def content_storage_delete(storage_path):
+    """
+    Delete one asset from Supabase Storage.
+    """
+
+    if not supabase_configured():
+        return {
+            "_error": "Supabase is not configured."
+        }
+
+    try:
+
+        url = (
+            f"{SUPABASE_URL.rstrip('/')}"
+            f"/storage/v1/object/"
+            f"{CONTENT_STORAGE_BUCKET}/"
+            f"{storage_path}"
+        )
+
+        response = requests.delete(
+            url,
+            headers=supabase_headers(),
+            timeout=30,
+        )
+
+        if response.status_code >= 400:
+
+            try:
+                error_data = response.json()
+            except Exception:
+                error_data = response.text[:1000]
+
+            return {
+                "_error": (
+                    f"Storage delete error "
+                    f"({response.status_code}): "
+                    f"{error_data}"
+                )
+            }
+
+        return {
+            "success": True
+        }
+
+    except Exception as exc:
+
+        return {
+            "_error": (
+                f"Storage delete failed: {str(exc)}"
+            )
+        }
+
+
+# ------------------------------------------------------------
+# CONTENT LIBRARY
+# ------------------------------------------------------------
+
+@app.route(
+    "/api/content/library",
+    methods=["GET"]
+)
+@protected
+def content_library():
+
+    try:
+
+        content_type = str(
+            request.args.get(
+                "type",
+                ""
+            )
+        ).strip().lower()
+
+        status = str(
+            request.args.get(
+                "status",
+                ""
+            )
+        ).strip().lower()
+
+        category = str(
+            request.args.get(
+                "category",
+                ""
+            )
+        ).strip()
+
+        search = str(
+            request.args.get(
+                "search",
+                ""
+            )
+        ).strip()
+
+        params = {
+            "select": "*",
+            "order": "created_at.desc",
+            "limit": "200",
+        }
+
+        if content_type:
+            params["content_type"] = (
+                f"eq.{content_type}"
+            )
+
+        if status:
+            params["status"] = (
+                f"eq.{status}"
+            )
+
+        if category:
+            params["category"] = (
+                f"eq.{category}"
+            )
+
+        if search:
+            params["or"] = (
+                f"(title.ilike.*{search}*,"
+                f"description.ilike.*{search}*,"
+                f"file_name.ilike.*{search}*)"
+            )
+
+        rows = sb_select(
+            "content_library",
+            params
+        )
+
+        for row in rows:
+
+            storage_path = row.get(
+                "storage_path"
+            )
+
+            row["public_url"] = (
+                content_public_url(
+                    storage_path
+                )
+            )
+
+        return jsonify({
+            "success": True,
+            "content": rows,
+            "count": len(rows),
+        })
+
+    except Exception as exc:
+
+        return jsonify({
+            "success": False,
+            "error": str(exc),
+        }), 500
+
+
+# ------------------------------------------------------------
+# UPLOAD CONTENT
+# ------------------------------------------------------------
+
+@app.route(
+    "/api/content/upload",
+    methods=["POST"]
+)
+@protected
+def content_upload():
+
+    temp_path = None
+
+    try:
+
+        if not supabase_configured():
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Supabase is not configured."
+                    if language() == "en"
+                    else "Supabase n'est pas configuré."
+                )
+            }), 500
+
+        uploaded_file = request.files.get(
+            "file"
+        )
+
+        if not uploaded_file:
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "No content file was uploaded."
+                    if language() == "en"
+                    else "Aucun fichier de contenu n'a été envoyé."
+                )
+            }), 400
+
+        original_name = str(
+            uploaded_file.filename or ""
+        ).strip()
+
+        if not original_name:
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "The filename is missing."
+                    if language() == "en"
+                    else "Le nom du fichier est manquant."
+                )
+            }), 400
+
+        extension = os.path.splitext(
+            original_name
+        )[1].lower()
+
+        allowed_extensions = {
+            ".mp4": "video",
+            ".mov": "video",
+            ".webm": "video",
+            ".avi": "video",
+
+            ".jpg": "photo",
+            ".jpeg": "photo",
+            ".png": "photo",
+            ".webp": "photo",
+
+            ".gif": "image",
+
+            ".pdf": "document",
+
+            ".mp3": "audio",
+            ".wav": "audio",
+        }
+
+        if extension not in allowed_extensions:
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "This file type is not supported."
+                    if language() == "en"
+                    else "Ce type de fichier n'est pas pris en charge."
+                )
+            }), 400
+
+        content_type = allowed_extensions[
+            extension
+        ]
+
+        mime_type = (
+            uploaded_file.mimetype
+            or "application/octet-stream"
+        )
+
+        # ----------------------------------------------------
+        # Metadata from form
+        # ----------------------------------------------------
+
+        title = str(
+            request.form.get(
+                "title",
+                ""
+            )
+        ).strip()
+
+        description = str(
+            request.form.get(
+                "description",
+                ""
+            )
+        ).strip()
+
+        category = str(
+            request.form.get(
+                "category",
+                "general"
+            )
+        ).strip()
+
+        language_code = str(
+            request.form.get(
+                "language",
+                "fr"
+            )
+        ).strip().lower()
+
+        if language_code not in {
+            "fr",
+            "en"
+        }:
+
+            language_code = "fr"
+
+        tags_raw = str(
+            request.form.get(
+                "tags",
+                ""
+            )
+        ).strip()
+
+        tags = []
+
+        if tags_raw:
+
+            tags = [
+                item.strip()
+                for item in tags_raw.split(",")
+                if item.strip()
+            ]
+
+        # ----------------------------------------------------
+        # Save temporary local file
+        # ----------------------------------------------------
+
+        upload_dir = os.path.join(
+            os.getcwd(),
+            "tassimo_content_temp"
+        )
+
+        os.makedirs(
+            upload_dir,
+            exist_ok=True
+        )
+
+        temp_name = (
+            f"content_"
+            f"{uuid.uuid4().hex}"
+            f"{extension}"
+        )
+
+        temp_path = os.path.join(
+            upload_dir,
+            temp_name
+        )
+
+        uploaded_file.save(
+            temp_path
+        )
+
+        file_size = os.path.getsize(
+            temp_path
+        )
+
+        if file_size <= 0:
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "The uploaded file is empty."
+                    if language() == "en"
+                    else "Le fichier envoyé est vide."
+                )
+            }), 400
+
+        # ----------------------------------------------------
+        # Maximum library upload:
+        # 500 MB
+        # ----------------------------------------------------
+
+        max_size = (
+            500 * 1024 * 1024
+        )
+
+        if file_size > max_size:
+
+            return jsonify({
+                "success": False,
+                "error": (
+                    "The file is larger than "
+                    "the 500 MB library limit."
+                    if language() == "en"
+                    else "Le fichier dépasse "
+                         "la limite de 500 Mo."
+                )
+            }), 400
+
+        # ----------------------------------------------------
+        # Permanent Storage path
+        # ----------------------------------------------------
+
+        year = datetime.now(
+            timezone.utc
+        ).strftime("%Y")
+
+        month = datetime.now(
+            timezone.utc
+        ).strftime("%m")
+
+        unique_id = uuid.uuid4().hex
+
+        storage_path = (
+            f"{content_type}/"
+            f"{year}/"
+            f"{month}/"
+            f"{unique_id}"
+            f"{extension}"
+        )
+
+        # ----------------------------------------------------
+        # Upload to Supabase Storage
+        # ----------------------------------------------------
+
+        storage_result = content_storage_upload(
+            storage_path,
+            temp_path,
+            mime_type
+        )
+
+        if (
+            isinstance(
+                storage_result,
+                dict
+            )
+            and storage_result.get("_error")
+        ):
+
+            return jsonify({
+                "success": False,
+                "stage": "storage",
+                "error": storage_result
+            }), 500
+
+        # ----------------------------------------------------
+        # Save metadata in database
+        # ----------------------------------------------------
+
+        content_record = {
+            "title": title
+                or os.path.splitext(
+                    original_name
+                )[0],
+
+            "description": description,
+
+            "content_type": content_type,
+
+            "file_name": original_name,
+
+            "storage_bucket": (
+                CONTENT_STORAGE_BUCKET
+            ),
+
+            "storage_path": storage_path,
+
+            "mime_type": mime_type,
+
+            "file_size": file_size,
+
+            "category": category,
+
+            "language": language_code,
+
+            "tags": tags,
+
+            "status": "ready",
+
+            "ai_generated": False,
+
+            "ai_selected": False,
+
+            "created_by": (
+                session.get(
+                    "tiktok_display_name"
+                )
+                or CEO_NAME
+            ),
+
+            "created_at": utc_now(),
+
+            "updated_at": utc_now(),
+        }
+
+        saved = sb_insert(
+            "content_library",
+            content_record
+        )
+
+        if (
+            isinstance(
+                saved,
+                dict
+            )
+            and saved.get("_error")
+        ):
+
+            # Database failed after Storage upload.
+            # Clean up the orphaned Storage file.
+
+            content_storage_delete(
+                storage_path
+            )
+
+            return jsonify({
+                "success": False,
+                "stage": "database",
+                "error": saved
+            }), 500
+
+        saved["public_url"] = (
+            content_public_url(
+                storage_path
+            )
+        )
+
+        return jsonify({
+            "success": True,
+            "message": (
+                "Content uploaded successfully."
+                if language() == "en"
+                else "Contenu téléchargé avec succès."
+            ),
+            "content": saved,
+        }), 201
+
+    except Exception as exc:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Content upload failed."
+                if language() == "en"
+                else "Le téléchargement du contenu a échoué."
+            ),
+            "details": str(exc),
+        }), 500
+
+    finally:
+
+        if temp_path:
+
+            try:
+
+                if os.path.exists(
+                    temp_path
+                ):
+                    os.remove(
+                        temp_path
+                    )
+
+            except Exception:
+                pass
+
+
+# ------------------------------------------------------------
+# GET ONE CONTENT ITEM
+# ------------------------------------------------------------
+
+@app.route(
+    "/api/content/<content_id>",
+    methods=["GET"]
+)
+@protected
+def content_detail(content_id):
+
+    rows = sb_select(
+        "content_library",
+        {
+            "select": "*",
+            "id": f"eq.{content_id}",
+            "limit": "1",
+        }
+    )
+
+    if not rows:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Content not found."
+                if language() == "en"
+                else "Contenu introuvable."
+            )
+        }), 404
+
+    item = rows[0]
+
+    item["public_url"] = (
+        content_public_url(
+            item.get(
+                "storage_path"
+            )
+        )
+    )
+
+    return jsonify({
+        "success": True,
+        "content": item,
+    })
+
+
+# ------------------------------------------------------------
+# UPDATE CONTENT METADATA
+# ------------------------------------------------------------
+
+@app.route(
+    "/api/content/<content_id>",
+    methods=["PUT"]
+)
+@protected
+def content_update(content_id):
+
+    data = (
+        request.get_json(
+            silent=True
+        )
+        or {}
+    )
+
+    allowed_fields = {
+        "title",
+        "description",
+        "category",
+        "language",
+        "tags",
+        "ai_caption",
+        "ai_description",
+        "ai_hashtags",
+        "status",
+        "ai_generated",
+        "ai_selected",
+        "duration_seconds",
+        "width",
+        "height",
+    }
+
+    payload = {}
+
+    for key in allowed_fields:
+
+        if key in data:
+            payload[key] = data[key]
+
+    if not payload:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "No valid fields were provided."
+                if language() == "en"
+                else "Aucun champ valide n'a été fourni."
+            )
+        }), 400
+
+    payload["updated_at"] = utc_now()
+
+    saved = sb_update(
+        "content_library",
+        {
+            "id": f"eq.{content_id}"
+        },
+        payload
+    )
+
+    if not saved:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Content could not be updated."
+                if language() == "en"
+                else "Le contenu n'a pas pu être mis à jour."
+            )
+        }), 500
+
+    saved["public_url"] = (
+        content_public_url(
+            saved.get(
+                "storage_path"
+            )
+        )
+    )
+
+    return jsonify({
+        "success": True,
+        "content": saved,
+    })
+
+
+# ------------------------------------------------------------
+# DELETE CONTENT
+# ------------------------------------------------------------
+
+@app.route(
+    "/api/content/<content_id>",
+    methods=["DELETE"]
+)
+@protected
+def content_delete(content_id):
+
+    rows = sb_select(
+        "content_library",
+        {
+            "select": (
+                "id,storage_path"
+            ),
+            "id": f"eq.{content_id}",
+            "limit": "1",
+        }
+    )
+
+    if not rows:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Content not found."
+                if language() == "en"
+                else "Contenu introuvable."
+            )
+        }), 404
+
+    item = rows[0]
+
+    storage_path = item.get(
+        "storage_path"
+    )
+
+    # Delete Storage file first.
+    if storage_path:
+
+        storage_result = (
+            content_storage_delete(
+                storage_path
+            )
+        )
+
+        if (
+            isinstance(
+                storage_result,
+                dict
+            )
+            and storage_result.get("_error")
+        ):
+
+            return jsonify({
+                "success": False,
+                "stage": "storage",
+                "error": storage_result
+            }), 500
+
+    # Then delete database record.
+    delete_result = sb_delete(
+        "content_library",
+        {
+            "id": f"eq.{content_id}"
+        }
+    )
+
+    return jsonify({
+        "success": True,
+        "message": (
+            "Content deleted successfully."
+            if language() == "en"
+            else "Contenu supprimé avec succès."
+        ),
+        "result": delete_result,
+    })
+
+
+# ------------------------------------------------------------
+# CONTENT PUBLICATIONS
+# ------------------------------------------------------------
+
+@app.route(
+    "/api/content/publications",
+    methods=["GET", "POST"]
+)
+@protected
+def content_publications():
+
+    if request.method == "GET":
+
+        content_id = str(
+            request.args.get(
+                "content_id",
+                ""
+            )
+        ).strip()
+
+        channel = str(
+            request.args.get(
+                "channel",
+                ""
+            )
+        ).strip().lower()
+
+        status = str(
+            request.args.get(
+                "status",
+                ""
+            )
+        ).strip().lower()
+
+        params = {
+            "select": "*",
+            "order": "created_at.desc",
+            "limit": "200",
+        }
+
+        if content_id:
+
+            params["content_id"] = (
+                f"eq.{content_id}"
+            )
+
+        if channel:
+
+            params["channel"] = (
+                f"eq.{channel}"
+            )
+
+        if status:
+
+            params["status"] = (
+                f"eq.{status}"
+            )
+
+        rows = sb_select(
+            "content_publications",
+            params
+        )
+
+        return jsonify({
+            "success": True,
+            "publications": rows,
+            "count": len(rows),
+        })
+
+    # --------------------------------------------------------
+    # CREATE publication record
+    # --------------------------------------------------------
+
+    data = (
+        request.get_json(
+            silent=True
+        )
+        or {}
+    )
+
+    content_id = str(
+        data.get(
+            "content_id",
+            ""
+        )
+    ).strip()
+
+    channel = str(
+        data.get(
+            "channel",
+            ""
+        )
+    ).strip().lower()
+
+    if not content_id or not channel:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "content_id and channel are required."
+                if language() == "en"
+                else "content_id et channel sont obligatoires."
+            )
+        }), 400
+
+    allowed_channels = {
+        "whatsapp",
+        "facebook",
+        "instagram",
+        "tiktok",
+        "linkedin",
+        "youtube",
+    }
+
+    if channel not in allowed_channels:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Unsupported publishing channel."
+                if language() == "en"
+                else "Canal de publication non pris en charge."
+            )
+        }), 400
+
+    content_rows = sb_select(
+        "content_library",
+        {
+            "select": (
+                "id,title,status"
+            ),
+            "id": f"eq.{content_id}",
+            "limit": "1",
+        }
+    )
+
+    if not content_rows:
+
+        return jsonify({
+            "success": False,
+            "error": (
+                "Content item does not exist."
+                if language() == "en"
+                else "Le contenu demandé n'existe pas."
+            )
+        }), 404
+
+    publication = {
+        "content_id": content_id,
+
+        "channel": channel,
+
+        "account_name": data.get(
+            "account_name"
+        ),
+
+        "title": data.get(
+            "title"
+        ),
+
+        "caption": data.get(
+            "caption"
+        ),
+
+        "hashtags": data.get(
+            "hashtags"
+        ),
+
+        "privacy_level": data.get(
+            "privacy_level"
+        ),
+
+        "scheduled_at": data.get(
+            "scheduled_at"
+        ),
+
+        "status": data.get(
+            "status",
+            "draft"
+        ),
+
+        "created_at": utc_now(),
+
+        "updated_at": utc_now(),
+    }
+
+    saved = sb_insert(
+        "content_publications",
+        publication
+    )
+
+    if (
+        isinstance(
+            saved,
+            dict
+        )
+        and saved.get("_error")
+    ):
+
+        return jsonify({
+            "success": False,
+            "error": saved
+        }), 500
+
+    return jsonify({
+        "success": True,
+        "publication": saved,
+    }), 201
 
 # ------------------------------------------------------------
 # Business profile / settings
