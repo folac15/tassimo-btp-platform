@@ -1,0 +1,1775 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>TASSIMO BTP — Content Center</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f4f7fb;
+  color:#172b4d;
+}
+
+button,
+input,
+select,
+textarea{
+  font:inherit;
+}
+
+.topbar{
+  background:#102a43;
+  color:white;
+  padding:16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+
+.brand{
+  font-weight:800;
+  font-size:17px;
+}
+
+.brand small{
+  display:block;
+  opacity:.7;
+  font-size:11px;
+  margin-top:3px;
+}
+
+.top-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.btn{
+  border:0;
+  border-radius:10px;
+  padding:10px 14px;
+  cursor:pointer;
+  background:#e0a72e;
+  color:#172b4d;
+  font-weight:700;
+}
+
+.btn.secondary{
+  background:#fff;
+  color:#172b4d;
+}
+
+.btn.dark{
+  background:#183b56;
+  color:white;
+}
+
+.btn.danger{
+  background:#b42318;
+  color:white;
+}
+
+.container{
+  max-width:1250px;
+  margin:auto;
+  padding:18px;
+}
+
+.hero{
+  background:white;
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:18px;
+  border:1px solid #e4e7ec;
+}
+
+.hero h1{
+  margin:0 0 6px;
+  font-size:25px;
+}
+
+.hero p{
+  margin:0;
+  color:#667085;
+  line-height:1.5;
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  margin-bottom:18px;
+  padding-bottom:4px;
+}
+
+.tab{
+  white-space:nowrap;
+  border:1px solid #d0d5dd;
+  background:white;
+  border-radius:10px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.tab.active{
+  background:#102a43;
+  color:white;
+  border-color:#102a43;
+}
+
+.panel{
+  background:white;
+  border:1px solid #e4e7ec;
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:18px;
+}
+
+.panel h2{
+  margin-top:0;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.stat{
+  background:white;
+  border:1px solid #e4e7ec;
+  border-radius:14px;
+  padding:15px;
+}
+
+.stat strong{
+  display:block;
+  font-size:24px;
+  margin-top:6px;
+}
+
+.muted{
+  color:#667085;
+}
+
+.filters{
+  display:grid;
+  grid-template-columns:1fr 160px 160px 160px;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  border:1px solid #d0d5dd;
+  border-radius:10px;
+  padding:11px;
+  background:white;
+}
+
+textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+.upload-box{
+  border:2px dashed #cbd5e1;
+  border-radius:14px;
+  padding:25px;
+  text-align:center;
+  background:#f8fafc;
+}
+
+.upload-box input{
+  border:0;
+  background:transparent;
+}
+
+.library-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+.content-card{
+  border:1px solid #e4e7ec;
+  border-radius:14px;
+  overflow:hidden;
+  background:white;
+}
+
+.preview{
+  height:180px;
+  background:#eef2f6;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  color:#667085;
+  font-weight:700;
+}
+
+.preview img,
+.preview video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.content-body{
+  padding:13px;
+}
+
+.content-title{
+  font-weight:800;
+  margin-bottom:6px;
+  word-break:break-word;
+}
+
+.badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:8px 0;
+}
+
+.badge{
+  font-size:11px;
+  padding:5px 8px;
+  border-radius:20px;
+  background:#eef2f6;
+}
+
+.badge.green{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.badge.orange{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.card-actions{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.card-actions button{
+  padding:8px 10px;
+  border-radius:8px;
+  border:1px solid #d0d5dd;
+  background:white;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.form-group{
+  margin-bottom:12px;
+}
+
+.form-group label{
+  display:block;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.full{
+  grid-column:1 / -1;
+}
+
+.channel-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+.channel{
+  border:1px solid #e4e7ec;
+  border-radius:14px;
+  padding:16px;
+}
+
+.channel h3{
+  margin:0 0 7px;
+}
+
+.channel-status{
+  font-size:13px;
+  margin-bottom:10px;
+}
+
+.green-text{
+  color:#15803d;
+  font-weight:700;
+}
+
+.orange-text{
+  color:#b45309;
+  font-weight:700;
+}
+
+.publication{
+  border:1px solid #e4e7ec;
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:10px;
+}
+
+.publication-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.performance-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+
+.empty{
+  text-align:center;
+  padding:35px 15px;
+  color:#667085;
+}
+
+.loading{
+  text-align:center;
+  padding:25px;
+}
+
+.notice{
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:12px;
+  background:#eff6ff;
+  color:#1e40af;
+}
+
+.error{
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:12px;
+  background:#fef2f2;
+  color:#b42318;
+}
+
+.success{
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:12px;
+  background:#ecfdf3;
+  color:#027a48;
+}
+
+@media(max-width:900px){
+  .stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .library-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .channel-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .performance-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .filters{
+    grid-template-columns:1fr 1fr;
+  }
+}
+
+@media(max-width:600px){
+  .container{
+    padding:12px;
+  }
+
+  .stats,
+  .library-grid,
+  .channel-grid,
+  .performance-grid,
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .filters{
+    grid-template-columns:1fr;
+  }
+
+  .hero h1{
+    font-size:21px;
+  }
+
+  .topbar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    TASSIMO BTP CONSTRUCTION SARL
+    <small>Content & Social Publishing Center</small>
+  </div>
+
+  <div class="top-actions">
+    <button class="btn secondary" onclick="goBack()">
+      ← Retour / Back
+    </button>
+
+    <button class="btn secondary" onclick="setLang()">
+      FR / EN
+    </button>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="hero">
+    <h1>📚 Centre de contenu / Content Center</h1>
+    <p>
+      Stockez vos vidéos, photos, projets et supports marketing,
+      préparez le contenu avec l'IA et gérez vos publications sociales
+      depuis un seul espace.
+      <br>
+      Store your videos, photos, projects and marketing materials,
+      prepare content with AI and manage social publishing from one place.
+    </p>
+  </section>
+
+  <div id="message"></div>
+
+  <section class="stats">
+    <div class="stat">
+      <span class="muted">Total contenus / Total content</span>
+      <strong id="totalCount">0</strong>
+    </div>
+
+    <div class="stat">
+      <span class="muted">Vidéos / Videos</span>
+      <strong id="videoCount">0</strong>
+    </div>
+
+    <div class="stat">
+      <span class="muted">Photos / Images</span>
+      <strong id="photoCount">0</strong>
+    </div>
+
+    <div class="stat">
+      <span class="muted">Publications</span>
+      <strong id="publicationCount">0</strong>
+    </div>
+  </section>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('library',this)">
+      📚 Bibliothèque / Library
+    </button>
+
+    <button class="tab" onclick="showTab('upload',this)">
+      ⬆️ Upload
+    </button>
+
+    <button class="tab" onclick="showTab('ai',this)">
+      🤖 AI Creator
+    </button>
+
+    <button class="tab" onclick="showTab('calendar',this)">
+      📅 Publications
+    </button>
+
+    <button class="tab" onclick="showTab('channels',this)">
+      📡 Channels
+    </button>
+
+    <button class="tab" onclick="showTab('performance',this)">
+      📊 Performance
+    </button>
+  </div>
+
+  <!-- LIBRARY -->
+
+  <section id="tab-library">
+
+    <div class="panel">
+
+      <h2>📚 Bibliothèque de contenu / Content Library</h2>
+
+      <div class="filters">
+
+        <input
+          id="search"
+          placeholder="Rechercher / Search..."
+          oninput="loadLibrary()"
+        >
+
+        <select id="typeFilter" onchange="loadLibrary()">
+          <option value="">Tous les types / All types</option>
+          <option value="video">Vidéo / Video</option>
+          <option value="photo">Photo</option>
+          <option value="image">Image</option>
+          <option value="document">Document</option>
+          <option value="audio">Audio</option>
+          <option value="other">Autre / Other</option>
+        </select>
+
+        <select id="statusFilter" onchange="loadLibrary()">
+          <option value="">Tous les statuts / All statuses</option>
+          <option value="draft">Draft</option>
+          <option value="ready">Ready</option>
+          <option value="pending_approval">Pending approval</option>
+          <option value="approved">Approved</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="published">Published</option>
+          <option value="failed">Failed</option>
+          <option value="archived">Archived</option>
+        </select>
+
+        <select id="categoryFilter" onchange="loadLibrary()">
+          <option value="">Toutes catégories</option>
+          <option value="project">Projet</option>
+          <option value="construction_progress">Avancement chantier</option>
+          <option value="before_after">Avant / Après</option>
+          <option value="design">Design / 3D</option>
+          <option value="training">Formation</option>
+          <option value="marketing">Marketing</option>
+          <option value="educational">Éducatif</option>
+          <option value="other">Autre</option>
+        </select>
+
+      </div>
+
+      <div id="library" class="library-grid">
+        <div class="loading">Chargement...</div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- UPLOAD -->
+
+  <section id="tab-upload" style="display:none">
+
+    <div class="panel">
+
+      <h2>⬆️ Ajouter du contenu / Upload Content</h2>
+
+      <div class="upload-box">
+
+        <p>
+          Sélectionnez une vidéo, photo, image, document ou audio.
+        </p>
+
+        <p class="muted">
+          MP4, MOV, WEBM, AVI, JPG, JPEG, PNG, WEBP, GIF, PDF, MP3, WAV
+        </p>
+
+        <input
+          type="file"
+          id="fileInput"
+          accept=".mp4,.mov,.webm,.avi,.jpg,.jpeg,.png,.webp,.gif,.pdf,.mp3,.wav"
+        >
+
+      </div>
+
+      <br>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Titre / Title</label>
+          <input id="uploadTitle">
+        </div>
+
+        <div class="form-group">
+          <label>Catégorie / Category</label>
+
+          <select id="uploadCategory">
+            <option value="">Sélectionner</option>
+            <option value="project">Projet</option>
+            <option value="construction_progress">Avancement chantier</option>
+            <option value="before_after">Avant / Après</option>
+            <option value="design">Design / 3D</option>
+            <option value="training">Formation</option>
+            <option value="marketing">Marketing</option>
+            <option value="educational">Éducatif</option>
+            <option value="other">Autre</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label>Description / Description</label>
+          <textarea id="uploadDescription"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Langue / Language</label>
+
+          <select id="uploadLanguage">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+            <option value="fr-en">Français + English</option>
+          </select>
+        </div>
+
+      </div>
+
+      <button class="btn" onclick="uploadContent()">
+        ⬆️ Enregistrer le contenu / Save Content
+      </button>
+
+      <div id="uploadProgress" class="muted" style="margin-top:12px"></div>
+
+    </div>
+
+  </section>
+
+  <!-- AI -->
+
+  <section id="tab-ai" style="display:none">
+
+    <div class="panel">
+
+      <h2>🤖 AI Content Creator</h2>
+
+      <p class="muted">
+        Préparez une publication à partir d'un contenu existant.
+        / Prepare a post from existing content.
+      </p>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Contenu / Content</label>
+          <select id="aiContent"></select>
+        </div>
+
+        <div class="form-group">
+          <label>Canal / Channel</label>
+
+          <select id="aiChannel">
+            <option value="tiktok">TikTok</option>
+            <option value="facebook">Facebook</option>
+            <option value="instagram">Instagram</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="youtube">YouTube</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label>
+            Objectif / Objective
+          </label>
+
+          <input
+            id="aiObjective"
+            value="engagement and qualified leads"
+          >
+        </div>
+
+        <div class="form-group full">
+          <label>
+            Instructions supplémentaires / Additional instructions
+          </label>
+
+          <textarea
+            id="aiInstructions"
+            placeholder="Ex: Focus on construction quality in Cameroon..."
+          ></textarea>
+        </div>
+
+      </div>
+
+      <button class="btn" onclick="generateAIContent()">
+        🤖 Générer avec TASSIMO AI
+      </button>
+
+      <div id="aiResult" style="margin-top:18px"></div>
+
+    </div>
+
+  </section>
+
+  <!-- PUBLICATIONS -->
+
+  <section id="tab-calendar" style="display:none">
+
+    <div class="panel">
+
+      <h2>📅 Publications / Publishing</h2>
+
+      <p class="muted">
+        Les publications sensibles peuvent passer par l'approbation CEO.
+        <br>
+        Sensitive publishing actions can pass through CEO approval.
+      </p>
+
+      <div id="publications">
+        <div class="loading">Chargement...</div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- CHANNELS -->
+
+  <section id="tab-channels" style="display:none">
+
+    <div class="panel">
+
+      <h2>📡 Canaux sociaux / Social Channels</h2>
+
+      <div class="channel-grid">
+
+        <div class="channel">
+          <h3>💬 WhatsApp</h3>
+          <div class="channel-status orange-text">
+            Vérification de connexion...
+          </div>
+          <p class="muted">
+            WhatsApp Business
+          </p>
+        </div>
+
+        <div class="channel">
+          <h3>📘 Facebook</h3>
+          <div class="channel-status orange-text">
+            Vérification de connexion...
+          </div>
+          <p class="muted">
+            Facebook Page
+          </p>
+        </div>
+
+        <div class="channel">
+          <h3>📸 Instagram</h3>
+          <div class="channel-status orange-text">
+            Vérification de connexion...
+          </div>
+          <p class="muted">
+            Instagram Business
+          </p>
+        </div>
+
+        <div class="channel">
+          <h3>🎵 TikTok</h3>
+          <div class="channel-status green-text">
+            🟢 Connected / Connecté
+          </div>
+          <p class="muted">
+            Direct Post API
+          </p>
+        </div>
+
+        <div class="channel">
+          <h3>💼 LinkedIn</h3>
+          <div class="channel-status orange-text">
+            🟠 À configurer
+          </div>
+          <p class="muted">
+            LinkedIn publishing
+          </p>
+        </div>
+
+        <div class="channel">
+          <h3>▶️ YouTube</h3>
+          <div class="channel-status orange-text">
+            🟠 À configurer
+          </div>
+          <p class="muted">
+            YouTube publishing
+          </p>
+        </div>
+
+      </div>
+
+      <br>
+
+      <button
+        class="btn secondary"
+        onclick="window.location.href='/integrations.html'"
+      >
+        🔗 Gérer les intégrations / Manage integrations
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- PERFORMANCE -->
+
+  <section id="tab-performance" style="display:none">
+
+    <div class="panel">
+
+      <h2>📊 Performance du contenu / Content Performance</h2>
+
+      <div class="performance-grid">
+
+        <div class="stat">
+          <span class="muted">Impressions</span>
+          <strong id="impressions">0</strong>
+        </div>
+
+        <div class="stat">
+          <span class="muted">Reach</span>
+          <strong id="reach">0</strong>
+        </div>
+
+        <div class="stat">
+          <span class="muted">Views</span>
+          <strong id="views">0</strong>
+        </div>
+
+        <div class="stat">
+          <span class="muted">Likes</span>
+          <strong id="likes">0</strong>
+        </div>
+
+        <div class="stat">
+          <span class="muted">Comments</span>
+          <strong id="comments">0</strong>
+        </div>
+
+        <div class="stat">
+          <span class="muted">Shares</span>
+          <strong id="shares">0</strong>
+        </div>
+
+        <div class="stat">
+          <span class="muted">Saves</span>
+          <strong id="saves">0</strong>
+        </div>
+
+        <div class="stat">
+          <span class="muted">Conversions</span>
+          <strong id="conversions">0</strong>
+        </div>
+
+      </div>
+
+      <p class="muted">
+        Les statistiques seront alimentées par les APIs des réseaux
+        lorsqu'elles seront connectées et autorisées.
+      </p>
+
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+
+let libraryItems = [];
+let publications = [];
+
+function goBack(){
+  window.location.href="/integrations.html";
+}
+
+function setLang(){
+  const current =
+    localStorage.getItem("lang") || "fr";
+
+  localStorage.setItem(
+    "lang",
+    current === "fr" ? "en" : "fr"
+  );
+
+  location.reload();
+}
+
+function showMessage(text,type="notice"){
+  const box=document.getElementById("message");
+
+  box.innerHTML =
+    `<div class="${type}">${escapeHtml(text)}</div>`;
+
+  setTimeout(()=>{
+    box.innerHTML="";
+  },4000);
+}
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function api(url,options={}){
+  options.headers={
+    ...(options.headers || {}),
+    "X-Language":
+      localStorage.getItem("lang") || "fr"
+  };
+
+  const response=await fetch(url,options);
+
+  if(response.status===401){
+    window.location.href="/login";
+    return null;
+  }
+
+  let data={};
+
+  try{
+    data=await response.json();
+  }catch(e){
+    data={};
+  }
+
+  if(!response.ok){
+    throw new Error(
+      data.error ||
+      "Request failed / Requête échouée"
+    );
+  }
+
+  return data;
+}
+
+function showTab(name,button){
+
+  document.querySelectorAll(
+    '[id^="tab-"]'
+  ).forEach(el=>{
+    el.style.display="none";
+  });
+
+  const target=
+    document.getElementById("tab-"+name);
+
+  if(target){
+    target.style.display="block";
+  }
+
+  document.querySelectorAll(".tab")
+    .forEach(el=>el.classList.remove("active"));
+
+  if(button){
+    button.classList.add("active");
+  }
+
+  if(name==="library"){
+    loadLibrary();
+  }
+
+  if(name==="calendar"){
+    loadPublications();
+  }
+
+  if(name==="ai"){
+    loadAIContentList();
+  }
+
+  if(name==="performance"){
+    calculatePerformance();
+  }
+}
+
+async function loadLibrary(){
+
+  const box=
+    document.getElementById("library");
+
+  box.innerHTML=
+    '<div class="loading">Chargement...</div>';
+
+  try{
+
+    const params=new URLSearchParams();
+
+    const search=
+      document.getElementById("search").value.trim();
+
+    const type=
+      document.getElementById("typeFilter").value;
+
+    const status=
+      document.getElementById("statusFilter").value;
+
+    const category=
+      document.getElementById("categoryFilter").value;
+
+    if(search){
+      params.set("search",search);
+    }
+
+    if(type){
+      params.set("content_type",type);
+    }
+
+    if(status){
+      params.set("status",status);
+    }
+
+    if(category){
+      params.set("category",category);
+    }
+
+    const data=
+      await api(
+        "/api/content/library?"+params.toString()
+      );
+
+    libraryItems=
+      data.items ||
+      data.content ||
+      data.library ||
+      [];
+
+    renderLibrary();
+    updateStats();
+
+  }catch(error){
+
+    box.innerHTML=
+      `<div class="error">${escapeHtml(error.message)}</div>`;
+  }
+}
+
+function renderLibrary(){
+
+  const box=
+    document.getElementById("library");
+
+  if(!libraryItems.length){
+
+    box.innerHTML=
+      `<div class="empty">
+        Aucun contenu pour le moment.<br>
+        No content yet.
+      </div>`;
+
+    return;
+  }
+
+  box.innerHTML=
+    libraryItems.map(item=>{
+
+      const title=
+        item.title ||
+        item.file_name ||
+        "Untitled";
+
+      const type=
+        item.content_type ||
+        "other";
+
+      const status=
+        item.status ||
+        "draft";
+
+      let preview="";
+
+      const url=
+        item.public_url ||
+        item.url ||
+        "";
+
+      if(
+        type==="video" &&
+        url
+      ){
+
+        preview=
+          `<video
+             src="${escapeHtml(url)}"
+             controls
+             preload="metadata">
+           </video>`;
+
+      }else if(
+        (type==="photo" || type==="image") &&
+        url
+      ){
+
+        preview=
+          `<img
+             src="${escapeHtml(url)}"
+             alt="${escapeHtml(title)}">`;
+
+      }else{
+
+        preview=
+          `<span>📄 ${escapeHtml(type.toUpperCase())}</span>`;
+      }
+
+      return `
+        <article class="content-card">
+
+          <div class="preview">
+            ${preview}
+          </div>
+
+          <div class="content-body">
+
+            <div class="content-title">
+              ${escapeHtml(title)}
+            </div>
+
+            <div class="muted">
+              ${escapeHtml(item.file_name || "")}
+            </div>
+
+            <div class="badges">
+
+              <span class="badge">
+                ${escapeHtml(type)}
+              </span>
+
+              <span class="badge orange">
+                ${escapeHtml(status)}
+              </span>
+
+              ${
+                item.category
+                ?
+                `<span class="badge">
+                   ${escapeHtml(item.category)}
+                 </span>`
+                :
+                ""
+              }
+
+            </div>
+
+            ${
+              item.description
+              ?
+              `<p class="muted">
+                 ${escapeHtml(item.description)}
+               </p>`
+              :
+              ""
+            }
+
+            <div class="card-actions">
+
+              ${
+                url
+                ?
+                `<button
+                   onclick="window.open('${escapeHtml(url)}','_blank')">
+                   👁️ Voir
+                 </button>`
+                :
+                ""
+              }
+
+              <button
+                onclick="prepareAI('${escapeHtml(item.id)}')">
+                🤖 AI
+              </button>
+
+              <button
+                onclick="editContent('${escapeHtml(item.id)}')">
+                ✏️ Modifier
+              </button>
+
+              <button
+                onclick="deleteContent('${escapeHtml(item.id)}')">
+                🗑️ Supprimer
+              </button>
+
+            </div>
+
+          </div>
+
+        </article>
+      `;
+
+    }).join("");
+}
+
+async function uploadContent(){
+
+  const file=
+    document.getElementById("fileInput").files[0];
+
+  if(!file){
+    showMessage(
+      "Sélectionnez d'abord un fichier.",
+      "error"
+    );
+    return;
+  }
+
+  const progress=
+    document.getElementById("uploadProgress");
+
+  progress.textContent=
+    "Upload en cours... / Uploading...";
+
+  const form=
+    new FormData();
+
+  form.append("file",file);
+
+  form.append(
+    "title",
+    document.getElementById("uploadTitle").value.trim()
+  );
+
+  form.append(
+    "description",
+    document.getElementById("uploadDescription").value.trim()
+  );
+
+  form.append(
+    "category",
+    document.getElementById("uploadCategory").value
+  );
+
+  form.append(
+    "language",
+    document.getElementById("uploadLanguage").value
+  );
+
+  try{
+
+    const response=
+      await fetch(
+        "/api/content/upload",
+        {
+          method:"POST",
+          headers:{
+            "X-Language":
+              localStorage.getItem("lang") || "fr"
+          },
+          body:form
+        }
+      );
+
+    if(response.status===401){
+      window.location.href="/login";
+      return;
+    }
+
+    const data=
+      await response.json();
+
+    if(!response.ok){
+      throw new Error(
+        data.error ||
+        "Upload failed."
+      );
+    }
+
+    progress.textContent=
+      "✓ Contenu enregistré / Content saved";
+
+    showMessage(
+      "Contenu ajouté avec succès. / Content uploaded successfully.",
+      "success"
+    );
+
+    document.getElementById("fileInput").value="";
+    document.getElementById("uploadTitle").value="";
+    document.getElementById("uploadDescription").value="";
+
+    await loadLibrary();
+
+    showTab(
+      "library",
+      document.querySelector(".tab")
+    );
+
+  }catch(error){
+
+    progress.textContent="";
+
+    showMessage(
+      error.message,
+      "error"
+    );
+  }
+}
+
+function prepareAI(id){
+
+  showTab(
+    "ai",
+    document.querySelectorAll(".tab")[2]
+  );
+
+  const select=
+    document.getElementById("aiContent");
+
+  select.value=id;
+}
+
+async function loadAIContentList(){
+
+  const select=
+    document.getElementById("aiContent");
+
+  if(!libraryItems.length){
+    await loadLibrary();
+  }
+
+  select.innerHTML=
+    `<option value="">
+      Sélectionner un contenu / Select content
+    </option>`+
+    libraryItems.map(item=>`
+      <option value="${escapeHtml(item.id)}">
+        ${escapeHtml(
+          item.title ||
+          item.file_name ||
+          "Untitled"
+        )}
+      </option>
+    `).join("");
+}
+
+async function generateAIContent(){
+
+  const contentId=
+    document.getElementById("aiContent").value;
+
+  const channel=
+    document.getElementById("aiChannel").value;
+
+  const objective=
+    document.getElementById("aiObjective").value;
+
+  const instructions=
+    document.getElementById("aiInstructions").value;
+
+  if(!contentId){
+
+    showMessage(
+      "Sélectionnez un contenu.",
+      "error"
+    );
+
+    return;
+  }
+
+  const result=
+    document.getElementById("aiResult");
+
+  result.innerHTML=
+    '<div class="loading">TASSIMO AI travaille...</div>';
+
+  try{
+
+    /*
+      We use the existing TASSIMO AI social-post
+      endpoint for the first AI generation layer.
+      Publishing remains a separate controlled action.
+    */
+
+    const response=
+      await api(
+        "/api/social/ai-post",
+        {
+          method:"POST",
+          body:JSON.stringify({
+            channels:[channel],
+            objective:
+              objective+
+              (
+                instructions
+                ? " Additional instructions: "+instructions
+                : ""
+              ),
+            topic:
+              "Create content using the selected TASSIMO content asset."
+          })
+        }
+      );
+
+    const first=
+      (response.results || [])[0] ||
+      {};
+
+    result.innerHTML=`
+      <div class="panel">
+
+        <h3>
+          🤖 AI Draft — ${escapeHtml(channel)}
+        </h3>
+
+        <textarea
+          id="generatedCopy"
+          style="min-height:220px"
+        >${escapeHtml(
+          first.copy ||
+          ""
+        )}</textarea>
+
+        <br><br>
+
+        <button
+          class="btn"
+          onclick="savePublicationDraft('${escapeHtml(contentId)}','${escapeHtml(channel)}')">
+          💾 Enregistrer comme brouillon / Save Draft
+        </button>
+
+      </div>
+    `;
+
+  }catch(error){
+
+    result.innerHTML=
+      `<div class="error">
+        ${escapeHtml(error.message)}
+      </div>`;
+  }
+}
+
+async function savePublicationDraft(
+  contentId,
+  channel
+){
+
+  const caption=
+    document.getElementById("generatedCopy").value;
+
+  try{
+
+    await api(
+      "/api/content/publications",
+      {
+        method:"POST",
+        body:JSON.stringify({
+          content_id:contentId,
+          channel:channel,
+          caption:caption,
+          status:"draft"
+        })
+      }
+    );
+
+    showMessage(
+      "Brouillon enregistré. / Draft saved.",
+      "success"
+    );
+
+    loadPublications();
+
+  }catch(error){
+
+    showMessage(
+      error.message,
+      "error"
+    );
+  }
+}
+
+async function loadPublications(){
+
+  const box=
+    document.getElementById("publications");
+
+  box.innerHTML=
+    '<div class="loading">Chargement...</div>';
+
+  try{
+
+    const data=
+      await api(
+        "/api/content/publications"
+      );
+
+    publications=
+      data.items ||
+      data.publications ||
+      [];
+
+    if(!publications.length){
+
+      box.innerHTML=
+        `<div class="empty">
+          Aucune publication pour le moment.<br>
+          No publications yet.
+        </div>`;
+
+      updateStats();
+      return;
+    }
+
+    box.innerHTML=
+      publications.map(pub=>`
+
+        <div class="publication">
+
+          <div class="publication-head">
+
+            <strong>
+              ${escapeHtml(
+                pub.title ||
+                pub.caption ||
+                "Publication"
+              )}
+            </strong>
+
+            <span class="badge">
+              ${escapeHtml(
+                pub.channel || ""
+              )}
+            </span>
+
+          </div>
+
+          <p>
+            ${escapeHtml(
+              pub.caption || ""
+            )}
+          </p>
+
+          <div class="badges">
+
+            <span class="badge orange">
+              ${escapeHtml(
+                pub.status || "draft"
+              )}
+            </span>
+
+            ${
+              pub.scheduled_at
+              ?
+              `<span class="badge">
+                 ${escapeHtml(pub.scheduled_at)}
+               </span>`
+              :
+              ""
+            }
+
+          </div>
+
+        </div>
+
+      `).join("");
+
+    updateStats();
+
+  }catch(error){
+
+    box.innerHTML=
+      `<div class="error">
+        ${escapeHtml(error.message)}
+      </div>`;
+  }
+}
+
+async function editContent(id){
+
+  const item=
+    libraryItems.find(
+      x=>String(x.id)===String(id)
+    );
+
+  if(!item){
+    return;
+  }
+
+  const title=
+    prompt(
+      "Titre / Title:",
+      item.title || ""
+    );
+
+  if(title===null){
+    return;
+  }
+
+  const description=
+    prompt(
+      "Description:",
+      item.description || ""
+    );
+
+  if(description===null){
+    return;
+  }
+
+  try{
+
+    await api(
+      "/api/content/"+encodeURIComponent(id),
+      {
+        method:"PUT",
+        body:JSON.stringify({
+          title:title,
+          description:description
+        })
+      }
+    );
+
+    showMessage(
+      "Contenu mis à jour. / Content updated.",
+      "success"
+    );
+
+    loadLibrary();
+
+  }catch(error){
+
+    showMessage(
+      error.message,
+      "error"
+    );
+  }
+}
+
+async function deleteContent(id){
+
+  if(!confirm(
+    "Supprimer ce contenu ? / Delete this content?"
+  )){
+    return;
+  }
+
+  try{
+
+    await api(
+      "/api/content/"+encodeURIComponent(id),
+      {
+        method:"DELETE"
+      }
+    );
+
+    showMessage(
+      "Contenu supprimé. / Content deleted.",
+      "success"
+    );
+
+    loadLibrary();
+
+  }catch(error){
+
+    showMessage(
+      error.message,
+      "error"
+    );
+  }
+}
+
+async function updateStats(){
+
+  document.getElementById("totalCount").textContent=
+    libraryItems.length;
+
+  document.getElementById("videoCount").textContent=
+    libraryItems.filter(
+      x=>x.content_type==="video"
+    ).length;
+
+  document.getElementById("photoCount").textContent=
+    libraryItems.filter(
+      x=>
+        x.content_type==="photo" ||
+        x.content_type==="image"
+    ).length;
+
+  document.getElementById("publicationCount").textContent=
+    publications.length;
+}
+
+function calculatePerformance(){
+
+  const fields=[
+    "impressions",
+    "reach",
+    "views",
+    "likes",
+    "comments",
+    "shares",
+    "saves",
+    "conversions"
+  ];
+
+  const totals={};
+
+  fields.forEach(field=>{
+    totals[field]=0;
+  });
+
+  publications.forEach(pub=>{
+    fields.forEach(field=>{
+      totals[field]+=
+        Number(pub[field] || 0);
+    });
+  });
+
+  fields.forEach(field=>{
+    const el=
+      document.getElementById(field);
+
+    if(el){
+      el.textContent=
+        totals[field].toLocaleString();
+    }
+  });
+}
+
+async function loadInitial(){
+
+  try{
+
+    await loadLibrary();
+
+    await loadPublications();
+
+    await loadAIContentList();
+
+  }catch(error){
+
+    showMessage(
+      error.message,
+      "error"
+    );
+  }
+}
+
+loadInitial();
+
+</script>
+
+</body>
+</html>
