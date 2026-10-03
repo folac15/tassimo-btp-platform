@@ -1226,120 +1226,183 @@ function renderLibrary(){
 
 async function uploadContent(){
 
-  const file=
-    document.getElementById("fileInput").files[0];
+    const fileInput =
+        document.getElementById("fileInput");
 
-  if(!file){
-    showMessage(
-      "Sélectionnez d'abord un fichier.",
-      "error"
+    const file =
+        fileInput.files[0];
+
+    if(!file){
+        showMessage(
+            "Sélectionnez d'abord un fichier. / Please select a file first.",
+            "error"
+        );
+        return;
+    }
+
+    const progress =
+        document.getElementById("uploadProgress");
+
+    const maxSize =
+        500 * 1024 * 1024;
+
+    if(file.size > maxSize){
+        showMessage(
+            "Le fichier dépasse la limite de 500 MB. / The file exceeds the 500 MB limit.",
+            "error"
+        );
+
+        progress.textContent = "";
+        return;
+    }
+
+    progress.textContent =
+        "Upload en cours... / Uploading...";
+
+    const form =
+        new FormData();
+
+    form.append(
+        "file",
+        file
     );
-    return;
-  }
 
-  const progress=
-    document.getElementById("uploadProgress");
+    form.append(
+        "title",
+        document
+            .getElementById("uploadTitle")
+            .value
+            .trim()
+    );
 
-  progress.textContent=
-    "Upload en cours... / Uploading...";
+    form.append(
+        "description",
+        document
+            .getElementById("uploadDescription")
+            .value
+            .trim()
+    );
 
-  const form=
-    new FormData();
+    form.append(
+        "category",
+        document
+            .getElementById("uploadCategory")
+            .value
+    );
 
-  form.append("file",file);
+    form.append(
+        "language",
+        document
+            .getElementById("uploadLanguage")
+            .value
+    );
 
-  form.append(
-    "title",
-    document.getElementById("uploadTitle").value.trim()
-  );
+    try{
 
-  form.append(
-    "description",
-    document.getElementById("uploadDescription").value.trim()
-  );
+        const response =
+            await fetch(
+                "/api/content/upload",
+                {
+                    method: "POST",
+                    headers: {
+                        "X-Language":
+                            localStorage.getItem("lang")
+                            || "fr"
+                    },
+                    body: form
+                }
+            );
 
-  form.append(
-    "category",
-    document.getElementById("uploadCategory").value
-  );
+        if(response.status === 401){
 
-  form.append(
-    "language",
-    document.getElementById("uploadLanguage").value
-  );
+            window.location.href =
+                "/login";
 
-  try{
-
-    const response=
-      await fetch(
-        "/api/content/upload",
-        {
-          method:"POST",
-          headers:{
-            "X-Language":
-              localStorage.getItem("lang") || "fr"
-          },
-          body:form
+            return;
         }
-      );
 
-    if(response.status===401){
-      window.location.href="/login";
-      return;
+        let data = {};
+
+        try{
+            data =
+                await response.json();
+        }catch(parseError){
+
+            throw new Error(
+                "Le serveur a renvoyé une réponse invalide. / The server returned an invalid response."
+            );
+        }
+
+        if(!response.ok){
+
+            const errorMessage =
+                typeof data.error === "string"
+                    ? data.error
+                    : (
+                        data.error &&
+                        data.error._error
+                    )
+                    ? data.error._error
+                    : (
+                        data.message ||
+                        "Échec de l'upload. / Upload failed."
+                    );
+
+            throw new Error(
+                errorMessage
+            );
+        }
+
+        progress.textContent =
+            "✓ Contenu enregistré / Content saved";
+
+        showMessage(
+            "Contenu ajouté avec succès. / Content uploaded successfully.",
+            "success"
+        );
+
+        document
+            .getElementById("fileInput")
+            .value = "";
+
+        document
+            .getElementById("uploadTitle")
+            .value = "";
+
+        document
+            .getElementById("uploadDescription")
+            .value = "";
+
+        await loadLibrary();
+
+        const libraryTab =
+            document.querySelector(".tab");
+
+        if(libraryTab){
+
+            showTab(
+                "library",
+                libraryTab
+            );
+        }
+
+    }catch(error){
+
+        console.error(
+            "Content upload error:",
+            error
+        );
+
+        progress.textContent = "";
+
+        showMessage(
+            error.message ||
+            "Échec de l'upload. / Upload failed.",
+            "error"
+        );
     }
-
-    const data=
-      await response.json();
-
-    if(!response.ok){
-      throw new Error(
-        data.error ||
-        "Upload failed."
-      );
-    }
-
-    progress.textContent=
-      "✓ Contenu enregistré / Content saved";
-
-    showMessage(
-      "Contenu ajouté avec succès. / Content uploaded successfully.",
-      "success"
-    );
-
-    document.getElementById("fileInput").value="";
-    document.getElementById("uploadTitle").value="";
-    document.getElementById("uploadDescription").value="";
-
-    await loadLibrary();
-
-    showTab(
-      "library",
-      document.querySelector(".tab")
-    );
-
-  }catch(error){
-
-    progress.textContent="";
-
-    showMessage(
-      error.message,
-      "error"
-    );
-  }
 }
-
-function prepareAI(id){
-
-  showTab(
-    "ai",
-    document.querySelectorAll(".tab")[2]
-  );
-
-  const select=
-    document.getElementById("aiContent");
-
-  select.value=id;
-}
+        
 
 async function loadAIContentList(){
 
