@@ -10008,6 +10008,10 @@ def projects_page():
 @protected
 def construction_ai_page():
     return send_from_directory(".", "construction-ai.html")
+@app.route("/content-center.html")
+@protected
+def content_center_page():
+    return send_from_directory(".", "content-center.html")
 @app.route("/inventory.html")
 @protected
 def inventory_page():
