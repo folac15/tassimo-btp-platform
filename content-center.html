@@ -1327,40 +1327,40 @@ async function uploadContent(){
 
             return;
         }
+    
+      if(!response.ok){
 
-                if(!response.ok){
+    const errorText =
+        data.error ||
+        data.message ||
+        data.details ||
+        "Unknown server error";
 
-            const errorText =
-                data.error ||
-                data.message ||
-                data.details ||
-                "Unknown server error";
-
-            let readableError =
-                typeof errorText === "string"
-                    ? errorText
-                    : JSON.stringify(
-                        errorText,
-                        null,
-                        2
-                    );
-
-            progress.textContent =
-                "❌ Échec du téléchargement / Upload failed.";
-
-            showMessage(
-                "Erreur serveur / Server error: " +
-                readableError,
-                "error"
+    let readableError =
+        typeof errorText === "string"
+            ? errorText
+            : JSON.stringify(
+                errorText,
+                null,
+                2
             );
 
-            console.error(
-                "UPLOAD SERVER RESPONSE:",
-                data
-            );
+    progress.textContent =
+        "❌ Échec du téléchargement / Upload failed.";
 
-            return;
-        }
+    showMessage(
+        "❌ ERREUR SERVEUR / SERVER ERROR:\n\n" +
+        readableError,
+        "error"
+    );
+
+    console.error(
+        "UPLOAD SERVER RESPONSE:",
+        data
+    );
+
+    return;
+}          
 
         progress.textContent =
             "✅ Contenu enregistré / Content saved successfully.";
