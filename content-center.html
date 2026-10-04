@@ -1328,12 +1328,13 @@ async function uploadContent(){
             return;
         }
     
-      if(!response.ok){
+       if(!response.ok){
 
     const errorText =
         data.error ||
         data.message ||
         data.details ||
+        JSON.stringify(data) ||
         "Unknown server error";
 
     let readableError =
@@ -1346,10 +1347,11 @@ async function uploadContent(){
             );
 
     progress.textContent =
-        "❌ Échec du téléchargement / Upload failed.";
+        "❌ SERVER ERROR / ERREUR SERVEUR: " +
+        readableError;
 
     showMessage(
-        "❌ ERREUR SERVEUR / SERVER ERROR:\n\n" +
+        "❌ SERVER ERROR / ERREUR SERVEUR: " +
         readableError,
         "error"
     );
@@ -1360,7 +1362,7 @@ async function uploadContent(){
     );
 
     return;
-}          
+}
 
         progress.textContent =
             "✅ Contenu enregistré / Content saved successfully.";
@@ -1391,24 +1393,21 @@ async function uploadContent(){
 
         }catch(error){
 
-        console.error(
-            "Content upload error:",
-            error
-        );
+    console.error(
+        "CONTENT UPLOAD ERROR:",
+        error
+    );
 
-        progress.textContent =
-            "❌ Échec du téléchargement / Upload failed.";
+    progress.textContent =
+        "❌ UPLOAD ERROR / ERREUR: " +
+        String(error.message || error);
 
-        showMessage(
-            "Erreur détaillée / Detailed error: " +
-            String(
-                error.message ||
-                error ||
-                "Unknown upload error"
-            ),
-            "error"
-        );
-    }
+    showMessage(
+        "❌ " +
+        String(error.message || error),
+        "error"
+    );
+}
 }
 
 
