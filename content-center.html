@@ -1328,35 +1328,34 @@ async function uploadContent(){
             return;
         }
 
-        if(!response.ok){
+                if(!response.ok){
 
-            let errorMessage =
+            const errorText =
                 data.error ||
                 data.message ||
-                "Upload failed / Échec du téléchargement.";
+                data.details ||
+                "Unknown server error";
 
-            if(
-                typeof errorMessage === "object"
-            ){
-
-                errorMessage =
-                    JSON.stringify(
-                        errorMessage,
+            let readableError =
+                typeof errorText === "string"
+                    ? errorText
+                    : JSON.stringify(
+                        errorText,
                         null,
                         2
                     );
-            }
 
             progress.textContent =
-                "Échec du téléchargement / Upload failed.";
+                "❌ Échec du téléchargement / Upload failed.";
 
             showMessage(
-                String(errorMessage),
+                "Erreur serveur / Server error: " +
+                readableError,
                 "error"
             );
 
             console.error(
-                "Content upload failed:",
+                "UPLOAD SERVER RESPONSE:",
                 data
             );
 
@@ -1390,7 +1389,7 @@ async function uploadContent(){
             document.querySelector(".tab")
         );
 
-    }catch(error){
+        }catch(error){
 
         console.error(
             "Content upload error:",
@@ -1401,10 +1400,11 @@ async function uploadContent(){
             "❌ Échec du téléchargement / Upload failed.";
 
         showMessage(
+            "Erreur détaillée / Detailed error: " +
             String(
                 error.message ||
                 error ||
-                "Upload failed / Échec du téléchargement."
+                "Unknown upload error"
             ),
             "error"
         );
