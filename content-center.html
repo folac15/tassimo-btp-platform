@@ -1442,100 +1442,338 @@ async function loadAIContentList(){
 
 async function generateAIContent(){
 
-  const contentId=
-    document.getElementById("aiContent").value;
+    const contentId =
+        document.getElementById("aiContent").value;
 
-  const channel=
-    document.getElementById("aiChannel").value;
+    const channel =
+        document.getElementById("aiChannel").value;
 
-  const objective=
-    document.getElementById("aiObjective").value;
+    const objective =
+        document.getElementById("aiObjective").value.trim();
 
-  const instructions=
-    document.getElementById("aiInstructions").value;
+    const instructions =
+        document.getElementById("aiInstructions").value.trim();
 
-  if(!contentId){
+    const result =
+        document.getElementById("aiResult");
 
-    showMessage(
-      "Sélectionnez un contenu.",
-      "error"
-    );
+    if(!contentId){
 
-    return;
-  }
+        showMessage(
+            "Sélectionnez un contenu / Select content.",
+            "error"
+        );
 
-  const result=
-    document.getElementById("aiResult");
-
-  result.innerHTML=
-    '<div class="loading">TASSIMO AI travaille...</div>';
-
-  try{
+        return;
+    }
 
     /*
-      We use the existing TASSIMO AI social-post
-      endpoint for the first AI generation layer.
-      Publishing remains a separate controlled action.
-    */
+     * Find the actual uploaded content
+     * so TASSIMO AI receives real asset context.
+     */
+    const asset =
+        libraryItems.find(
+            item => String(item.id) === String(contentId)
+        );
 
-    const response=
-      await api(
-        "/api/social/ai-post",
-        {
-          method:"POST",
-          body:JSON.stringify({
-            channels:[channel],
-            objective:
-              objective+
-              (
-                instructions
-                ? " Additional instructions: "+instructions
-                : ""
-              ),
-            topic:
-              "Create content using the selected TASSIMO content asset."
-          })
+    if(!asset){
+
+        showMessage(
+            "Contenu introuvable / Content not found.",
+            "error"
+        );
+
+        return;
+    }
+
+    const title =
+        asset.title ||
+        asset.file_name ||
+        "TASSIMO BTP content";
+
+    const fileName =
+        asset.file_name ||
+        "";
+
+    const category =
+        asset.category ||
+        "construction";
+
+    const description =
+        asset.description ||
+        "";
+
+    const language =
+        asset.language ||
+        "fr";
+
+    /*
+     * Build a detailed content brief.
+     *
+     * The AI is instructed not to invent
+     * projects, prices, results or claims.
+     */
+    const contentBrief =
+
+        "SELECTED TASSIMO CONTENT ASSET\n" +
+
+        "Title: " +
+        title +
+        "\n" +
+
+        "File: " +
+        fileName +
+        "\n" +
+
+        "Category: " +
+        category +
+        "\n" +
+
+        "Description: " +
+        description +
+        "\n" +
+
+        "Content language: " +
+        language +
+        "\n\n" +
+
+        "Create professional marketing content for TASSIMO BTP CONSTRUCTION SARL.\n" +
+
+        "Business: construction, renovation, civil engineering, architectural design, villas, duplexes, 3D design, VRD and professional training in Cameroon.\n\n" +
+
+        "OBJECTIVE:\n" +
+        (objective || "Generate engagement and qualified leads.") +
+
+        "\n\n" +
+
+        "SELECTED CHANNEL:\n" +
+        channel +
+
+        "\n\n" +
+
+        "REQUIRED OUTPUT:\n" +
+
+        "1. FRENCH TITLE\n" +
+        "2. FRENCH CAPTION\n" +
+        "3. FRENCH CALL TO ACTION\n" +
+        "4. FRENCH HASHTAGS\n" +
+        "5. ENGLISH TITLE\n" +
+        "6. ENGLISH CAPTION\n" +
+        "7. ENGLISH CALL TO ACTION\n" +
+        "8. ENGLISH HASHTAGS\n\n" +
+
+        "RULES:\n" +
+
+        "- Adapt the content to " +
+        channel +
+        ".\n" +
+
+        "- Make the content professional and attractive.\n" +
+
+        "- Keep the wording natural and suitable for social media.\n" +
+
+        "- Highlight TASSIMO BTP professionally.\n" +
+
+        "- Do not invent project names.\n" +
+
+        "- Do not invent prices.\n" +
+
+        "- Do not invent client testimonials.\n" +
+
+        "- Do not invent construction results that are not provided.\n" +
+
+        "- Do not claim certifications or awards unless provided.\n" +
+
+        "- Do not make unrealistic promises.\n" +
+
+        "- Use Cameroon-relevant construction language where appropriate.\n" +
+
+        "- Keep hashtags relevant rather than generating random hashtags.\n" +
+
+        "- Return only the requested marketing content.\n";
+
+    const finalTopic =
+
+        contentBrief +
+
+        (
+
+            instructions
+
+            ? "\n\nADDITIONAL CEO/USER INSTRUCTIONS:\n" +
+              instructions
+
+            : ""
+        );
+
+    result.innerHTML =
+
+        '<div class="loading">' +
+
+        '🤖 TASSIMO AI travaille...<br>' +
+
+        'TASSIMO AI is creating your content...' +
+
+        '</div>';
+
+    try{
+
+        const response =
+
+            await api(
+
+                "/api/social/ai-post",
+
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        channels:[channel],
+
+                        objective:
+                            objective ||
+                            "engagement and qualified leads",
+
+                        audience:
+                            "Customers, property owners, investors, diaspora clients and people interested in construction, renovation, architecture, design and professional training in Cameroon.",
+
+                        topic:
+                            finalTopic
+
+                    })
+
+                }
+
+            );
+
+        const first =
+
+            (response.results || [])[0] || {};
+
+        const generatedCopy =
+
+            first.copy || "";
+
+        if(!generatedCopy){
+
+            throw new Error(
+                "TASSIMO AI did not return content."
+            );
         }
-      );
 
-    const first=
-      (response.results || [])[0] ||
-      {};
+        /*
+         * Store the generated text safely
+         * for the textarea.
+         */
+        const safeCopy =
+            escapeHtml(generatedCopy);
 
-    result.innerHTML=`
-      <div class="panel">
+        result.innerHTML =
 
-        <h3>
-          🤖 AI Draft — ${escapeHtml(channel)}
-        </h3>
+            '<div class="panel">' +
 
-        <textarea
-          id="generatedCopy"
-          style="min-height:220px"
-        >${escapeHtml(
-          first.copy ||
-          ""
-        )}</textarea>
+            '<h3>' +
 
-        <br><br>
+            '🤖 TASSIMO AI — ' +
 
-        <button
-          class="btn"
-          onclick="savePublicationDraft('${escapeHtml(contentId)}','${escapeHtml(channel)}')">
-          💾 Enregistrer comme brouillon / Save Draft
-        </button>
+            escapeHtml(channel) +
 
-      </div>
-    `;
+            '</h3>' +
 
-  }catch(error){
+            '<p class="muted">' +
 
-    result.innerHTML=
-      `<div class="error">
-        ${escapeHtml(error.message)}
-      </div>`;
-  }
+            'Contenu généré à partir de : ' +
+
+            escapeHtml(title) +
+
+            '<br>' +
+
+            'Generated from: ' +
+
+            escapeHtml(title) +
+
+            '</p>' +
+
+            '<label>' +
+
+            'Contenu généré / Generated Content' +
+
+            '</label>' +
+
+            '<textarea ' +
+
+            'id="generatedCopy" ' +
+
+            'style="min-height:320px; width:100%;"' +
+
+            '>' +
+
+            safeCopy +
+
+            '</textarea>' +
+
+            '<br><br>' +
+
+            '<button ' +
+
+            'class="btn" ' +
+
+            'onclick="savePublicationDraft(' +
+
+            "'" +
+
+            escapeHtml(contentId) +
+
+            "'" +
+
+            ',' +
+
+            "'" +
+
+            escapeHtml(channel) +
+
+            "'" +
+
+            ')">' +
+
+            '💾 Enregistrer comme brouillon / Save Draft' +
+
+            '</button>' +
+
+            '</div>';
+
+    }
+
+    catch(error){
+
+        console.error(
+            "TASSIMO AI CONTENT ERROR:",
+            error
+        );
+
+        result.innerHTML =
+
+            '<div class="error">' +
+
+            '❌ ' +
+
+            escapeHtml(
+                error.message ||
+                "AI generation failed."
+            ) +
+
+            '</div>';
+
+    }
 }
+
 
 async function savePublicationDraft(
   contentId,
