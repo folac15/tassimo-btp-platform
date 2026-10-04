@@ -1226,35 +1226,21 @@ function renderLibrary(){
 
 async function uploadContent(){
 
-    const fileInput =
-        document.getElementById("fileInput");
-
     const file =
-        fileInput.files[0];
+        document.getElementById("fileInput").files[0];
 
     if(!file){
+
         showMessage(
-            "Sélectionnez d'abord un fichier. / Please select a file first.",
+            "Sélectionnez d'abord un fichier.",
             "error"
         );
+
         return;
     }
 
     const progress =
         document.getElementById("uploadProgress");
-
-    const maxSize =
-        500 * 1024 * 1024;
-
-    if(file.size > maxSize){
-        showMessage(
-            "Le fichier dépasse la limite de 500 MB. / The file exceeds the 500 MB limit.",
-            "error"
-        );
-
-        progress.textContent = "";
-        return;
-    }
 
     progress.textContent =
         "Upload en cours... / Uploading...";
@@ -1269,32 +1255,30 @@ async function uploadContent(){
 
     form.append(
         "title",
-        document
-            .getElementById("uploadTitle")
-            .value
-            .trim()
+        document.getElementById(
+            "uploadTitle"
+        ).value.trim()
     );
 
     form.append(
         "description",
-        document
-            .getElementById("uploadDescription")
-            .value
-            .trim()
+        document.getElementById(
+            "uploadDescription"
+        ).value.trim()
     );
 
     form.append(
         "category",
-        document
-            .getElementById("uploadCategory")
-            .value
+        document.getElementById(
+            "uploadCategory"
+        ).value
     );
 
     form.append(
         "language",
-        document
-            .getElementById("uploadLanguage")
-            .value
+        document.getElementById(
+            "uploadLanguage"
+        ).value
     );
 
     try{
@@ -1315,6 +1299,9 @@ async function uploadContent(){
 
         if(response.status === 401){
 
+            progress.textContent =
+                "Session expirée / Session expired.";
+
             window.location.href =
                 "/login";
 
@@ -1324,67 +1311,84 @@ async function uploadContent(){
         let data = {};
 
         try{
+
             data =
                 await response.json();
-        }catch(parseError){
 
-            throw new Error(
-                "Le serveur a renvoyé une réponse invalide. / The server returned an invalid response."
+        }catch(jsonError){
+
+            progress.textContent =
+                "Erreur serveur / Server error.";
+
+            showMessage(
+                "Le serveur n'a pas retourné une réponse valide. / The server returned an invalid response.",
+                "error"
             );
+
+            return;
         }
 
         if(!response.ok){
 
-            const errorMessage =
-                typeof data.error === "string"
-                    ? data.error
-                    : (
-                        data.error &&
-                        data.error._error
-                    )
-                    ? data.error._error
-                    : (
-                        data.message ||
-                        "Échec de l'upload. / Upload failed."
-                    );
+            let errorMessage =
+                data.error ||
+                data.message ||
+                "Upload failed / Échec du téléchargement.";
 
-            throw new Error(
-                errorMessage
+            if(
+                typeof errorMessage === "object"
+            ){
+
+                errorMessage =
+                    JSON.stringify(
+                        errorMessage,
+                        null,
+                        2
+                    );
+            }
+
+            progress.textContent =
+                "Échec du téléchargement / Upload failed.";
+
+            showMessage(
+                String(errorMessage),
+                "error"
             );
+
+            console.error(
+                "Content upload failed:",
+                data
+            );
+
+            return;
         }
 
         progress.textContent =
-            "✓ Contenu enregistré / Content saved";
+            "✅ Contenu enregistré / Content saved successfully.";
 
         showMessage(
-            "Contenu ajouté avec succès. / Content uploaded successfully.",
+            "✅ Contenu ajouté avec succès. / Content uploaded successfully.",
             "success"
         );
 
-        document
-            .getElementById("fileInput")
-            .value = "";
+        document.getElementById(
+            "fileInput"
+        ).value = "";
 
-        document
-            .getElementById("uploadTitle")
-            .value = "";
+        document.getElementById(
+            "uploadTitle"
+        ).value = "";
 
-        document
-            .getElementById("uploadDescription")
-            .value = "";
+        document.getElementById(
+            "uploadDescription"
+        ).value = "";
 
         await loadLibrary();
 
-        const libraryTab =
-            document.querySelector(".tab");
-
-        if(libraryTab){
-
-            showTab(
-                "library",
-                libraryTab
-            );
-        }
+        showTab(
+            "library",
+            document.querySelector(".tab")
+        );
 
     }catch(error){
 
@@ -1393,15 +1397,24 @@ async function uploadContent(){
             error
         );
 
-        progress.textContent = "";
+        progress.textContent =
+            "❌ Échec du téléchargement / Upload failed.";
 
         showMessage(
-            error.message ||
-            "Échec de l'upload. / Upload failed.",
+            String(
+                error.message ||
+                error ||
+                "Upload failed / Échec du téléchargement."
+            ),
             "error"
         );
     }
 }
+
+
+    
+
+        
         
 
 async function loadAIContentList(){
