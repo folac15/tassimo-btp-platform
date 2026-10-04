@@ -2415,13 +2415,10 @@ def content_library():
 )
 @protected
 def content_upload():
-
     temp_path = None
 
     try:
-
         if not supabase_configured():
-
             return jsonify({
                 "success": False,
                 "error": (
@@ -2431,12 +2428,9 @@ def content_upload():
                 )
             }), 500
 
-        uploaded_file = request.files.get(
-            "file"
-        )
+        uploaded_file = request.files.get("file")
 
         if not uploaded_file:
-
             return jsonify({
                 "success": False,
                 "error": (
@@ -2451,7 +2445,6 @@ def content_upload():
         ).strip()
 
         if not original_name:
-
             return jsonify({
                 "success": False,
                 "error": (
@@ -2470,22 +2463,17 @@ def content_upload():
             ".mov": "video",
             ".webm": "video",
             ".avi": "video",
-
             ".jpg": "photo",
             ".jpeg": "photo",
             ".png": "photo",
             ".webp": "photo",
-
             ".gif": "image",
-
             ".pdf": "document",
-
             ".mp3": "audio",
             ".wav": "audio",
         }
 
         if extension not in allowed_extensions:
-
             return jsonify({
                 "success": False,
                 "error": (
@@ -2540,7 +2528,6 @@ def content_upload():
             "fr",
             "en"
         }:
-
             language_code = "fr"
 
         tags_raw = str(
@@ -2553,7 +2540,6 @@ def content_upload():
         tags = []
 
         if tags_raw:
-
             tags = [
                 item.strip()
                 for item in tags_raw.split(",")
@@ -2594,7 +2580,6 @@ def content_upload():
         )
 
         if file_size <= 0:
-
             return jsonify({
                 "success": False,
                 "error": (
@@ -2605,8 +2590,7 @@ def content_upload():
             }), 400
 
         # ----------------------------------------------------
-        # Maximum library upload:
-        # 500 MB
+        # Maximum library upload: 500 MB
         # ----------------------------------------------------
 
         max_size = (
@@ -2614,7 +2598,6 @@ def content_upload():
         )
 
         if file_size > max_size:
-
             return jsonify({
                 "success": False,
                 "error": (
@@ -2622,7 +2605,7 @@ def content_upload():
                     "the 500 MB library limit."
                     if language() == "en"
                     else "Le fichier dépasse "
-                         "la limite de 500 Mo."
+                    "la limite de 500 Mo."
                 )
             }), 400
 
@@ -2651,71 +2634,61 @@ def content_upload():
         # ----------------------------------------------------
         # Upload to Supabase Storage
         # ----------------------------------------------------
-          storage_result = content_storage_upload(
-    storage_path,
-    temp_path,
-    mime_type
-)
 
-if (
-    isinstance(storage_result, dict)
-    and storage_result.get("_error")
-):
-    return jsonify({
-        "success": False,
-        "stage": "storage",
-        "error": str(
-            storage_result.get("_error")
+        storage_result = content_storage_upload(
+            storage_path,
+            temp_path,
+            mime_type
         )
-    }), 500
+
+        if (
+            isinstance(
+                storage_result,
+                dict
+            )
+            and storage_result.get("_error")
+        ):
+            return jsonify({
+                "success": False,
+                "stage": "storage",
+                "error": str(
+                    storage_result.get("_error")
+                )
+            }), 500
 
         # ----------------------------------------------------
         # Save metadata in database
         # ----------------------------------------------------
 
         content_record = {
-            "title": title
+            "title": (
+                title
                 or os.path.splitext(
                     original_name
-                )[0],
-
+                )[0]
+            ),
             "description": description,
-
             "content_type": content_type,
-
             "file_name": original_name,
-
             "storage_bucket": (
                 CONTENT_STORAGE_BUCKET
             ),
-
             "storage_path": storage_path,
-
             "mime_type": mime_type,
-
             "file_size": file_size,
-
             "category": category,
-
             "language": language_code,
-
             "tags": tags,
-
             "status": "ready",
-
             "ai_generated": False,
-
             "ai_selected": False,
-
             "created_by": (
                 session.get(
                     "tiktok_display_name"
                 )
                 or CEO_NAME
             ),
-
             "created_at": utc_now(),
-
             "updated_at": utc_now(),
         }
 
@@ -2731,7 +2704,6 @@ if (
             )
             and saved.get("_error")
         ):
-
             # Database failed after Storage upload.
             # Clean up the orphaned Storage file.
 
@@ -2742,7 +2714,9 @@ if (
             return jsonify({
                 "success": False,
                 "stage": "database",
-                "error": saved
+                "error": str(
+                    saved.get("_error")
+                )
             }), 500
 
         saved["public_url"] = (
@@ -2762,7 +2736,6 @@ if (
         }), 201
 
     except Exception as exc:
-
         return jsonify({
             "success": False,
             "error": (
@@ -2774,20 +2747,18 @@ if (
         }), 500
 
     finally:
-
         if temp_path:
-
             try:
-
                 if os.path.exists(
                     temp_path
                 ):
                     os.remove(
                         temp_path
                     )
-
             except Exception:
                 pass
+
+
 
 
 # ------------------------------------------------------------
