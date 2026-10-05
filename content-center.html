@@ -1970,99 +1970,289 @@ async function savePublicationDraft(
 
 async function loadPublications(){
 
-  const box=
-    document.getElementById("publications");
+    const box =
+        document.getElementById("publications");
 
-  box.innerHTML=
-    '<div class="loading">Chargement...</div>';
+    box.innerHTML =
+        '<div class="loading">' +
+        'Chargement... / Loading...' +
+        '</div>';
 
-  try{
+    try{
 
-    const data=
-      await api(
-        "/api/content/publications"
-      );
+        const data =
+            await api(
+                "/api/content/publications"
+            );
 
-    publications=
-      data.items ||
-      data.publications ||
-      [];
+        publications =
+            data.items ||
+            data.publications ||
+            [];
 
-    if(!publications.length){
+        if(!publications.length){
 
-      box.innerHTML=
-        `<div class="empty">
-          Aucune publication pour le moment.<br>
-          No publications yet.
-        </div>`;
+            box.innerHTML =
+                `<div class="empty">
+                    Aucune publication pour le moment.<br>
+                    No publications yet.
+                </div>`;
 
-      updateStats();
-      return;
+            updateStats();
+
+            return;
+        }
+
+        box.innerHTML =
+            publications.map(pub => {
+
+                const status =
+                    String(
+                        pub.status ||
+                        "draft"
+                    ).toLowerCase();
+
+                let actionButton = "";
+
+                /*
+                 * Drafts can be submitted for
+                 * CEO approval.
+                 */
+                if(status === "draft"){
+
+                    actionButton =
+                        `
+                        <button
+                            class="btn"
+                            type="button"
+                            onclick="submitPublicationForApproval('${escapeHtml(pub.id)}')"
+                        >
+                            🔐 Soumettre au CEO /
+                            Submit for CEO Approval
+                        </button>
+                        `;
+                }
+
+                /*
+                 * Pending approval cannot be
+                 * published yet.
+                 */
+                if(status === "pending_approval"){
+
+                    actionButton =
+                        `
+                        <div class="notice">
+                            🔐 En attente d'approbation CEO
+                            / Awaiting CEO approval
+                        </div>
+                        `;
+                }
+
+                /*
+                 * Approved publications are
+                 * prepared for the next scheduling
+                 * step.
+                 */
+                if(status === "approved"){
+
+                    actionButton =
+                        `
+                        <button
+                            class="btn"
+                            type="button"
+                            onclick="preparePublicationSchedule('${escapeHtml(pub.id)}')"
+                        >
+                            📅 Programmer /
+                            Schedule
+                        </button>
+                        `;
+                }
+
+                /*
+                 * Scheduled publication.
+                 */
+                if(status === "scheduled"){
+
+                    actionButton =
+                        `
+                        <div class="success">
+                            📅 Publication programmée /
+                            Publication scheduled
+                        </div>
+                        `;
+                }
+
+                /*
+                 * Published publication.
+                 */
+                if(status === "published"){
+
+                    actionButton =
+                        `
+                        <div class="success">
+                            ✅ Publié / Published
+                        </div>
+                        `;
+                }
+
+                return `
+                    <div class="publication">
+
+                        <div class="publication-head">
+
+                            <strong>
+                                ${escapeHtml(
+                                    pub.title ||
+                                    pub.caption ||
+                                    "Publication"
+                                )}
+                            </strong>
+
+                            <span class="badge">
+                                ${escapeHtml(
+                                    pub.channel ||
+                                    ""
+                                )}
+                            </span>
+
+                        </div>
+
+                        <p>
+                            ${escapeHtml(
+                                pub.caption ||
+                                ""
+                            )}
+                        </p>
+
+                        <div class="badges">
+
+                            <span class="badge orange">
+                                ${escapeHtml(
+                                    status
+                                )}
+                            </span>
+
+                            ${
+                                pub.scheduled_at
+                                ?
+                                `
+                                <span class="badge">
+                                    📅 ${escapeHtml(
+                                        pub.scheduled_at
+                                    )}
+                                </span>
+                                `
+                                :
+                                ""
+                            }
+
+                        </div>
+
+                        <div
+                            class="card-actions"
+                            style="margin-top:12px"
+                        >
+                            ${actionButton}
+                        </div>
+
+                    </div>
+                `;
+
+            }).join("");
+
+        updateStats();
+
+    }catch(error){
+
+        console.error(
+            "LOAD PUBLICATIONS ERROR:",
+            error
+        );
+
+        box.innerHTML =
+            `<div class="error">
+                ${escapeHtml(
+                    error.message ||
+                    "Unable to load publications."
+                )}
+            </div>`;
+    }
+}
+async function submitPublicationForApproval(
+    publicationId
+){
+
+    if(!publicationId){
+
+        showMessage(
+            "Publication introuvable. / Publication not found.",
+            "error"
+        );
+
+        return;
     }
 
-    box.innerHTML=
-      publications.map(pub=>`
+    const confirmed =
+        confirm(
+            "Soumettre cette publication à l'approbation du CEO ?\n\n" +
+            "Submit this publication for CEO approval?"
+        );
 
-        <div class="publication">
+    if(!confirmed){
 
-          <div class="publication-head">
+        return;
+    }
 
-            <strong>
-              ${escapeHtml(
-                pub.title ||
-                pub.caption ||
-                "Publication"
-              )}
-            </strong>
+    try{
 
-            <span class="badge">
-              ${escapeHtml(
-                pub.channel || ""
-              )}
-            </span>
+        showMessage(
+            "Soumission pour approbation CEO... / Sending for CEO approval...",
+            "notice"
+        );
 
-          </div>
-
-          <p>
-            ${escapeHtml(
-              pub.caption || ""
-            )}
-          </p>
-
-          <div class="badges">
-
-            <span class="badge orange">
-              ${escapeHtml(
-                pub.status || "draft"
-              )}
-            </span>
-
-            ${
-              pub.scheduled_at
-              ?
-              `<span class="badge">
-                 ${escapeHtml(pub.scheduled_at)}
-               </span>`
-              :
-              ""
+        /*
+         * This endpoint will move the publication
+         * into pending_approval and create the
+         * corresponding approval request.
+         */
+        await api(
+            "/api/content/publications/" +
+            encodeURIComponent(
+                publicationId
+            ) +
+            "/submit-approval",
+            {
+                method:"POST",
+                body:JSON.stringify({})
             }
+        );
 
-          </div>
+        showMessage(
+            "✅ Publication envoyée au CEO pour approbation. / Publication sent for CEO approval.",
+            "success"
+        );
 
-        </div>
+        await loadPublications();
 
-      `).join("");
+    }catch(error){
 
-    updateStats();
+        console.error(
+            "PUBLICATION APPROVAL ERROR:",
+            error
+        );
 
-  }catch(error){
-
-    box.innerHTML=
-      `<div class="error">
-        ${escapeHtml(error.message)}
-      </div>`;
-  }
+        showMessage(
+            "❌ " +
+            String(
+                error.message ||
+                "Approval request failed."
+            ),
+            "error"
+        );
+    }
 }
+
+
 
 async function editContent(id){
 
