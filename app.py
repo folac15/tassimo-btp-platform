@@ -3185,6 +3185,139 @@ def content_publications():
         "success": True,
         "publication": saved,
     }), 201
+# ------------------------------------------------------------
+# CONTENT PUBLICATION → CEO APPROVAL
+# ------------------------------------------------------------
+
+@app.route(
+    "/api/content/publications/<publication_id>/submit-approval",
+    methods=["POST"]
+)
+@protected
+def submit_content_publication_for_approval(publication_id):
+
+    # Load publication
+    rows = sb_select(
+        "content_publications",
+        {
+            "select": "*",
+            "id": f"eq.{publication_id}",
+            "limit": "1",
+        },
+    )
+
+    if not rows:
+        return jsonify({
+            "success": False,
+            "error": (
+                "Publication introuvable. / "
+                "Publication not found."
+            )
+        }), 404
+
+    publication = rows[0]
+
+    current_status = str(
+        publication.get("status") or "draft"
+    ).lower()
+
+    # Only drafts can be submitted
+    if current_status != "draft":
+        return jsonify({
+            "success": False,
+            "error": (
+                "Cette publication ne peut plus être "
+                "soumise pour approbation. / "
+                "This publication cannot be submitted "
+                "for approval."
+            ),
+            "status": current_status,
+        }), 400
+
+    now = utc_now()
+
+    # Create CEO approval request
+    approval = {
+        "title": (
+            "Publication " +
+            str(
+                publication.get("channel") or ""
+            ).upper() +
+            " - CEO Approval"
+        ),
+        "description": (
+            publication.get("title")
+            or publication.get("caption")
+            or "Content publication"
+        ),
+        "status": "pending",
+        "requested_by": "TASSIMO AI",
+        "created_at": now,
+        "updated_at": now,
+    }
+
+    saved_approval = sb_insert(
+        "approvals",
+        approval
+    )
+
+    if (
+        isinstance(saved_approval, dict)
+        and saved_approval.get("_error")
+    ):
+        return jsonify({
+            "success": False,
+            "error": (
+                "Impossible de créer la demande "
+                "d'approbation CEO. / "
+                "Unable to create CEO approval request."
+            ),
+            "details": saved_approval,
+        }), 500
+
+    approval_id = None
+
+    if isinstance(saved_approval, dict):
+        approval_id = saved_approval.get("id")
+
+    # Update publication
+    updated = sb_update(
+        "content_publications",
+        {
+            "id": f"eq.{publication_id}"
+        },
+        {
+            "status": "pending_approval",
+            "approval_id": approval_id,
+            "updated_at": now,
+        },
+    )
+
+    if (
+        isinstance(updated, dict)
+        and updated.get("_error")
+    ):
+        return jsonify({
+            "success": False,
+            "error": (
+                "La publication n'a pas pu être mise "
+                "en attente d'approbation. / "
+                "Publication could not be moved to "
+                "approval status."
+            ),
+            "details": updated,
+        }), 500
+
+    return jsonify({
+        "success": True,
+        "message": (
+            "Publication envoyée au CEO pour approbation. / "
+            "Publication sent to CEO for approval."
+        ),
+        "publication_id": publication_id,
+        "approval_id": approval_id,
+        "status": "pending_approval",
+    }), 201
 
 # ------------------------------------------------------------
 # Business profile / settings
