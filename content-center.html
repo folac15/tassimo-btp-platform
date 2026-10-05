@@ -938,36 +938,70 @@ function escapeHtml(value){
     .replaceAll("'","&#039;");
 }
 
-async function api(url,options={}){
-  options.headers={
-    ...(options.headers || {}),
-    "X-Language":
-      localStorage.getItem("lang") || "fr"
-  };
+async function api(url, options = {}){
 
-  const response=await fetch(url,options);
+    options.headers = {
+        ...(options.headers || {}),
+        "X-Language":
+            localStorage.getItem("lang") || "fr"
+    };
 
-  if(response.status===401){
-    window.location.href="/login";
-    return null;
-  }
+    /*
+     * Automatically tell Flask that JSON is being sent.
+     */
+    if(
+        options.body &&
+        typeof options.body === "string"
+    ){
 
-  let data={};
+        options.headers["Content-Type"] =
+            "application/json";
+    }
 
-  try{
-    data=await response.json();
-  }catch(e){
-    data={};
-  }
+    const response =
+        await fetch(url, options);
 
-  if(!response.ok){
-    throw new Error(
-      data.error ||
-      "Request failed / Requête échouée"
-    );
-  }
+    if(response.status === 401){
 
-  return data;
+        window.location.href = "/login";
+        return null;
+    }
+
+    let data = {};
+
+    try{
+
+        data = await response.json();
+
+    }catch(error){
+
+        data = {};
+    }
+
+    if(!response.ok){
+
+        let errorMessage =
+            data.error ||
+            data.message ||
+            data.details ||
+            "Request failed / Requête échouée";
+
+        if(typeof errorMessage !== "string"){
+
+            errorMessage =
+                JSON.stringify(
+                    errorMessage,
+                    null,
+                    2
+                );
+        }
+
+        throw new Error(
+            String(errorMessage)
+        );
+    }
+
+    return data;
 }
 
 function showTab(name,button){
@@ -1776,43 +1810,163 @@ async function generateAIContent(){
 
 
 async function savePublicationDraft(
-  contentId,
-  channel
+    contentId,
+    channel
 ){
 
-  const caption=
-    document.getElementById("generatedCopy").value;
+    const result =
+        document.getElementById("aiResult");
 
-  try{
+    const generated =
+        document.getElementById("generatedCopy");
 
-    await api(
-      "/api/content/publications",
-      {
-        method:"POST",
-        body:JSON.stringify({
-          content_id:contentId,
-          channel:channel,
-          caption:caption,
-          status:"draft"
-        })
-      }
-    );
+    if(!contentId){
 
-    showMessage(
-      "Brouillon enregistré. / Draft saved.",
-      "success"
-    );
+        showMessage(
+            "❌ Aucun contenu sélectionné. / No content selected.",
+            "error"
+        );
 
-    loadPublications();
+        return;
+    }
 
-  }catch(error){
+    if(!channel){
 
-    showMessage(
-      error.message,
-      "error"
-    );
-  }
+        showMessage(
+            "❌ Aucun canal sélectionné. / No channel selected.",
+            "error"
+        );
+
+        return;
+    }
+
+    if(!generated){
+
+        showMessage(
+            "❌ Contenu généré introuvable. / Generated content not found.",
+            "error"
+        );
+
+        return;
+    }
+
+    const caption =
+        generated.value.trim();
+
+    if(!caption){
+
+        showMessage(
+            "❌ Le contenu généré est vide. / Generated content is empty.",
+            "error"
+        );
+
+        return;
+    }
+
+    /*
+     * Give immediate feedback so the user knows
+     * the button has actually been pressed.
+     */
+    if(result){
+
+        result.innerHTML +=
+            '<div class="loading" id="saveDraftStatus">' +
+            '💾 Enregistrement du brouillon... / Saving draft...' +
+            '</div>';
+    }
+
+    try{
+
+        const response =
+            await api(
+                "/api/content/publications",
+                {
+                    method: "POST",
+
+                    body: JSON.stringify({
+
+                        content_id:
+                            String(contentId),
+
+                        channel:
+                            String(channel),
+
+                        caption:
+                            caption,
+
+                        status:
+                            "draft"
+                    })
+                }
+            );
+
+        console.log(
+            "PUBLICATION DRAFT SAVED:",
+            response
+        );
+
+        showMessage(
+            "✅ Brouillon enregistré avec succès. / Draft saved successfully.",
+            "success"
+        );
+
+        if(result){
+
+            result.innerHTML +=
+                '<div class="success">' +
+                '✅ Brouillon enregistré / Draft saved successfully.' +
+                '</div>';
+        }
+
+        /*
+         * Reload the publication list.
+         */
+        await loadPublications();
+
+        /*
+         * Automatically open the Publications tab
+         * so the user can immediately see the draft.
+         */
+        const publicationTab =
+            document.querySelectorAll(".tab")[3];
+
+        showTab(
+            "calendar",
+            publicationTab
+        );
+
+    }catch(error){
+
+        console.error(
+            "SAVE PUBLICATION DRAFT ERROR:",
+            error
+        );
+
+        showMessage(
+            "❌ " +
+            String(
+                error.message ||
+                "Impossible d'enregistrer le brouillon."
+            ),
+            "error"
+        );
+
+        if(result){
+
+            result.innerHTML +=
+                '<div class="error">' +
+                '❌ ' +
+                escapeHtml(
+                    String(
+                        error.message ||
+                        "Draft save failed."
+                    )
+                ) +
+                '</div>';
+        }
+    }
 }
+    
 
 async function loadPublications(){
 
