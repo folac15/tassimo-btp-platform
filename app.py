@@ -7301,7 +7301,16 @@ def integrations_status():
         "whatsapp": bool(WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID),
         "facebook": bool(FACEBOOK_PAGE_ACCESS_TOKEN),
         "instagram": bool(INSTAGRAM_ACCESS_TOKEN and INSTAGRAM_BUSINESS_ACCOUNT_ID),
-        "tiktok": bool(TIKTOK_ACCESS_TOKEN),
+        "tiktok": bool(
+    TIKTOK_ACCESS_TOKEN
+    or sb_select(
+        "tiktok_connections",
+        {
+            "select": "id",
+            "limit": "1"
+        }
+    )
+),
         "linkedin": bool(LINKEDIN_ACCESS_TOKEN and LINKEDIN_ORGANIZATION_ID),
         "youtube": bool(YOUTUBE_ACCESS_TOKEN or YOUTUBE_API_KEY),
         "ai_auto_publish": AI_AUTO_PUBLISH,
