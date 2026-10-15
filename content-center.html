@@ -2202,6 +2202,141 @@ const isTikTokVideo =
             </div>`;
     }
 }
+async function publishContentToTikTok(publicationId){
+
+    const publication = publications.find(
+        item => String(item.id) === String(publicationId)
+    );
+
+    if(!publication){
+        showMessage(
+            "Publication introuvable. / Publication not found.",
+            "error"
+        );
+        return;
+    }
+
+    const asset = libraryItems.find(
+        item => String(item.id) === String(publication.content_id)
+    );
+
+    if(!asset || String(asset.content_type).toLowerCase() !== "video"){
+        showMessage(
+            "Vidéo introuvable. / Saved video not found.",
+            "error"
+        );
+        return;
+    }
+
+    const title = prompt(
+        "TikTok caption / Légende TikTok:",
+        publication.caption || publication.title || asset.title || ""
+    );
+
+    if(title === null){
+        return;
+    }
+
+    const duration = prompt(
+        "Enter the video duration in seconds / Entrez la durée de la vidéo en secondes:"
+    );
+
+    if(duration === null){
+        return;
+    }
+
+    const durationSeconds = Number(duration);
+
+    if(!Number.isFinite(durationSeconds) || durationSeconds <= 0){
+        showMessage(
+            "Enter a valid video duration. / Entrez une durée valide.",
+            "error"
+        );
+        return;
+    }
+
+    const privacy = prompt(
+        "TikTok privacy level. For a safe test, use SELF_ONLY. " +
+        "Other options depend on your TikTok account.",
+        "SELF_ONLY"
+    );
+
+    if(privacy === null){
+        return;
+    }
+
+    const confirmed = confirm(
+        "Send this saved video to TikTok?\n\n" +
+        "Envoyer cette vidéo enregistrée sur TikTok ?\n\n" +
+        title
+    );
+
+    if(!confirmed){
+        return;
+    }
+
+    const form = new FormData();
+
+    form.append("content_id", asset.id);
+    form.append("title", title);
+    form.append("privacy_level", privacy.trim());
+    form.append("duration_sec", String(durationSeconds));
+
+    form.append("disable_comment", "false");
+    form.append("disable_duet", "false");
+    form.append("disable_stitch", "false");
+    form.append("is_aigc", "false");
+    form.append("brand_organic_toggle", "false");
+
+    try{
+
+        showMessage(
+            "Envoi vers TikTok... / Sending to TikTok...",
+            "notice"
+        );
+
+        const data = await api(
+            "/api/tiktok/publish",
+            {
+                method: "POST",
+                body: form
+            }
+        );
+
+        if(!data || data.success !== true){
+            throw new Error(
+                data?.error ||
+                "TikTok publishing request failed."
+            );
+        }
+
+        showMessage(
+            "TikTok accepted the publishing request. Publish ID: " +
+            (data.publish_id || "received"),
+            "success"
+        );
+
+        console.log(
+            "TikTok publishing response:",
+            data
+        );
+
+    }catch(error){
+
+        console.error(
+            "TIKTOK PUBLISH ERROR:",
+            error
+        );
+
+        showMessage(
+            error.message ||
+            "TikTok publishing failed.",
+            "error"
+        );
+
+    }
+
+}
 async function submitPublicationForApproval(
     publicationId
 ){
