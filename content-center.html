@@ -2028,18 +2028,34 @@ const isTikTokVideo =
                  */
                 if(status === "draft"){
 
-                    actionButton =
-                        `
-                        <button
-                            class="btn"
-                            type="button"
-                            onclick="submitPublicationForApproval('${escapeHtml(pub.id)}')"
-                        >
-                            🔐 Soumettre au CEO /
-                            Submit for CEO Approval
-                        </button>
-                        `;
-                }
+    if(isTikTokVideo){
+
+        actionButton = `
+            <button
+                class="btn"
+                type="button"
+                onclick="publishContentToTikTok('${escapeHtml(pub.id)}')"
+            >
+                🎵 Publish to TikTok
+            </button>
+        `;
+
+    }else{
+
+        actionButton = `
+            <button
+                class="btn"
+                type="button"
+                onclick="submitPublicationForApproval('${escapeHtml(pub.id)}')"
+            >
+                🔐 Soumettre au CEO /
+                Submit for CEO Approval
+            </button>
+        `;
+
+    }
+
+}
 
                 /*
                  * Pending approval cannot be
