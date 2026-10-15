@@ -2013,6 +2013,14 @@ async function loadPublications(){
                     ).toLowerCase();
 
                 let actionButton = "";
+                const linkedAsset = libraryItems.find(
+    item => String(item.id) === String(pub.content_id)
+);
+
+const isTikTokVideo =
+    String(pub.channel || "").toLowerCase().includes("tiktok") &&
+    linkedAsset &&
+    String(linkedAsset.content_type || "").toLowerCase() === "video";
 
                 /*
                  * Drafts can be submitted for
