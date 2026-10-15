@@ -1253,20 +1253,123 @@ def tiktok_publish():
                 )
             }), 500
 
-        # ----------------------------------------------------
-        # 1. Get uploaded video
-        # ----------------------------------------------------
+            # ----------------------------------------------------
+    # 1. Get video from Content Center or direct upload
+    # ----------------------------------------------------
+    content_id = str(
+        request.form.get("content_id", "")
+    ).strip()
 
+    upload_dir = os.path.join(
+        os.getcwd(),
+        "tiktok_uploads"
+    )
+    os.makedirs(upload_dir, exist_ok=True)
+
+    if content_id:
+        # Load saved content from Supabase
+        content_rows = sb_select(
+            "content_library",
+            {
+                "select": "*",
+                "id": f"eq.{content_id}",
+                "limit": "1"
+            }
+        )
+
+        if not content_rows:
+            return jsonify({
+                "success": False,
+                "error": "Content not found in Content Center."
+            }), 404
+
+        content = content_rows[0]
+
+        if content.get("content_type") != "video":
+            return jsonify({
+                "success": False,
+                "error": "Please select a video from Content Center."
+            }), 400
+
+        filename = str(
+            content.get("file_name") or ""
+        ).strip()
+
+        extension = os.path.splitext(filename)[1].lower()
+
+        allowed_extensions = {
+            ".mp4": "video/mp4",
+            ".mov": "video/quicktime",
+            ".webm": "video/webm",
+        }
+
+        if extension not in allowed_extensions:
+            return jsonify({
+                "success": False,
+                "error": "Unsupported TikTok video format."
+            }), 400
+
+        mime_type = (
+            content.get("mime_type")
+            or allowed_extensions[extension]
+        )
+
+        storage_path = str(
+            content.get("storage_path") or ""
+        ).strip()
+
+        if not storage_path:
+            return jsonify({
+                "success": False,
+                "error": "The saved video has no Storage path."
+            }), 400
+
+        video_url = content_public_url(storage_path)
+
+        if not video_url:
+            return jsonify({
+                "success": False,
+                "error": "Could not create the video URL."
+            }), 500
+
+        safe_name = f"tiktok_{uuid.uuid4().hex}{extension}"
+        temp_path = os.path.join(upload_dir, safe_name)
+
+        download_response = requests.get(
+            video_url,
+            timeout=120,
+            stream=True
+        )
+
+        if download_response.status_code != 200:
+            return jsonify({
+                "success": False,
+                "error": "Could not download the saved video."
+            }), 502
+
+        with open(temp_path, "wb") as output_file:
+            for chunk in download_response.iter_content(
+                chunk_size=1024 * 1024
+            ):
+                if chunk:
+                    output_file.write(chunk)
+
+        video_size = os.path.getsize(temp_path)
+
+        title = str(
+            request.form.get("title")
+            or content.get("title")
+            or os.path.splitext(filename)[0]
+        ).strip()
+
+    else:
+        # Keep support for direct video uploads
         video = request.files.get("video")
 
         if not video:
             return jsonify({
                 "success": False,
-                "error": (
-                    "No video file was uploaded."
-                    if language() == "en"
-                    else "Aucun fichier vidéo n'a été envoyé."
-                )
+                "error": "No video or Content Center item was provided."
             }), 400
 
         filename = str(video.filename or "").strip()
@@ -1274,11 +1377,7 @@ def tiktok_publish():
         if not filename:
             return jsonify({
                 "success": False,
-                "error": (
-                    "The video filename is missing."
-                    if language() == "en"
-                    else "Le nom du fichier vidéo est manquant."
-                )
+                "error": "The video filename is missing."
             }), 400
 
         allowed_extensions = {
@@ -1292,62 +1391,18 @@ def tiktok_publish():
         if extension not in allowed_extensions:
             return jsonify({
                 "success": False,
-                "error": (
-                    "Unsupported video format. Use MP4, MOV or WebM."
-                    if language() == "en"
-                    else "Format vidéo non pris en charge. Utilisez MP4, MOV ou WebM."
-                )
+                "error": "Unsupported TikTok video format."
             }), 400
 
         mime_type = allowed_extensions[extension]
 
-        # ----------------------------------------------------
-        # 2. Save temporary video
-        # ----------------------------------------------------
-
-        upload_dir = os.path.join(
-            os.getcwd(),
-            "tiktok_uploads"
-        )
-
-        os.makedirs(upload_dir, exist_ok=True)
-
-        safe_name = (
-            f"tiktok_{uuid.uuid4().hex}"
-            f"{extension}"
-        )
-
-        temp_path = os.path.join(
-            upload_dir,
-            safe_name
-        )
+        safe_name = f"tiktok_{uuid.uuid4().hex}{extension}"
+        temp_path = os.path.join(upload_dir, safe_name)
 
         video.save(temp_path)
-
         video_size = os.path.getsize(temp_path)
 
-        if video_size <= 0:
-            return jsonify({
-                "success": False,
-                "error": (
-                    "The uploaded video is empty."
-                    if language() == "en"
-                    else "La vidéo envoyée est vide."
-                )
-            }), 400
 
-        # TikTok maximum video size = 4 GB.
-        max_video_size = 4 * 1024 * 1024 * 1024
-
-        if video_size > max_video_size:
-            return jsonify({
-                "success": False,
-                "error": (
-                    "The video is larger than TikTok's 4 GB limit."
-                    if language() == "en"
-                    else "La vidéo dépasse la limite TikTok de 4 Go."
-                )
-            }), 400
 
         # ----------------------------------------------------
         # 3. Read publishing options
