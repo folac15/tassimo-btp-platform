@@ -1253,7 +1253,7 @@ def tiktok_publish():
                 )
             }), 500
 
-        # ----------------------------------------------------
+                # ----------------------------------------------------
         # 1. Get video from Content Center or direct upload
         # ----------------------------------------------------
         content_id = str(
@@ -1273,6 +1273,7 @@ def tiktok_publish():
         }
 
         if content_id:
+            # Get saved video from Content Center
             content_rows = sb_select(
                 "content_library",
                 {
@@ -1334,6 +1335,7 @@ def tiktok_publish():
             safe_name = (
                 f"tiktok_{uuid.uuid4().hex}{extension}"
             )
+
             temp_path = os.path.join(
                 upload_dir,
                 safe_name
@@ -1369,6 +1371,7 @@ def tiktok_publish():
             ).strip()
 
         else:
+            # Support direct video uploads too
             video = request.files.get("video")
 
             if not video:
@@ -1377,7 +1380,9 @@ def tiktok_publish():
                     "error": "No video or Content Center item was provided."
                 }), 400
 
-            filename = str(video.filename or "").strip()
+            filename = str(
+                video.filename or ""
+            ).strip()
 
             if not filename:
                 return jsonify({
@@ -1398,6 +1403,7 @@ def tiktok_publish():
             safe_name = (
                 f"tiktok_{uuid.uuid4().hex}{extension}"
             )
+
             temp_path = os.path.join(
                 upload_dir,
                 safe_name
@@ -1436,9 +1442,11 @@ def tiktok_publish():
                 )
             }), 400
 
-        # ----------------------------------------------------
-        # 3. Read publishing options
-        # ----------------------------------------------------
+        
+                    
+
+
+        
 
 
 
