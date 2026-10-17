@@ -426,7 +426,11 @@ def protected(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         if not session_authenticated():
-            return jsonify({"error": t("login_required")}), 401
+            return jsonify({
+                "error": t("login_required"),
+                "code": "authentication_required"
+            }), 401
+
         return fn(*args, **kwargs)
 
     return wrapper
