@@ -958,50 +958,37 @@ async function api(url, options = {}){
             "application/json";
     }
 
-    const response =
-        await fetch(url, options);
+    const response = await fetch(url, {
+    ...options,
+    credentials: "same-origin"
+});
 
-    if(response.status === 401){
+let data = {};
 
-        window.location.href = "/login";
-        return null;
-    }
+try {
+    data = await response.json();
+} catch (error) {
+    data = {};
+}
 
-    let data = {};
+/* Redirect only when TASSIMO authentication has failed. */
+if (
+    response.status === 401 &&
+    data.code === "authentication_required"
+) {
+    window.location.href = "/login";
+    return null;
+}
 
-    try{
+/* Show other errors instead of silently redirecting. */
+if (!response.ok) {
+    throw new Error(
+        data.error ||
+        `Request failed with status ${response.status}`
+    );
+}
 
-        data = await response.json();
-
-    }catch(error){
-
-        data = {};
-    }
-
-    if(!response.ok){
-
-        let errorMessage =
-            data.error ||
-            data.message ||
-            data.details ||
-            "Request failed / Requête échouée";
-
-        if(typeof errorMessage !== "string"){
-
-            errorMessage =
-                JSON.stringify(
-                    errorMessage,
-                    null,
-                    2
-                );
-        }
-
-        throw new Error(
-            String(errorMessage)
-        );
-    }
-
-    return data;
+return data;
 }
 
 function showTab(name,button){
