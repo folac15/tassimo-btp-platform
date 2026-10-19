@@ -427,9 +427,11 @@ def protected(fn):
     def wrapper(*args, **kwargs):
         if not session_authenticated():
             return jsonify({
-                "error": t("login_required"),
-                "code": "authentication_required"
-            }), 401
+    "success": False,
+    "error": t("login_required"),
+    "code": "authentication_required",
+    "stage": "app_authentication"
+}), 401
 
         return fn(*args, **kwargs)
 
