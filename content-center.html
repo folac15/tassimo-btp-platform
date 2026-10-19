@@ -938,57 +938,67 @@ function escapeHtml(value){
     .replaceAll("'","&#039;");
 }
 
-async function api(url, options = {}){
-
+async function api(url, options = {}) {
     options.headers = {
         ...(options.headers || {}),
-        "X-Language":
-            localStorage.getItem("lang") || "fr"
+        "X-Language": localStorage.getItem("lang") || "fr"
     };
 
-    /*
-     * Automatically tell Flask that JSON is being sent.
-     */
-    if(
-        options.body &&
-        typeof options.body === "string"
-    ){
+    let response;
+    let data = {};
 
-        options.headers["Content-Type"] =
-            "application/json";
+    try {
+        response = await fetch(url, {
+            ...options,
+            credentials: "same-origin"
+        });
+
+        try {
+            data = await response.json();
+        } catch (e) {
+            data = {};
+        }
+
+    } catch (error) {
+        throw new Error(
+            "Network error. Please check your connection and try again."
+        );
     }
 
-    const response = await fetch(url, {
-    ...options,
-    credentials: "same-origin"
-});
+    // Redirect only when the application explicitly identifies
+    // its own login/session authentication failure.
+    if (
+        response.status === 401 &&
+        data.code === "authentication_required"
+    ) {
+        window.location.href = "/login";
+        return null;
+    }
 
-let data = {};
+    // Display TikTok or other API errors instead of hiding them.
+    if (!response.ok) {
+        let message =
+            data.error ||
+            data.message ||
+            data.details ||
+            "Request failed. HTTP " + response.status;
 
-try {
-    data = await response.json();
-} catch (error) {
-    data = {};
-}
+        if (typeof message !== "string") {
+            message = JSON.stringify(message);
+        }
 
-/* Redirect only when TASSIMO authentication has failed. */
-if (
-    response.status === 401 &&
-    data.code === "authentication_required"
-) {
-    window.location.href = "/login";
-    return null;
-}
+        if (data.stage) {
+            message = "Stage: " + data.stage + "\n" + message;
+        }
 
-/* Show other errors instead of silently redirecting. */
-if (!response.ok) {
-    throw new Error(
-        data.error ||
-        `Request failed with status ${response.status}`
-    );
-}
+        if (data.http_status) {
+            message += "\nTikTok HTTP status: " + data.http_status;
+        }
 
-return data;
+        throw new Error(message);
+    }
+
+    return data;
 }
 
 function showTab(name,button){
