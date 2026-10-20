@@ -1227,6 +1227,158 @@ def tiktok_creator_info():
             ),
             "details": str(exc)
         }), 500
+    # ============================================================
+# TIKTOK ACCESS TOKEN REFRESH
+# ============================================================
+
+def refresh_tiktok_access_token(connection):
+    """
+    Refresh an expired TikTok access token and save the new
+    token information to Supabase.
+    """
+
+    refresh_token = str(
+        connection.get("refresh_token") or ""
+    ).strip()
+
+    if not refresh_token:
+        return None, None, "TikTok refresh token is missing."
+
+    if not TIKTOK_CLIENT_KEY or not TIKTOK_CLIENT_SECRET:
+        return (
+            None,
+            None,
+            "TikTok client credentials are not configured."
+        )
+
+    token_url = "https://open.tiktokapis.com/v2/oauth/token/"
+
+    try:
+        response = requests.post(
+            token_url,
+            headers={
+                "Content-Type": (
+                    "application/x-www-form-urlencoded"
+                ),
+                "Cache-Control": "no-cache"
+            },
+            data={
+                "client_key": TIKTOK_CLIENT_KEY,
+                "client_secret": TIKTOK_CLIENT_SECRET,
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token
+            },
+            timeout=30
+        )
+
+        try:
+            token_data = response.json()
+        except Exception:
+            token_data = {}
+
+    except Exception:
+        return (
+            None,
+            None,
+            "Unable to contact TikTok token service."
+        )
+
+    new_access_token = str(
+        token_data.get("access_token") or ""
+    ).strip()
+
+    if response.status_code >= 400 or not new_access_token:
+        error_description = (
+            token_data.get("error_description")
+            or token_data.get("message")
+            or token_data.get("error")
+            or "TikTok rejected the refresh request."
+        )
+
+        return (
+            None,
+            None,
+            str(error_description)
+        )
+
+    now_utc = datetime.now(timezone.utc)
+
+    try:
+        expires_in = int(
+            token_data.get("expires_in") or 86400
+        )
+    except (ValueError, TypeError):
+        expires_in = 86400
+
+    if expires_in <= 0:
+        return (
+            None,
+            None,
+            "TikTok returned an invalid access-token lifetime."
+        )
+
+    new_refresh_token = str(
+        token_data.get("refresh_token") or refresh_token
+    ).strip()
+
+    payload = {
+        "access_token": new_access_token,
+        "refresh_token": new_refresh_token,
+        "expires_at": (
+            now_utc + timedelta(seconds=expires_in)
+        ).isoformat(),
+        "updated_at": now_utc.isoformat()
+    }
+
+    refresh_expires_in = token_data.get(
+        "refresh_expires_in"
+    )
+
+    if refresh_expires_in is not None:
+        try:
+            refresh_expires_in = int(refresh_expires_in)
+
+            if refresh_expires_in > 0:
+                payload["refresh_expires_at"] = (
+                    now_utc
+                    + timedelta(seconds=refresh_expires_in)
+                ).isoformat()
+
+        except (ValueError, TypeError):
+            pass
+
+    returned_scope = token_data.get("scope")
+
+    if returned_scope:
+        payload["scope"] = returned_scope
+
+    connection_id = connection.get("id")
+
+    if not connection_id:
+        return (
+            None,
+            None,
+            "TikTok connection ID is missing."
+        )
+
+    saved_connection = sb_update(
+        "tiktok_connections",
+        {"id": f"eq.{connection_id}"},
+        payload
+    )
+
+    if not isinstance(saved_connection, dict):
+        return (
+            None,
+            None,
+            "The refreshed token could not be saved to Supabase."
+        )
+
+    return (
+        new_access_token,
+        saved_connection,
+        None
+    )
 
 # ------------------------------------------------------------
 # TIKTOK DIRECT POST — VIDEO PUBLISH
@@ -1523,18 +1675,20 @@ def tiktok_publish():
                 )
             }), 400
 
+                # ----------------------------------------------------
+        # 6. Get the real TikTok publishing account
         # ----------------------------------------------------
-        # 6. Get connected TikTok account
-        # ----------------------------------------------------
+
         connections = sb_select(
             "tiktok_connections",
             {
                 "select": (
                     "id,open_id,display_name,"
-                    "access_token,scope,expires_at"
+                    "access_token,refresh_token,"
+                    "scope,expires_at,refresh_expires_at"
                 ),
                 "order": "updated_at.desc",
-                "limit": "1"
+                "limit": "10"
             }
         )
 
@@ -1545,17 +1699,111 @@ def tiktok_publish():
                 "error": "No TikTok account is connected."
             }), 404
 
-        connection = connections[0]
+        # Exclude the diagnostic test account.
+        # Only use an account authorized to publish videos.
+
+        connection = None
+
+        for item in connections:
+            display_name = str(
+                item.get("display_name") or ""
+            ).strip()
+
+            scope_value = str(
+                item.get("scope") or ""
+            )
+
+            scopes = {
+                value.strip()
+                for value in scope_value.split(",")
+            }
+
+            if display_name == "Render Diagnostic Test":
+                continue
+
+            if "video.publish" not in scopes:
+                continue
+
+            connection = item
+            break
+
+        if connection is None:
+            return jsonify({
+                "success": False,
+                "connected": False,
+                "error": (
+                    "No TikTok publishing account with "
+                    "video.publish permission was found."
+                )
+            }), 404
+
+        # ----------------------------------------------------
+        # 6A. Check whether the access token needs refreshing
+        # ----------------------------------------------------
 
         access_token = str(
             connection.get("access_token") or ""
         ).strip()
 
+        expiry_value = connection.get("expires_at")
+        needs_refresh = not expiry_value
+
+        if expiry_value:
+            try:
+                expiry_text = str(expiry_value).strip()
+
+                if expiry_text.endswith("Z"):
+                    expiry_text = (
+                        expiry_text[:-1] + "+00:00"
+                    )
+
+                expiry_datetime = datetime.fromisoformat(
+                    expiry_text
+                )
+
+                if expiry_datetime.tzinfo is None:
+                    expiry_datetime = expiry_datetime.replace(
+                        tzinfo=timezone.utc
+                    )
+
+                needs_refresh = (
+                    expiry_datetime
+                    <= datetime.now(timezone.utc)
+                    + timedelta(minutes=5)
+                )
+
+            except (ValueError, TypeError):
+                needs_refresh = True
+
+        if needs_refresh:
+            (
+                refreshed_access_token,
+                refreshed_connection,
+                refresh_error
+            ) = refresh_tiktok_access_token(connection)
+
+            if not refreshed_access_token:
+                return jsonify({
+                    "success": False,
+                    "connected": True,
+                    "stage": "token_refresh",
+                    "error": (
+                        "TikTok access-token refresh failed."
+                    ),
+                    "details": refresh_error
+                }), 401
+
+            access_token = refreshed_access_token
+            connection = refreshed_connection
+
         if not access_token:
             return jsonify({
                 "success": False,
-                "connected": False,
-                "error": "TikTok access token is missing."
+                "connected": True,
+                "stage": "access_token",
+                "error": (
+                    "TikTok access token is missing."
+                )
             }), 401
 
         # ----------------------------------------------------
