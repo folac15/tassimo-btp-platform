@@ -1901,19 +1901,34 @@ def tiktok_publish():
                 "max_video_post_duration_sec": max_duration
             }), 400
 
-        # ----------------------------------------------------
+                # ----------------------------------------------------
         # 9. Calculate upload chunks
         # ----------------------------------------------------
         five_mb = 5 * 1024 * 1024
-        chunk_size = 10 * 1024 * 1024
+        sixty_four_mb = 64 * 1024 * 1024
 
-        if video_size < five_mb:
+        if video_size <= sixty_four_mb:
             chunk_size = video_size
             total_chunk_count = 1
+
         else:
+            chunk_size = sixty_four_mb
+
             total_chunk_count = (
                 video_size + chunk_size - 1
             ) // chunk_size
+
+            last_chunk_size = (
+                video_size
+                - chunk_size * (total_chunk_count - 1)
+            )
+
+            if last_chunk_size < five_mb:
+                total_chunk_count -= 1
+
+                chunk_size = (
+                    video_size + total_chunk_count - 1
+                ) // total_chunk_count
 
         # ----------------------------------------------------
         # 10. Initialize TikTok Direct Post
