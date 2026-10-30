@@ -2301,11 +2301,18 @@ async function publishContentToTikTok(publicationId){
         );
 
         if(!data || data.success !== true){
-            throw new Error(
-                data?.error ||
-                "TikTok publishing request failed."
-            );
-        }
+    const details = data?.error;
+
+    const message = typeof details === "string"
+        ? details
+        : JSON.stringify(details || data);
+
+    throw new Error(
+        "Stage: " + (data?.stage || "unknown") +
+        "\nHTTP: " + (data?.http_status || "unknown") +
+        "\nDetails: " + message
+    );
+}
 
         showMessage(
             "TikTok accepted the publishing request. Publish ID: " +
